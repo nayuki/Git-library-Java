@@ -73,6 +73,8 @@ public final class Repository {
 		// Select object type
 		if (type.equals("blob"))
 			return new BlobObject(id, bytes);
+		if (type.equals("tree"))
+			return new TreeObject(id, bytes);
 		else
 			throw new DataFormatException("Unknown object type: " + type);
 	}
