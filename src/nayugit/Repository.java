@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.zip.DataFormatException;
 import java.util.zip.InflaterInputStream;
 
 
@@ -45,6 +47,34 @@ public final class Repository {
 		} finally {
 			in.close();
 		}
+	}
+	
+	
+	public GitObject readObject(ObjectId id) throws IOException, DataFormatException {
+		// Read object bytes and extract header
+		byte[] bytes = readRawObject(id);
+		int index = 0;
+		while (bytes[index] != 0)
+			index++;
+		String header = new String(bytes, 0, index, "US-ASCII");
+		bytes = Arrays.copyOfRange(bytes, index + 1, bytes.length);
+		
+		// Parse header
+		String[] parts = header.split(" ", -1);
+		if (parts.length != 2)
+			throw new DataFormatException("Invalid object header");
+		String type = parts[0];
+		int length = Integer.parseInt(parts[1]);
+		if (length < 0)
+			throw new DataFormatException("Negative data length");
+		if (length != bytes.length)
+			throw new DataFormatException("Data length mismatch");
+		
+		// Select object type
+		if (type.equals("blob"))
+			return new BlobObject(id, bytes);
+		else
+			throw new DataFormatException("Unknown object type: " + type);
 	}
 	
 }
