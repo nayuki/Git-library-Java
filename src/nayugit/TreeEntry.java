@@ -1,7 +1,7 @@
 package nayugit;
 
 
-public class TreeEntry {
+public final class TreeEntry {
 	
 	public final Type type;
 	public final String name;
@@ -12,6 +12,9 @@ public class TreeEntry {
 	public TreeEntry(Type type, String name, ObjectId id) {
 		if (name == null || id == null)
 			throw new NullPointerException();
+		if (name.indexOf('\0') != -1)
+			throw new IllegalArgumentException("Name cannot contai null character");
+		
 		this.type = type;
 		this.name = name;
 		this.id = id;
