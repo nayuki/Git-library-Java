@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.regex.Pattern;
 
 
-public final class ObjectId {
+public final class ObjectId implements Comparable<ObjectId> {
 	
 	public final String hexString;  // 40 characters of 0-9 and lowercase a-f
 	private final byte[] bytes;  // 20 bytes
@@ -68,6 +68,23 @@ public final class ObjectId {
 	
 	public byte[] getBytes() {
 		return bytes.clone();
+	}
+	
+	
+	public boolean equals(Object obj) {
+		if (!(obj instanceof ObjectId))
+			return false;
+		return Arrays.equals(bytes, ((ObjectId)obj).bytes);
+	}
+	
+	
+	public int hashCode() {
+		return bytes[0] << 24 | (bytes[1] & 0xFF) << 16 | (bytes[2] & 0xFF) << 8 | (bytes[3] & 0xFF);
+	}
+	
+	
+	public int compareTo(ObjectId other) {
+		return hexString.compareTo(other.hexString);
 	}
 	
 	
