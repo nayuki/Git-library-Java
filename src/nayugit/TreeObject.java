@@ -1,5 +1,7 @@
 package nayugit;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,6 +44,20 @@ public final class TreeObject extends GitObject {
 				return entry;
 		}
 		return null;
+	}
+	
+	
+	public byte[] toBytes() {
+		try {
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			for (TreeEntry entry : entries) {
+				out.write(String.format("%o %s\0", entry.type.mode, entry.name).getBytes("UTF-8"));  // Format number as octal
+				out.write(entry.id.getBytes());
+			}
+			return addHeader("tree", out.toByteArray());
+		} catch (IOException e) {
+			throw new AssertionError(e);
+		}
 	}
 	
 	

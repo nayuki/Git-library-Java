@@ -13,6 +13,11 @@ public final class BlobObject extends GitObject {
 	
 	
 	
+	public byte[] toBytes() {
+		return addHeader("blob", data);
+	}
+	
+	
 	public String toString() {
 		return String.format("BlobObject(length=%d)", data.length);
 	}

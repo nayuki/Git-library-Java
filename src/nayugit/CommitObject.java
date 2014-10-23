@@ -85,10 +85,35 @@ public final class CommitObject extends GitObject {
 	
 	
 	
+	public byte[] toBytes() {
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append("tree ").append(tree.hexString).append("\n");
+			for (ObjectId parent : parents)
+				sb.append("parent ").append(parent.hexString).append("\n");
+			sb.append(String.format("author %s <%s> %d %s\n", authorName, authorEmail, authorTime, formatTimezone(authorTimezone)));
+			sb.append(String.format("committer %s <%s> %d %s\n", committerName, committerEmail, committerTime, formatTimezone(committerTimezone)));
+			sb.append("\n").append(message);
+			return addHeader("commit", sb.toString().getBytes("UTF-8"));
+		} catch (UnsupportedEncodingException e) {
+			throw new AssertionError(e);
+		}
+	}
+	
+	
 	public String toString() {
 		return String.format("CommitObject(tree=%s)", tree.hexString);
 	}
 	
+	
+	
+	private static String formatTimezone(int timezone) {
+		String sign = timezone >= 0 ? "+" : "-";
+		timezone = Math.abs(timezone);
+		int hours = timezone / 60;
+		int minutes = timezone % 60;
+		return String.format("%s%02d%02d", sign, hours, minutes);
+	}
 	
 	
 	private static final Pattern AUTHORSHIP_PATTERN = Pattern.compile("(.*?) <([^>]*)> (\\d+) ([+-])(\\d{2})(\\d{2})");
