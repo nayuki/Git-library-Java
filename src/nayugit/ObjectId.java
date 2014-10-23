@@ -4,13 +4,18 @@ import java.util.Arrays;
 import java.util.regex.Pattern;
 
 
+// An immutable 160-bit (20-byte) SHA-1 hash
 public final class ObjectId implements Comparable<ObjectId> {
 	
-	public final String hexString;  // 40 characters of 0-9 and lowercase a-f
-	private final byte[] bytes;  // 20 bytes
+	public static final int NUM_BYTES = 20;
+	
+	
+	public final String hexString;  // 40 characters (NUM_BYTES * 2) of 0-9 and lowercase a-f
+	private final byte[] bytes;     // 20 bytes (NUM_BYTES)
 	
 	
 	
+	// Accepts uppercase and lowercase
 	public ObjectId(String hexStr) {
 		if (hexStr == null)
 			throw new NullPointerException();
@@ -30,25 +35,25 @@ public final class ObjectId implements Comparable<ObjectId> {
 	}
 	
 	
+	// Array must be 20 bytes long
 	public ObjectId(byte[] bytes) {
-		if (bytes == null)
-			throw new NullPointerException();
-		if (bytes.length != NUM_BYTES)
-			throw new IllegalArgumentException();
-		
-		this.bytes = bytes;
-		StringBuilder sb = new StringBuilder();
-		for (byte b : bytes)
-			sb.append(HEX_DIGITS[(b >>> 4) & 0xF]).append(HEX_DIGITS[b & 0xF]);
-		hexString = sb.toString();
+		this(bytes, 0, bytes.length);
 	}
 	
 	
+	// Array can be any length, only requiring (off + 20 <= bytes.length)
 	public ObjectId(byte[] bytes, int off) {
+		this(bytes, off, NUM_BYTES);
+	}
+	
+	
+	private ObjectId(byte[] bytes, int off, int len) {
 		if (bytes == null)
 			throw new NullPointerException();
+		if (len != NUM_BYTES)
+			throw new IllegalArgumentException("Invalid array length");
 		if (bytes.length - off < NUM_BYTES)
-			throw new IllegalArgumentException();
+			throw new IndexOutOfBoundsException();
 		
 		this.bytes = Arrays.copyOfRange(bytes, off, off + NUM_BYTES);
 		StringBuilder sb = new StringBuilder();
@@ -94,8 +99,7 @@ public final class ObjectId implements Comparable<ObjectId> {
 	
 	
 	
-	private static final int NUM_BYTES = 20;
 	private static final Pattern HEX_STRING_PATTERN = Pattern.compile("[0-9a-fA-F]{" + (NUM_BYTES * 2) + "}");
-	private static char[] HEX_DIGITS = "0123456789abcdef".toCharArray();
+	private static final char[] HEX_DIGITS = "0123456789abcdef".toCharArray();
 	
 }
