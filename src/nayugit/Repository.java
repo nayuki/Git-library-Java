@@ -83,6 +83,8 @@ public final class Repository {
 			throw new DataFormatException("Invalid object header");
 		String type = parts[0];
 		int length = Integer.parseInt(parts[1]);
+		if (!Integer.toString(length).equals(parts[1]))  // Check for non-canonical number representations like -0, 007, etc.
+			throw new DataFormatException("Invalid data length string");
 		if (length < 0)
 			throw new DataFormatException("Negative data length");
 		if (length != bytes.length)
