@@ -10,20 +10,19 @@ import java.util.zip.DataFormatException;
 
 public final class CommitObject extends GitObject {
 	
-	public final ObjectId tree;
+	public ObjectId tree;
 	public List<ObjectId> parents;
-	public final String message;
+	public String message;
 	
-	public final String authorName;
-	public final String authorEmail;
-	public final int authorTime;
-	public final int authorTimezone;
+	public String authorName;
+	public String authorEmail;
+	public int authorTime;
+	public int authorTimezone;
 	
-	public final String committerName;
-	public final String committerEmail;
-	public final int committerTime;
-	public final int committerTimezone;
-	
+	public String committerName;
+	public String committerEmail;
+	public int committerTime;
+	public int committerTimezone;
 	
 	
 	

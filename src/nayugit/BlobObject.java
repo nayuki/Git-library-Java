@@ -3,7 +3,7 @@ package nayugit;
 
 public final class BlobObject extends GitObject {
 	
-	private byte[] data;
+	public byte[] data;
 	
 	
 	
@@ -11,11 +11,6 @@ public final class BlobObject extends GitObject {
 		this.data = data.clone();
 	}
 	
-	
-	
-	public byte[] getData() {
-		return data.clone();
-	}
 	
 	
 	public String toString() {

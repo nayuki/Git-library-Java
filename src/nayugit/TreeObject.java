@@ -8,7 +8,7 @@ import java.util.List;
 
 public final class TreeObject extends GitObject {
 	
-	private List<TreeEntry> entries;
+	public List<TreeEntry> entries;
 	
 	
 	
@@ -34,16 +34,6 @@ public final class TreeObject extends GitObject {
 		}
 	}
 	
-	
-	
-	public int getEntryCount() {
-		return entries.size();
-	}
-	
-	
-	public TreeEntry getEntry(int index) {
-		return entries.get(index);
-	}
 	
 	
 	public TreeEntry getEntry(String name) {
