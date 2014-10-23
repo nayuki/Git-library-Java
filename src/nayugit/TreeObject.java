@@ -14,8 +14,13 @@ public final class TreeObject extends GitObject {
 	
 	
 	
-	public TreeObject(byte[] data) throws UnsupportedEncodingException {
+	public TreeObject() {
 		entries = new ArrayList<TreeEntry>();
+	}
+	
+	
+	public TreeObject(byte[] data) throws UnsupportedEncodingException {
+		this();
 		int index = 0;
 		while (index < data.length) {
 			int start = index;
