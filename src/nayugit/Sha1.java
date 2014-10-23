@@ -3,7 +3,10 @@ package nayugit;
 import java.util.Arrays;
 
 
+// Computes SHA-1 hashes of binary data
 public final class Sha1 {
+	
+	/* Convenience methods */
 	
 	public static ObjectId getHash(byte[] b) {
 		return getHash(b, 0, b.length);
@@ -17,6 +20,8 @@ public final class Sha1 {
 	}
 	
 	
+	
+	/* Stateful streaming hasher */
 	
 	private byte[] block;
 	private int blockFilled;
