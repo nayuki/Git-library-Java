@@ -31,7 +31,7 @@ public final class TreeObject extends GitObject {
 			index++;
 			ObjectId fileId = new ObjectId(Arrays.copyOfRange(data, index, index + 20));
 			index += 20;
-			entries.add(new TreeEntry(mode, name, fileId));
+			entries.add(new TreeEntry(TreeEntry.Type.fromMode(mode), name, fileId));
 		}
 	}
 	
