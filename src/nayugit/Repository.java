@@ -3,10 +3,13 @@ package nayugit;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.zip.DataFormatException;
+import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
 
@@ -99,6 +102,25 @@ public final class Repository {
 			return new CommitObject(bytes);
 		else
 			throw new DataFormatException("Unknown object type: " + type);
+	}
+	
+	
+	public void writeObject(GitObject obj) throws IOException {
+		ObjectId id = obj.getId();
+		File file = new File(directory, "objects" + File.separator + id.hexString.substring(0, 2) + File.separator + id.hexString.substring(2));
+		if (file.isFile())
+			return;  // Object already exists in the loose objects database; no work to do
+		
+		OutputStream out = new DeflaterOutputStream(new FileOutputStream(file));
+		boolean success = false;
+		try {
+			out.write(obj.toBytes());
+			success = true;
+		} finally {
+			out.close();
+			if (!success)
+				file.delete();
+		}
 	}
 	
 }
