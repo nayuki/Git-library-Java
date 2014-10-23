@@ -1,5 +1,6 @@
 package nayugit;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.File;
@@ -78,54 +79,166 @@ public final class PackfileReader {
 			indexRaf.close();
 		}
 		
-		InputStream packIn = new FileInputStream(packFile);
+		return readRawObject(byteOffset);
+	}
+	
+	
+	private Object[] readRawObject(int byteOffset) throws IOException, DataFormatException {
+		if (byteOffset < 0)
+			throw new IllegalArgumentException();
+		InputStream in = new FileInputStream(packFile);
 		try {
 			// Skip fully
-			while (byteOffset > 0) {
-				long n = packIn.skip(byteOffset);
+			int toSkip = byteOffset;
+			while (toSkip > 0) {
+				long n = in.skip(toSkip);
 				if (n <= 0)
 					throw new EOFException();
-				byteOffset -= n;
+				toSkip -= n;
 			}
 			
 			// Read decompressed size
-			int b = packIn.read();
-			if (b == -1)
-				throw new EOFException();
-			int type = (b >>> 4) & 7;
-			int size = b & 0xF;
-			boolean hasNext = (b & 0x80) != 0;
-			for (int shift = 4; hasNext; shift += 7) {
-				if (shift + 7 > 32)
-					throw new DataFormatException("Variable-length integer too long");
-				b = packIn.read();
-				if (b == -1)
-					throw new EOFException();
-				size |= (b & 0x7F) << shift;
-				hasNext = (b & 0x80) != 0;
-			}
+			int typeAndSize = decodeTypeAndSize(in);
+			int type = typeAndSize & 7;
+			if (type == 0 || type == 5)
+				throw new DataFormatException("Unknown object type: " + type);
+			int size = typeAndSize >>> 3;
+			
+			int deltaOffset;
+			if (type == 6)
+				deltaOffset = decodeOffsetDelta(in);
+			else
+				deltaOffset = -1;
 			
 			// Decompress data
-			InputStream in = new InflaterInputStream(packIn);
+			InputStream inflateIn = new InflaterInputStream(in);
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			try {
 				byte[] buf = new byte[1024];
 				while (true) {
-					int n = in.read(buf);
+					int n = inflateIn.read(buf);
 					if (n == -1)
 						break;
 					out.write(buf, 0, n);
 				}
 			} finally {
-				in.close();
+				inflateIn.close();
 			}
 			byte[] data = out.toByteArray();
 			if (data.length != size)
 				throw new DataFormatException("Data length mismatch");
+			
+			if (type == 6) {
+				Object[] temp = readRawObject(byteOffset - deltaOffset);
+				type = (Integer)temp[0];
+				byte[] base = (byte[])temp[1];
+				InputStream deltaIn = new ByteArrayInputStream(data);
+				int baseLen = decodeDeltaHeader(deltaIn);
+				if (baseLen != base.length)
+					throw new DataFormatException("Base data length mismatch");
+				int dataLen = decodeDeltaHeader(deltaIn);
+				
+				out = new ByteArrayOutputStream();
+				while (true) {
+					int op = deltaIn.read();
+					if (op == -1)
+						break;
+					if ((op & 0x80) == 0) {  // Insert
+						byte[] buf = new byte[op];
+						int n = deltaIn.read(buf);
+						if (n != buf.length)
+							throw new EOFException();
+						out.write(buf);
+					} else {  // Copy
+						int off = 0;
+						for (int i = 0; i < 4; i++) {
+							if (((op >>> i) & 1) != 0)
+								off |= readByteNoEof(deltaIn) << (i * 8);
+						}
+						int len = 0;
+						for (int i = 0; i < 3; i++) {
+							if (((op >>> (i + 4)) & 1) != 0)
+								len |= readByteNoEof(deltaIn) << (i * 8);
+						}
+						if (len == 0)
+							len = 0x10000;
+						out.write(base, off, len);
+					}
+				}
+				data = out.toByteArray();
+				if (data.length != dataLen)
+					throw new DataFormatException("Data length mismatch");
+			}
+			
 			return new Object[]{type, data};
 		} finally {
-			packIn.close();
+			in.close();
 		}
+	}
+	
+	
+	private static int decodeTypeAndSize(InputStream in) throws IOException, DataFormatException {
+		int b = readByteNoEof(in);
+		int type = (b >>> 4) & 7;
+		long size = b & 0xF;
+		
+		for (int i = 0; ; i++) {
+			if (i >= 6)
+				throw new DataFormatException("Variable-length integer too long");
+			b = readByteNoEof(in);
+			size |= (b & 0x7FL) << (i * 7 + 4);
+			if ((b & 0x80) == 0)
+				break;
+		}
+		
+		long result = size << 3 | type;
+		if ((int)result != result)
+			throw new DataFormatException("Variable-length integer too large");
+		return (int)result;
+	}
+	
+	
+	private static int decodeOffsetDelta(InputStream in) throws IOException, DataFormatException {
+		long result = 0;
+		for (int i = 0; ; i++) {
+			if (i >= 5)
+				throw new DataFormatException("Variable-length integer too long");
+			int b = readByteNoEof(in);
+			result |= b & 0x7F;
+			if ((b & 0x80) == 0)
+				break;
+			result++;
+			result <<= 7;
+		}
+		
+		if ((int)result != result)
+			throw new DataFormatException("Variable-length integer too large");
+		return (int)result;
+	}
+	
+	
+	private static int decodeDeltaHeader(InputStream in) throws IOException, DataFormatException {
+		long result = 0;
+		for (int i = 0; ; i++) {
+			if (i >= 6)
+				throw new DataFormatException("Variable-length integer too long");
+			int b = readByteNoEof(in);
+			result |= (b & 0x7FL) << (i * 7);
+			if ((b & 0x80) == 0)
+				break;
+		}
+		
+		if ((int)result != result)
+			throw new DataFormatException("Variable-length integer too large");
+		return (int)result;
+	}
+	
+	
+	private static int readByteNoEof(InputStream in) throws IOException {
+		int b = in.read();
+		if (b == -1)
+			throw new EOFException();
+		return b & 0xFF;  // Convert to unsigned
 	}
 	
 	
