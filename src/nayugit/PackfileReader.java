@@ -104,7 +104,7 @@ public final class PackfileReader {
 			// Read decompressed size
 			int typeAndSize = decodeTypeAndSize(in);
 			int type = typeAndSize & 7;
-			if (type == 0 || type == 5)
+			if (type == 0 || type == 5 || type == 7)
 				throw new DataFormatException("Unknown object type: " + type);
 			int size = typeAndSize >>> 3;
 			
@@ -186,13 +186,11 @@ public final class PackfileReader {
 		int type = (b >>> 4) & 7;
 		long size = b & 0xF;
 		
-		for (int i = 0; ; i++) {
+		for (int i = 0; (b & 0x80) != 0; i++) {
 			if (i >= 6)
 				throw new DataFormatException("Variable-length integer too long");
 			b = IoUtils.readUnsignedNoEof(in);
 			size |= (b & 0x7FL) << (i * 7 + 4);
-			if ((b & 0x80) == 0)
-				break;
 		}
 		
 		long result = size << 3 | type;
