@@ -55,8 +55,8 @@ public final class PackfileReader {
 				indexRaf.seek(8 + (headByte - 1) * 4);
 				objectOffset = IoUtils.readInt32(indexRaf);
 			}
-			indexRaf.seek(8 + 256 * 4 + objectOffset * 20);
-			b = new byte[20];
+			indexRaf.seek(8 + 256 * 4 + objectOffset * ObjectId.NUM_BYTES);
+			b = new byte[ObjectId.NUM_BYTES];
 			while (true) {
 				indexRaf.readFully(b);
 				ObjectId temp = new ObjectId(b);
@@ -67,7 +67,7 @@ public final class PackfileReader {
 					return null;
 				objectOffset++;
 			}
-			indexRaf.seek(8 + 256 * 4 + totalObjects * 20 + totalObjects * 4 + objectOffset * 4);
+			indexRaf.seek(8 + 256 * 4 + totalObjects * ObjectId.NUM_BYTES + totalObjects * 4 + objectOffset * 4);
 			byteOffset = IoUtils.readInt32(indexRaf);
 		} finally {
 			indexRaf.close();

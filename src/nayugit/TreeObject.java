@@ -22,16 +22,16 @@ public final class TreeObject extends GitObject {
 			while (data[index] != ' ')
 				index++;
 			int mode = Integer.parseInt(new String(data, start, index - start, "US-ASCII"), 8);  // Parse number as octal
-			
 			index++;
+			
 			start = index;
 			while (data[index] != 0)
 				index++;
 			String name = new String(data, start, index - start, "UTF-8");
-			
 			index++;
-			ObjectId fileId = new ObjectId(Arrays.copyOfRange(data, index, index + 20));
-			index += 20;
+			
+			ObjectId fileId = new ObjectId(Arrays.copyOfRange(data, index, index + ObjectId.NUM_BYTES));
+			index += ObjectId.NUM_BYTES;
 			entries.add(new TreeEntry(TreeEntry.Type.fromMode(mode), name, fileId));
 		}
 	}
