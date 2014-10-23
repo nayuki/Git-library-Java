@@ -28,7 +28,7 @@ public final class PackfileReader {
 	
 	
 	
-	public Object[] readRawObject(ObjectId id) throws IOException, DataFormatException {
+	public byte[] readRawObject(ObjectId id) throws IOException, DataFormatException {
 		RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
 		int byteOffset;
 		try {
@@ -79,7 +79,24 @@ public final class PackfileReader {
 			indexRaf.close();
 		}
 		
-		return readRawObject(byteOffset);
+		Object[] pair = readRawObject(byteOffset);
+		String typeStr;
+		int type = (Integer)pair[0];
+		if (type == 1)
+			typeStr = "commit";
+		else if (type == 2)
+			typeStr = "tree";
+		else if (type == 3)
+			typeStr = "blob";
+		else
+			throw new DataFormatException("Unknown object type: " + type);
+		
+		byte[] data = (byte[])pair[1];
+		byte[] header = (typeStr + " " + data.length + "\0").getBytes("US-ASCII");
+		byte[] result = new byte[header.length + data.length];
+		System.arraycopy(header, 0, result, 0, header.length);
+		System.arraycopy(data, 0, result, header.length, data.length);
+		return result;
 	}
 	
 	

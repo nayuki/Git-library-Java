@@ -54,25 +54,9 @@ public final class Repository {
 				String name = item.getName();
 				if (item.isFile() && name.startsWith("pack-") && name.endsWith(".idx")) {
 					File packFile = new File(item.getParentFile(), name.substring(0, name.length() - 3) + "pack");
-					Object[] temp = new PackfileReader(item, packFile).readRawObject(id);
-					if (temp != null) {
-						int type = (Integer)temp[0];
-						byte[] data = (byte[])temp[1];
-						String typeStr;
-						if (type == 1)
-							typeStr = "commit";
-						else if (type == 2)
-							typeStr = "tree";
-						else if (type == 3)
-							typeStr = "blob";
-						else
-							throw new DataFormatException("Unknown object type: " + type);
-						byte[] header = (typeStr + " " + data.length + "\0").getBytes("US-ASCII");
-						byte[] result = new byte[header.length + data.length];
-						System.arraycopy(header, 0, result, 0, header.length);
-						System.arraycopy(data, 0, result, header.length, data.length);
-						return result;
-					}
+					byte[] temp = new PackfileReader(item, packFile).readRawObject(id);
+					if (temp != null)
+						return temp;
 				}
 			}
 		}
