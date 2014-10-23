@@ -27,8 +27,7 @@ public final class CommitObject extends GitObject {
 	
 	
 	
-	public CommitObject(ObjectId id, byte[] data) throws UnsupportedEncodingException, DataFormatException {
-		super(id);
+	public CommitObject(byte[] data) throws UnsupportedEncodingException, DataFormatException {
 		parents = new ArrayList<ObjectId>();
 		
 		int index = 0;
@@ -88,7 +87,7 @@ public final class CommitObject extends GitObject {
 	
 	
 	public String toString() {
-		return String.format("CommitObject(id=%s, tree=%s)", id.hexString, tree.hexString);
+		return String.format("CommitObject(tree=%s)", tree.hexString);
 	}
 	
 	

@@ -7,8 +7,7 @@ public final class BlobObject extends GitObject {
 	
 	
 	
-	public BlobObject(ObjectId id, byte[] data) {
-		super(id);
+	public BlobObject(byte[] data) {
 		this.data = data.clone();
 	}
 	
@@ -20,7 +19,7 @@ public final class BlobObject extends GitObject {
 	
 	
 	public String toString() {
-		return String.format("BlobObject(id=%s, length=%d)", id.hexString, data.length);
+		return String.format("BlobObject(length=%d)", data.length);
 	}
 	
 }

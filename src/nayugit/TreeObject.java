@@ -12,8 +12,7 @@ public final class TreeObject extends GitObject {
 	
 	
 	
-	public TreeObject(ObjectId id, byte[] data) throws UnsupportedEncodingException {
-		super(id);
+	public TreeObject(byte[] data) throws UnsupportedEncodingException {
 		entries = new ArrayList<TreeEntry>();
 		int index = 0;
 		while (index < data.length) {
@@ -57,7 +56,7 @@ public final class TreeObject extends GitObject {
 	
 	
 	public String toString() {
-		return String.format("TreeObject(id=%s, entries=%d)", id.hexString, entries.size());
+		return String.format("TreeObject(entries=%d)", entries.size());
 	}
 	
 }

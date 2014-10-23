@@ -92,11 +92,11 @@ public final class Repository {
 		
 		// Select object type
 		if (type.equals("blob"))
-			return new BlobObject(id, bytes);
+			return new BlobObject(bytes);
 		if (type.equals("tree"))
-			return new TreeObject(id, bytes);
+			return new TreeObject(bytes);
 		if (type.equals("commit"))
-			return new CommitObject(id, bytes);
+			return new CommitObject(bytes);
 		else
 			throw new DataFormatException("Unknown object type: " + type);
 	}
