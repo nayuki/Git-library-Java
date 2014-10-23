@@ -31,6 +31,7 @@ public final class Repository {
 	
 	public byte[] readRawObject(ObjectId id) throws IOException, DataFormatException {
 		File file = new File(directory, "objects" + File.separator + id.hexString.substring(0, 2) + File.separator + id.hexString.substring(2));
+		byte[] result = null;
 		if (file.isFile()) {
 			// Read from loose object store
 			InputStream in = new InflaterInputStream(new FileInputStream(file));
@@ -43,7 +44,7 @@ public final class Repository {
 						break;
 					out.write(buf, 0, n);
 				}
-				return out.toByteArray();
+				result = out.toByteArray();
 			} finally {
 				in.close();
 			}
@@ -54,15 +55,16 @@ public final class Repository {
 				String name = item.getName();
 				if (item.isFile() && name.startsWith("pack-") && name.endsWith(".idx")) {
 					File packFile = new File(item.getParentFile(), name.substring(0, name.length() - 3) + "pack");
-					byte[] temp = new PackfileReader(item, packFile).readRawObject(id);
-					if (temp != null)
-						return temp;
+					result = new PackfileReader(item, packFile).readRawObject(id);
+					if (result != null)
+						break;
 				}
 			}
 		}
 		
-		// Object not found
-		return null;
+		if (result != null && !Sha1.getHash(result).equals(id))
+			throw new DataFormatException("Hash of data mismatches object ID");
+		return result;
 	}
 	
 	
