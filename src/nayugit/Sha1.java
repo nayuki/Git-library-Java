@@ -69,7 +69,7 @@ public final class Sha1 {
 		int d = state[3];
 		int e = state[4];
 		int[] schedule = new int[80];
-		for (int i = off, end = off + len; i < end; i += 64) {
+		for (int i = off, end = off + len; i < end; ) {
 			for (int j = 0; j < 16; j++, i += 4) {
 				schedule[j] =
 					  (msg[i + 0] & 0xFF) << 24
