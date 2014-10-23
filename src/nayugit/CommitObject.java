@@ -16,13 +16,13 @@ public final class CommitObject extends GitObject {
 	
 	public String authorName;
 	public String authorEmail;
-	public int authorTime;
-	public int authorTimezone;
+	public int authorTime;      // Unix time in seconds
+	public int authorTimezone;  // In minutes from UTC
 	
 	public String committerName;
 	public String committerEmail;
-	public int committerTime;
-	public int committerTimezone;
+	public int committerTime;      // Unix time in seconds
+	public int committerTimezone;  // In minutes from UTC
 	
 	
 	
@@ -34,6 +34,7 @@ public final class CommitObject extends GitObject {
 		String line;
 		String[] parts;
 		
+		// Parse tree line
 		for (start = index; data[index] != '\n'; index++);
 		line = new String(data, start, index - start, "UTF-8");
 		parts = line.split(" ", 2);
@@ -42,6 +43,7 @@ public final class CommitObject extends GitObject {
 		tree = new ObjectId(parts[1]);
 		index++;
 		
+		// Parse parent lines (0 or more)
 		while (true) {
 			for (start = index; data[index] != '\n'; index++);
 			line = new String(data, start, index - start, "UTF-8");
@@ -52,6 +54,7 @@ public final class CommitObject extends GitObject {
 			index++;
 		}
 		
+		// Parse author line
 		if (!parts[0].equals("author"))
 			throw new DataFormatException("Author field expected");
 		Matcher m = AUTHORSHIP_PATTERN.matcher(parts[1]);
@@ -63,6 +66,7 @@ public final class CommitObject extends GitObject {
 		authorTimezone = Integer.parseInt(m.group(4) + "1") * (Integer.parseInt(m.group(5)) * 60 + Integer.parseInt(m.group(6)));
 		index++;
 		
+		// Parse committer line
 		for (start = index; data[index] != '\n'; index++);
 		line = new String(data, start, index - start, "UTF-8");
 		parts = line.split(" ", 2);
@@ -77,6 +81,7 @@ public final class CommitObject extends GitObject {
 		committerTimezone = Integer.parseInt(m.group(4) + "1") * (Integer.parseInt(m.group(5)) * 60 + Integer.parseInt(m.group(6)));
 		index++;
 		
+		// Grab message
 		if (data[index] != '\n')
 			throw new DataFormatException("Blank line expected");
 		index++;
@@ -107,6 +112,7 @@ public final class CommitObject extends GitObject {
 	
 	
 	
+	// For example: 105 -> "+0145"; -240 -> "-0400"
 	private static String formatTimezone(int timezone) {
 		String sign = timezone >= 0 ? "+" : "-";
 		timezone = Math.abs(timezone);
@@ -116,6 +122,7 @@ public final class CommitObject extends GitObject {
 	}
 	
 	
+	// For example: John Smith <jsmith@example.com> 1234567890 +0000
 	private static final Pattern AUTHORSHIP_PATTERN = Pattern.compile("(.*?) <([^>]*)> (\\d+) ([+-])(\\d{2})(\\d{2})");
 	
 }
