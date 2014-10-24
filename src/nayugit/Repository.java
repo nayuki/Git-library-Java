@@ -22,6 +22,15 @@ public final class Repository {
 	public Repository(File dir) {
 		if (dir == null)
 			throw new NullPointerException();
+		if (!dir.isDirectory())
+			throw new IllegalArgumentException("Repository directory does not exist");
+		if (!dir.getName().endsWith(".git"))
+			throw new IllegalArgumentException("Invalid Git repository directory name");
+		if (!new File(dir, "HEAD").isFile()
+				|| !new File(dir, "objects").isDirectory()
+				|| !new File(dir, "refs").isDirectory())
+			throw new IllegalArgumentException("Invalid repository format");
+		
 		directory = dir;
 	}
 	
