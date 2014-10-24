@@ -105,6 +105,15 @@ public final class Repository {
 	}
 	
 	
+	public boolean containsObject(ObjectId id) throws IOException, DataFormatException {
+		File file = new File(directory, "objects" + File.separator + id.hexString.substring(0, 2) + File.separator + id.hexString.substring(2));
+		if (file.isFile())
+			return true;
+		else
+			return readRawObject(id) != null;
+	}
+	
+	
 	public void writeObject(GitObject obj) throws IOException {
 		ObjectId id = obj.getId();
 		File file = new File(directory, "objects" + File.separator + id.hexString.substring(0, 2) + File.separator + id.hexString.substring(2));
