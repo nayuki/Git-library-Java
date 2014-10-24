@@ -33,7 +33,7 @@ public final class Repository {
 	
 	
 	public byte[] readRawObject(ObjectId id) throws IOException, DataFormatException {
-		File file = new File(directory, "objects" + File.separator + id.hexString.substring(0, 2) + File.separator + id.hexString.substring(2));
+		File file = getLooseObjectFile(id);
 		byte[] result = null;
 		if (file.isFile()) {
 			// Read from loose object store
@@ -106,19 +106,17 @@ public final class Repository {
 	
 	
 	public boolean containsObject(ObjectId id) throws IOException, DataFormatException {
-		File file = new File(directory, "objects" + File.separator + id.hexString.substring(0, 2) + File.separator + id.hexString.substring(2));
-		if (file.isFile())
-			return true;
-		else
-			return readRawObject(id) != null;
+		return getLooseObjectFile(id).isFile() || readRawObject(id) != null;
 	}
 	
 	
 	public void writeObject(GitObject obj) throws IOException {
-		ObjectId id = obj.getId();
-		File file = new File(directory, "objects" + File.separator + id.hexString.substring(0, 2) + File.separator + id.hexString.substring(2));
+		File file = getLooseObjectFile(obj.getId());
 		if (file.isFile())
 			return;  // Object already exists in the loose objects database; no work to do
+		File dir = file.getParentFile();
+		if (!dir.exists())
+			dir.mkdirs();
 		
 		OutputStream out = new DeflaterOutputStream(new FileOutputStream(file));
 		boolean success = false;
@@ -130,6 +128,11 @@ public final class Repository {
 			if (!success)
 				file.delete();
 		}
+	}
+	
+	
+	private File getLooseObjectFile(ObjectId id) {
+		return new File(directory, "objects" + File.separator + id.hexString.substring(0, 2) + File.separator + id.hexString.substring(2));
 	}
 	
 }
