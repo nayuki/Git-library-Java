@@ -43,6 +43,17 @@ public final class Repository {
 	}
 	
 	
+	public boolean containsObject(ObjectId id) throws IOException, DataFormatException {
+		if (getLooseObjectFile(id).isFile())
+			return true;
+		for (PackfileReader pfr : listPackfiles()) {
+			if (pfr.containsObject(id))
+				return true;
+		}
+		return false;
+	}
+	
+	
 	public byte[] readRawObject(ObjectId id) throws IOException, DataFormatException {
 		File file = getLooseObjectFile(id);
 		byte[] result = null;
@@ -65,8 +76,8 @@ public final class Repository {
 			
 		} else {
 			// Scan pack files
-			for (File[] pack : listPackfiles()) {
-				result = new PackfileReader(pack[0], pack[1]).readRawObject(id);
+			for (PackfileReader pfr : listPackfiles()) {
+				result = pfr.readRawObject(id);
 				if (result != null)
 					break;
 			}
@@ -79,41 +90,48 @@ public final class Repository {
 	
 	
 	public GitObject readObject(ObjectId id) throws IOException, DataFormatException {
-		// Read object bytes and extract header
-		byte[] bytes = readRawObject(id);
-		int index = 0;
-		while (bytes[index] != 0)
-			index++;
-		String header = new String(bytes, 0, index, "US-ASCII");
-		bytes = Arrays.copyOfRange(bytes, index + 1, bytes.length);
-		
-		// Parse header
-		String[] parts = header.split(" ", -1);
-		if (parts.length != 2)
-			throw new DataFormatException("Invalid object header");
-		String type = parts[0];
-		int length = Integer.parseInt(parts[1]);
-		if (!Integer.toString(length).equals(parts[1]))  // Check for non-canonical number representations like -0, 007, etc.
-			throw new DataFormatException("Invalid data length string");
-		if (length < 0)
-			throw new DataFormatException("Negative data length");
-		if (length != bytes.length)
-			throw new DataFormatException("Data length mismatch");
-		
-		// Select object type
-		if (type.equals("blob"))
-			return new BlobObject(bytes);
-		if (type.equals("tree"))
-			return new TreeObject(bytes);
-		if (type.equals("commit"))
-			return new CommitObject(bytes);
-		else
-			throw new DataFormatException("Unknown object type: " + type);
-	}
-	
-	
-	public boolean containsObject(ObjectId id) throws IOException, DataFormatException {
-		return getLooseObjectFile(id).isFile() || readRawObject(id) != null;
+		if (getLooseObjectFile(id).isFile()) {
+			// Read object bytes and extract header
+			byte[] bytes = readRawObject(id);
+			int index = 0;
+			while (index < bytes.length && bytes[index] != 0)
+				index++;
+			if (index >= bytes.length)
+				throw new DataFormatException("Invalid object header");
+			String header = new String(bytes, 0, index, "US-ASCII");
+			bytes = Arrays.copyOfRange(bytes, index + 1, bytes.length);
+			
+			// Parse header
+			String[] parts = header.split(" ", -1);
+			if (parts.length != 2)
+				throw new DataFormatException("Invalid object header");
+			String type = parts[0];
+			int length = Integer.parseInt(parts[1]);
+			if (length < 0)
+				throw new DataFormatException("Negative data length");
+			if (!Integer.toString(length).equals(parts[1]))  // Check for non-canonical number representations like -0, 007, etc.
+				throw new DataFormatException("Invalid data length string");
+			if (length != bytes.length)
+				throw new DataFormatException("Data length mismatch");
+			
+			// Select object type
+			if (type.equals("blob"))
+				return new BlobObject(bytes);
+			if (type.equals("tree"))
+				return new TreeObject(bytes);
+			if (type.equals("commit"))
+				return new CommitObject(bytes);
+			else
+				throw new DataFormatException("Unknown object type: " + type);
+			
+		} else {
+			for (PackfileReader pfr : listPackfiles()) {
+				GitObject result = pfr.readObject(id);
+				if (result != null)
+					return result;
+			}
+			return null;  // Not found
+		}
 	}
 	
 	
@@ -138,14 +156,14 @@ public final class Repository {
 	}
 	
 	
-	private Collection<File[]> listPackfiles() {
-		Collection<File[]> result = new ArrayList<File[]>();
+	private Collection<PackfileReader> listPackfiles() {
+		Collection<PackfileReader> result = new ArrayList<PackfileReader>();
 		for (File item : new File(directory, "objects" + File.separator + "pack").listFiles()) {
 			String name = item.getName();
 			if (item.isFile() && name.startsWith("pack-") && name.endsWith(".idx")) {
 				File packfile = new File(item.getParentFile(), name.substring(0, name.length() - 3) + "pack");
 				if (packfile.isFile())
-					result.add(new File[]{item, packfile});
+					result.add(new PackfileReader(item, packfile));
 			}
 		}
 		return result;

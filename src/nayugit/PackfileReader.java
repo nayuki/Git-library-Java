@@ -12,7 +12,7 @@ import java.util.zip.DataFormatException;
 import java.util.zip.InflaterInputStream;
 
 
-public final class PackfileReader {
+final class PackfileReader {
 	
 	private final File indexFile;
 	private final File packFile;
@@ -22,21 +22,63 @@ public final class PackfileReader {
 	public PackfileReader(File index, File pack) {
 		if (index == null || pack == null)
 			throw new NullPointerException();
+		if (!index.isFile() || !pack.isFile())
+			throw new IllegalArgumentException("File does not exist");
 		indexFile = index;
 		packFile = pack;
 	}
 	
 	
 	
+	/* High-level query methods */
+	
+	public boolean containsObject(ObjectId id) throws IOException, DataFormatException {
+		return readDataOffset(id) != null;
+	}
+	
+	
 	public byte[] readRawObject(ObjectId id) throws IOException, DataFormatException {
+		Object[] pair = readObjectHeaderless(readDataOffset(id));
+		int type = (Integer)pair[0];
+		String typeStr = TYPE_NAMES[type];
+		if (typeStr == null)
+			throw new DataFormatException("Unknown object type: " + type);
+		return GitObject.addHeader(typeStr, (byte[])pair[1]);
+	}
+	
+	
+	public GitObject readObject(ObjectId id) throws IOException, DataFormatException {
+		// Read data
+		Object[] pair = readObjectHeaderless(readDataOffset(id));
+		int type = (Integer)pair[0];
+		byte[] data = (byte[])pair[1];
+		
+		// Check hash
+		Sha1 hasher = new Sha1();
+		hasher.update((TYPE_NAMES[type] + " " + data.length + "\0").getBytes("US-ASCII"));
+		hasher.update(data);
+		if (!hasher.getHash().equals(id))
+			throw new DataFormatException("Hash of data mismatches object ID");
+		
+		// Parse object
+		if (type == 1)
+			return new CommitObject(data);
+		else if (type == 2)
+			return new TreeObject(data);
+		else if (type == 3)
+			return new BlobObject(data);
+		else
+			throw new DataFormatException("Unknown object type: " + type);
+	}
+	
+	
+	/* Low-level read methods */
+	
+	private Long readDataOffset(ObjectId id) throws IOException, DataFormatException {
 		RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
-		int byteOffset;
 		try {
-			// Only supports version 2 indexes
-			byte[] b;
-			
-			// Check header
-			b = new byte[4];
+			// Check header; this logic only supports version 2 indexes
+			byte[] b = new byte[4];
 			indexRaf.readFully(b);
 			if (b[0] != -1 || b[1] != 't' || b[2] != 'O' || b[3] != 'c')
 				throw new DataFormatException("Pack index header expected");
@@ -48,13 +90,15 @@ public final class PackfileReader {
 				throw new EOFException();
 			int totalObjects = IoUtils.readInt32(indexRaf);
 			
-			// Find object ID in index
+			// Skip over some index entries based on head byte
 			int headByte = id.getByte(0) & 0xFF;
 			int objectOffset = 0;
 			if (headByte > 0) {
 				indexRaf.seek(8 + (headByte - 1) * 4);
 				objectOffset = IoUtils.readInt32(indexRaf);
 			}
+			
+			// Find object ID in index (which is in ascending order)
 			indexRaf.seek(8 + 256 * 4 + objectOffset * ObjectId.NUM_BYTES);
 			b = new byte[ObjectId.NUM_BYTES];
 			while (true) {
@@ -64,50 +108,35 @@ public final class PackfileReader {
 				if (cmp == 0)
 					break;
 				else if (cmp > 0)
-					return null;
+					return null;  // Not found
 				objectOffset++;
 			}
+			
+			// Read the data packfile offset of the object
 			indexRaf.seek(8 + 256 * 4 + totalObjects * ObjectId.NUM_BYTES + totalObjects * 4 + objectOffset * 4);
-			byteOffset = IoUtils.readInt32(indexRaf);
+			return (long)IoUtils.readInt32(indexRaf);
+			
 		} finally {
 			indexRaf.close();
 		}
-		
-		Object[] pair = readRawObject(byteOffset);
-		String typeStr;
-		int type = (Integer)pair[0];
-		if (type == 1)
-			typeStr = "commit";
-		else if (type == 2)
-			typeStr = "tree";
-		else if (type == 3)
-			typeStr = "blob";
-		else
-			throw new DataFormatException("Unknown object type: " + type);
-		
-		byte[] data = (byte[])pair[1];
-		byte[] header = (typeStr + " " + data.length + "\0").getBytes("US-ASCII");
-		byte[] result = new byte[header.length + data.length];
-		System.arraycopy(header, 0, result, 0, header.length);
-		System.arraycopy(data, 0, result, header.length, data.length);
-		return result;
 	}
 	
 	
-	private Object[] readRawObject(int byteOffset) throws IOException, DataFormatException {
+	private Object[] readObjectHeaderless(long byteOffset) throws IOException, DataFormatException {
 		if (byteOffset < 0)
 			throw new IllegalArgumentException();
 		InputStream in = new FileInputStream(packFile);
 		try {
 			IoUtils.skipFully(in, byteOffset);
 			
-			// Read decompressed size
+			// Read decompressed size and type
 			int typeAndSize = decodeTypeAndSize(in);
-			int type = typeAndSize & 7;
+			int type = typeAndSize & 7;  // 3-bit unsigned
 			if (type == 0 || type == 5 || type == 7)
 				throw new DataFormatException("Unknown object type: " + type);
 			int size = typeAndSize >>> 3;
 			
+			// Read delta offset
 			int deltaOffset;
 			if (type == 6)
 				deltaOffset = decodeOffsetDelta(in);
@@ -132,16 +161,21 @@ public final class PackfileReader {
 			if (data.length != size)
 				throw new DataFormatException("Data length mismatch");
 			
+			// Handle delta encoding
 			if (type == 6) {
-				Object[] temp = readRawObject(byteOffset - deltaOffset);
+				// Recurse
+				Object[] temp = readObjectHeaderless(byteOffset - deltaOffset);
 				type = (Integer)temp[0];
 				byte[] base = (byte[])temp[1];
+				
+				// Decode delta header
 				InputStream deltaIn = new ByteArrayInputStream(data);
-				int baseLen = decodeDeltaHeader(deltaIn);
+				int baseLen = decodeDeltaHeaderInt(deltaIn);
 				if (baseLen != base.length)
 					throw new DataFormatException("Base data length mismatch");
-				int dataLen = decodeDeltaHeader(deltaIn);
+				int dataLen = decodeDeltaHeaderInt(deltaIn);
 				
+				// Decode delta format
 				out = new ByteArrayOutputStream();
 				while (true) {
 					int op = deltaIn.read();
@@ -174,12 +208,15 @@ public final class PackfileReader {
 					throw new DataFormatException("Data length mismatch");
 			}
 			
+			// Done
 			return new Object[]{type, data};
 		} finally {
 			in.close();
 		}
 	}
 	
+	
+	/* Byte-level integer decoding functions */
 	
 	private static int decodeTypeAndSize(InputStream in) throws IOException, DataFormatException {
 		int b = IoUtils.readUnsignedNoEof(in);
@@ -219,7 +256,7 @@ public final class PackfileReader {
 	}
 	
 	
-	private static int decodeDeltaHeader(InputStream in) throws IOException, DataFormatException {
+	private static int decodeDeltaHeaderInt(InputStream in) throws IOException, DataFormatException {
 		long result = 0;
 		for (int i = 0; ; i++) {
 			if (i >= 6)
@@ -234,5 +271,8 @@ public final class PackfileReader {
 			throw new DataFormatException("Variable-length integer too large");
 		return (int)result;
 	}
+	
+	
+	private static final String[] TYPE_NAMES = {null, "commit", "tree", "blob", null, null, null, null};
 	
 }
