@@ -7,7 +7,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.zip.DataFormatException;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
@@ -63,14 +65,10 @@ public final class Repository {
 			
 		} else {
 			// Scan pack files
-			for (File item : new File(directory, "objects" + File.separator + "pack").listFiles()) {
-				String name = item.getName();
-				if (item.isFile() && name.startsWith("pack-") && name.endsWith(".idx")) {
-					File packFile = new File(item.getParentFile(), name.substring(0, name.length() - 3) + "pack");
-					result = new PackfileReader(item, packFile).readRawObject(id);
-					if (result != null)
-						break;
-				}
+			for (File[] pack : listPackfiles()) {
+				result = new PackfileReader(pack[0], pack[1]).readRawObject(id);
+				if (result != null)
+					break;
 			}
 		}
 		
@@ -137,6 +135,20 @@ public final class Repository {
 			if (!success)
 				file.delete();
 		}
+	}
+	
+	
+	private Collection<File[]> listPackfiles() {
+		Collection<File[]> result = new ArrayList<File[]>();
+		for (File item : new File(directory, "objects" + File.separator + "pack").listFiles()) {
+			String name = item.getName();
+			if (item.isFile() && name.startsWith("pack-") && name.endsWith(".idx")) {
+				File packfile = new File(item.getParentFile(), name.substring(0, name.length() - 3) + "pack");
+				if (packfile.isFile())
+					result.add(new File[]{item, packfile});
+			}
+		}
+		return result;
 	}
 	
 	
