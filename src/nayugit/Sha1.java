@@ -39,6 +39,11 @@ public final class Sha1 {
 	
 	
 	
+	public void update(byte[] b) {
+		update(b, 0, b.length);
+	}
+	
+	
 	public void update(byte[] b, int off, int len) {
 		int blockLen = block.length;
 		length += len;

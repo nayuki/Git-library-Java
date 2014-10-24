@@ -17,7 +17,7 @@ public abstract class GitObject {
 	}
 	
 	
-	protected static byte[] addHeader(String type, byte[] data) {
+	static byte[] addHeader(String type, byte[] data) {
 		try {
 			byte[] header = String.format("%s %d\0", type, data.length).getBytes("US-ASCII");
 			byte[] result = new byte[header.length + data.length];

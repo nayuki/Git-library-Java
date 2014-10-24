@@ -23,7 +23,7 @@ final class IoUtils {
 	}
 	
 	
-	public static void skipFully(InputStream in, int skip) throws IOException {
+	public static void skipFully(InputStream in, long skip) throws IOException {
 		if (skip < 0)
 			throw new IllegalArgumentException();
 		while (skip > 0) {
