@@ -136,7 +136,12 @@ public final class Repository {
 	
 	
 	public void writeObject(GitObject obj) throws IOException {
-		File file = getLooseObjectFile(obj.getId());
+		writeRawObject(obj.toBytes());
+	}
+	
+	
+	public void writeRawObject(byte[] obj) throws IOException {
+		File file = getLooseObjectFile(Sha1.getHash(obj));
 		if (file.isFile())
 			return;  // Object already exists in the loose objects database; no work to do
 		File dir = file.getParentFile();
@@ -146,7 +151,7 @@ public final class Repository {
 		OutputStream out = new DeflaterOutputStream(new FileOutputStream(file));
 		boolean success = false;
 		try {
-			out.write(obj.toBytes());
+			out.write(obj);
 			success = true;
 		} finally {
 			out.close();
