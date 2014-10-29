@@ -4,10 +4,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
-public class Reference {
+public final class Reference {
 	
 	public final String name;
-	public ObjectId target;
+	public ObjectId target;  // Can be null
 	
 	
 	
@@ -19,7 +19,7 @@ public class Reference {
 	public Reference(String name, ObjectId target) {
 		checkName(name);
 		this.name = name;
-		this.target = target;  // Can be null
+		this.target = target;
 	}
 	
 	
@@ -30,6 +30,18 @@ public class Reference {
 	
 	
 	
+	/* 
+	 * Example of valid references:
+	 * - "heads/master"
+	 * - "remotes/origin/mybranch"
+	 * - "tags/version1"
+	 * 
+	 * Examples of invalid references:
+	 * - "heads/HEAD"
+	 * - "heads/.."
+	 * - "remotes/foobox/HEAD"
+	 * - "tags/subdir/onetwo"
+	 */
 	static void checkName(String name) {
 		if (name == null)
 			throw new NullPointerException();
