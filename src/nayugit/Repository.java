@@ -1,15 +1,22 @@
 package nayugit;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.zip.DataFormatException;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
@@ -172,6 +179,122 @@ public final class Repository {
 			}
 		}
 		return result;
+	}
+	
+	
+	public Collection<Reference> listReferences() throws IOException, DataFormatException {
+		// Scan loose ref files
+		Collection<Reference> result = new ArrayList<Reference>();
+		File headsDir = new File(directory, "refs" + File.separator + "heads");
+		if (headsDir.isDirectory())
+			listReferences("heads", result);
+		File remotesDir = new File(directory, "refs" + File.separator + "remotes");
+		if (remotesDir.isDirectory()) {
+			for (File item : remotesDir.listFiles()) {
+				if (item.isDirectory())
+					listReferences("remotes/" + item.getName(), result);
+			}
+		}
+		
+		Set<String> names = new HashSet<String>();
+		for (Reference ref : result)
+			names.add(ref.name);
+		
+		// Parse packed refs file
+		for (Reference ref : parsePackedRefsFile()) {
+			System.out.println(ref);
+			if (names.add(ref.name))
+				result.add(ref);
+		}
+		return result;
+	}
+	
+	
+	public Reference readReference(String name) throws IOException, DataFormatException {
+		Reference.checkName(name);
+		File looseRefFile = new File(directory, "refs" + File.separator + name);
+		if (looseRefFile.isFile())
+			return parseReferenceFile(name.substring(0, name.lastIndexOf('/')), looseRefFile);
+		else {
+			for (Reference ref : parsePackedRefsFile()) {
+				if (ref.name.equals(name))
+					return ref;
+			}
+			return null;
+		}
+	}
+	
+	
+	public void writeReference(Reference ref) throws IOException {
+		if (ref.target == null)
+			throw new NullPointerException();
+		File looseRefFile = new File(directory, "refs" + File.separator + ref.name);
+		looseRefFile.getParentFile().mkdirs();
+		Writer out = new OutputStreamWriter(new FileOutputStream(looseRefFile), "US-ASCII");
+		boolean success = false;
+		try {
+			out.write(ref.target.hexString + "\n");
+			success = true;
+		} finally {
+			out.close();
+		}
+		if (!success)
+			looseRefFile.delete();
+	}
+	
+	
+	private void listReferences(String subDirName, Collection<Reference> result) throws IOException, DataFormatException {
+		for (File item : new File(directory, "refs" + File.separator + subDirName.replace('/', File.separatorChar)).listFiles()) {
+			if (item.isFile() && !item.getName().equals("HEAD"))
+				result.add(parseReferenceFile(subDirName, item));
+		}
+	}
+	
+	
+	private Collection<Reference> parsePackedRefsFile() throws IOException, DataFormatException {
+		Collection<Reference> result = new ArrayList<Reference>();
+		File packedRefFile = new File(directory, "packed-refs");
+		if (packedRefFile.isFile()) {
+			BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(packedRefFile), "UTF-8"));
+			try {
+				if (!"# pack-refs with: peeled ".equals(in.readLine()))
+					throw new DataFormatException("Invalid packed-refs file");
+				while (true) {
+					String line = in.readLine();
+					if (line == null)
+						break;
+					String[] parts = line.split(" ", 2);
+					if (parts.length == 1) {
+						if (parts[0].startsWith("^"))
+							continue;
+						else
+							throw new DataFormatException("Invalid packed-refs file");
+					}
+					if (!parts[1].startsWith("refs/"))
+						throw new DataFormatException("Invalid packed-refs file");
+					Reference ref = new Reference(parts[1].substring(5), new ObjectId(parts[0]));
+					if (!ref.name.startsWith("tags/"))
+						result.add(ref);
+				}
+			} finally {
+				in.close();
+			}
+		}
+		return result;
+	}
+	
+	
+	private Reference parseReferenceFile(String subDirName, File file) throws IOException, DataFormatException {
+		byte[] buf = new byte[41];
+		DataInputStream in = new DataInputStream(new FileInputStream(file));
+		try {
+			in.readFully(buf);
+			if (buf[40] != '\n' || in.read() != -1)
+				throw new DataFormatException("Invalid reference file");
+		} finally {
+			in.close();
+		}
+		return new Reference(subDirName + "/" + file.getName(), new ObjectId(new String(buf, 0, 40, "US-ASCII")));
 	}
 	
 	
