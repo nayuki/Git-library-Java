@@ -102,6 +102,8 @@ final class PackfileReader {
 			indexRaf.seek(8 + 256 * 4 + objectOffset * ObjectId.NUM_BYTES);
 			b = new byte[ObjectId.NUM_BYTES];
 			while (true) {
+				if (objectOffset >= totalObjects)
+					return null;  // Not found
 				indexRaf.readFully(b);
 				ObjectId temp = new ObjectId(b);
 				int cmp = temp.compareTo(id);
