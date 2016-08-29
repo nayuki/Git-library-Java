@@ -19,6 +19,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,6 +33,8 @@ import java.util.zip.InflaterInputStream;
 public final class Repository {
 	
 	private final File directory;
+	
+	private final WeakReference<Repository> weakThis;
 	
 	
 	
@@ -48,6 +51,7 @@ public final class Repository {
 			throw new IllegalArgumentException("Invalid repository format");
 		
 		directory = dir;
+		weakThis = new WeakReference<>(this);
 	}
 	
 	
@@ -132,9 +136,9 @@ public final class Repository {
 			if (type.equals("blob"))
 				return new BlobObject(bytes);
 			if (type.equals("tree"))
-				return new TreeObject(bytes);
+				return new TreeObject(bytes, weakThis);
 			if (type.equals("commit"))
-				return new CommitObject(bytes);
+				return new CommitObject(bytes, weakThis);
 			else
 				throw new DataFormatException("Unknown object type: " + type);
 			
@@ -155,7 +159,7 @@ public final class Repository {
 	
 	
 	public void writeRawObject(byte[] obj) throws IOException {
-		File file = getLooseObjectFile(new RawId(Sha1.getHash(obj)));
+		File file = getLooseObjectFile(new RawId(Sha1.getHash(obj), null));
 		if (file.isFile())
 			return;  // Object already exists in the loose objects database; no work to do
 		File dir = file.getParentFile();
@@ -182,7 +186,7 @@ public final class Repository {
 			if (item.isFile() && name.startsWith("pack-") && name.endsWith(".idx")) {
 				File packfile = new File(item.getParentFile(), name.substring(0, name.length() - 3) + "pack");
 				if (packfile.isFile())
-					result.add(new PackfileReader(item, packfile));
+					result.add(new PackfileReader(item, packfile, weakThis));
 			}
 		}
 		return result;
@@ -279,7 +283,7 @@ public final class Repository {
 					}
 					if (!parts[1].startsWith("refs/"))
 						throw new DataFormatException("Invalid packed-refs file");
-					Reference ref = new Reference(parts[1].substring(5), new CommitId(parts[0]));
+					Reference ref = new Reference(parts[1].substring(5), new CommitId(parts[0], weakThis));
 					if (!ref.name.startsWith("tags/"))
 						result.add(ref);
 				}
@@ -301,7 +305,7 @@ public final class Repository {
 		} finally {
 			in.close();
 		}
-		return new Reference(subDirName + "/" + file.getName(), new CommitId(new String(buf, 0, 40, "US-ASCII")));
+		return new Reference(subDirName + "/" + file.getName(), new CommitId(new String(buf, 0, 40, "US-ASCII"), null));
 	}
 	
 	

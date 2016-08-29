@@ -10,6 +10,7 @@ package io.nayuki.git;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -26,7 +27,7 @@ public final class TreeObject extends GitObject {
 	}
 	
 	
-	public TreeObject(byte[] data) throws UnsupportedEncodingException {
+	public TreeObject(byte[] data, WeakReference<Repository> srcRepo) throws UnsupportedEncodingException {
 		this();
 		int index = 0;
 		while (index < data.length) {
@@ -44,7 +45,7 @@ public final class TreeObject extends GitObject {
 			
 			byte[] hash = Arrays.copyOfRange(data, index, index + ObjectId.NUM_BYTES);
 			index += ObjectId.NUM_BYTES;
-			entries.add(new TreeEntry(TreeEntry.Type.fromMode(mode), name, hash));
+			entries.add(new TreeEntry(TreeEntry.Type.fromMode(mode), name, hash, srcRepo));
 		}
 	}
 	

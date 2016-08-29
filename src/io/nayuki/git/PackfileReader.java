@@ -15,6 +15,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
+import java.lang.ref.WeakReference;
 import java.util.zip.DataFormatException;
 import java.util.zip.InflaterInputStream;
 
@@ -24,15 +25,18 @@ final class PackfileReader {
 	private final File indexFile;
 	private final File packFile;
 	
+	private final WeakReference<Repository> sourceRepo;
 	
 	
-	public PackfileReader(File index, File pack) {
+	
+	public PackfileReader(File index, File pack, WeakReference<Repository> srcRepo) {
 		if (index == null || pack == null)
 			throw new NullPointerException();
 		if (!index.isFile() || !pack.isFile())
 			throw new IllegalArgumentException("File does not exist");
 		indexFile = index;
 		packFile = pack;
+		sourceRepo = srcRepo;
 	}
 	
 	
@@ -69,9 +73,9 @@ final class PackfileReader {
 		
 		// Parse object
 		if (type == 1)
-			return new CommitObject(data);
+			return new CommitObject(data, sourceRepo);
 		else if (type == 2)
-			return new TreeObject(data);
+			return new TreeObject(data, sourceRepo);
 		else if (type == 3)
 			return new BlobObject(data);
 		else
@@ -112,7 +116,7 @@ final class PackfileReader {
 				if (objectOffset >= totalObjects)
 					return null;  // Not found
 				indexRaf.readFully(b);
-				ObjectId temp = new CommitId(b);
+				ObjectId temp = new CommitId(b, sourceRepo);
 				int cmp = temp.compareTo(id);
 				if (cmp == 0)
 					break;

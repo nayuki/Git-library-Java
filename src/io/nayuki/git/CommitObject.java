@@ -8,6 +8,7 @@
 package io.nayuki.git;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -33,7 +34,7 @@ public final class CommitObject extends GitObject {
 	
 	
 	
-	public CommitObject(byte[] data) throws UnsupportedEncodingException, DataFormatException {
+	public CommitObject(byte[] data, WeakReference<Repository> repo) throws UnsupportedEncodingException, DataFormatException {
 		parents = new ArrayList<ObjectId>();
 		
 		int index = 0;
@@ -47,7 +48,7 @@ public final class CommitObject extends GitObject {
 		parts = line.split(" ", 2);
 		if (!parts[0].equals("tree"))
 			throw new DataFormatException("Tree field expected");
-		tree = new TreeId(parts[1]);
+		tree = new TreeId(parts[1], repo);
 		index++;
 		
 		// Parse parent lines (0 or more)
@@ -57,7 +58,7 @@ public final class CommitObject extends GitObject {
 			parts = line.split(" ", 2);
 			if (!parts[0].equals("parent"))
 				break;
-			parents.add(new CommitId(parts[1]));
+			parents.add(new CommitId(parts[1], repo));
 			index++;
 		}
 		

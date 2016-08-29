@@ -7,6 +7,8 @@
 
 package io.nayuki.git;
 
+import java.lang.ref.WeakReference;
+
 
 public final class TreeEntry {
 	
@@ -16,7 +18,7 @@ public final class TreeEntry {
 	
 	
 	
-	public TreeEntry(Type type, String name, byte[] hash) {
+	public TreeEntry(Type type, String name, byte[] hash, WeakReference<Repository> srcRepo) {
 		if (name == null || hash == null)
 			throw new NullPointerException();
 		if (name.indexOf('\0') != -1)
@@ -25,9 +27,9 @@ public final class TreeEntry {
 		this.type = type;
 		this.name = name;
 		if (type == Type.NORMAL_FILE || type == Type.EXECUTABLE_FILE)
-			id = new BlobId(hash);
+			id = new BlobId(hash, srcRepo);
 		else if (type == Type.DIRECTORY)
-			id = new TreeId(hash);
+			id = new TreeId(hash, srcRepo);
 		else
 			throw new IllegalArgumentException();
 	}
