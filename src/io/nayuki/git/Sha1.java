@@ -16,11 +16,17 @@ public final class Sha1 {
 	/* Convenience methods */
 	
 	public static byte[] getHash(byte[] b) {
+		if (b == null)
+			throw new NullPointerException();
 		return getHash(b, 0, b.length);
 	}
 	
 	
 	public static byte[] getHash(byte[] b, int off, int len) {
+		if (b == null)
+			throw new NullPointerException();
+		if (off < 0 || off > len || len < 0 || b.length - off < len)
+			throw new ArrayIndexOutOfBoundsException();
 		Sha1 hasher = new Sha1();
 		hasher.update(b, off, len);
 		return hasher.getHash();
@@ -47,11 +53,18 @@ public final class Sha1 {
 	
 	
 	public void update(byte[] b) {
+		if (b == null)
+			throw new NullPointerException();
 		update(b, 0, b.length);
 	}
 	
 	
 	public void update(byte[] b, int off, int len) {
+		if (b == null)
+			throw new NullPointerException();
+		if (off < 0 || off > len || len < 0 || b.length - off < len)
+			throw new ArrayIndexOutOfBoundsException();
+		
 		int blockLen = block.length;
 		length += len;
 		if (blockFilled > 0) {
