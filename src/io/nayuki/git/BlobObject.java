@@ -14,6 +14,11 @@ public final class BlobObject extends GitObject {
 	
 	
 	
+	public BlobObject() {
+		data = null;
+	}
+	
+	
 	public BlobObject(byte[] data) {
 		if (data == null)
 			throw new NullPointerException();

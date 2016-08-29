@@ -22,7 +22,7 @@ public final class TreeEntry {
 		if (name == null || hash == null)
 			throw new NullPointerException();
 		if (name.indexOf('\0') != -1)
-			throw new IllegalArgumentException("Name cannot contai null character");
+			throw new IllegalArgumentException("Name cannot contain NUL character");
 		
 		this.type = type;
 		this.name = name;
@@ -44,7 +44,7 @@ public final class TreeEntry {
 	
 	public enum Type {
 		
-		// Numbers are octal
+		// Numbers are in octal
 		DIRECTORY      (0040000),
 		NORMAL_FILE    (0100644),
 		EXECUTABLE_FILE(0100755),
@@ -60,12 +60,15 @@ public final class TreeEntry {
 		
 		
 		public static Type fromMode(int mode) {
-			if (mode == DIRECTORY.mode      ) return DIRECTORY;
-			if (mode == NORMAL_FILE.mode    ) return NORMAL_FILE;
-			if (mode == EXECUTABLE_FILE.mode) return EXECUTABLE_FILE;
-			if (mode == SYMBOLIC_LINK.mode  ) return SYMBOLIC_LINK;
-			throw new IllegalArgumentException("Unknown mode: " + Integer.toString(mode, 8));
+			for (Type type : VALUES) {
+				if (mode == type.mode)
+					return type;
+			}
+			throw new IllegalArgumentException("Unknown mode: octal " + Integer.toString(mode, 8));
 		}
+		
+		
+		private static final Type[] VALUES = values();
 		
 	}
 	

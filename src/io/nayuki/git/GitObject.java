@@ -12,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 
 public abstract class GitObject {
 	
-	public GitObject() {}
+	GitObject() {}
 	
 	
 	

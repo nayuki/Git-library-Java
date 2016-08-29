@@ -34,10 +34,15 @@ public final class CommitObject extends GitObject {
 	
 	
 	
+	public CommitObject() {
+		parents = new ArrayList<>();
+	}
+	
+	
 	public CommitObject(byte[] data, WeakReference<Repository> repo) throws DataFormatException {
+		this();
 		if (data == null)
 			throw new NullPointerException();
-		parents = new ArrayList<>();
 		
 		int index = 0;
 		int start;
@@ -122,13 +127,11 @@ public final class CommitObject extends GitObject {
 	
 	
 	
-	// For example: 105 -> "+0145"; -240 -> "-0400"
-	private static String formatTimezone(int timezone) {
-		String sign = timezone >= 0 ? "+" : "-";
-		timezone = Math.abs(timezone);
-		int hours = timezone / 60;
-		int minutes = timezone % 60;
-		return String.format("%s%02d%02d", sign, hours, minutes);
+	// For example: 0 -> "+0000"; 105 -> "+0145"; -240 -> "-0400".
+	private static String formatTimezone(int minutes) {
+		String sign = minutes >= 0 ? "+" : "-";
+		minutes = Math.abs(minutes);
+		return String.format("%s%02d%02d", sign, minutes / 60, minutes % 60);
 	}
 	
 	
