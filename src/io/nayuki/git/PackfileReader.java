@@ -94,20 +94,20 @@ final class PackfileReader {
 			indexRaf.readFully(b);
 			if (b[0] != -1 || b[1] != 't' || b[2] != 'O' || b[3] != 'c')
 				throw new DataFormatException("Pack index header expected");
-			if (IoUtils.readInt32(indexRaf) != 2)
+			if (indexRaf.readInt() != 2)
 				throw new DataFormatException("Index version 2 expected");
 			
 			// Read pack size
 			if (indexRaf.skipBytes(255 * 4) != 255 * 4)
 				throw new EOFException();
-			int totalObjects = IoUtils.readInt32(indexRaf);
+			int totalObjects = indexRaf.readInt();
 			
 			// Skip over some index entries based on head byte
 			int headByte = id.getByte(0) & 0xFF;
 			int objectOffset = 0;
 			if (headByte > 0) {
 				indexRaf.seek(8 + (headByte - 1) * 4);
-				objectOffset = IoUtils.readInt32(indexRaf);
+				objectOffset = indexRaf.readInt();
 			}
 			
 			// Find object ID in index (which is in ascending order)
@@ -128,7 +128,7 @@ final class PackfileReader {
 			
 			// Read the data packfile offset of the object
 			indexRaf.seek(8 + 256 * 4 + totalObjects * ObjectId.NUM_BYTES + totalObjects * 4 + objectOffset * 4);
-			return (long)IoUtils.readInt32(indexRaf);
+			return (long)indexRaf.readInt();
 			
 		} finally {
 			indexRaf.close();
