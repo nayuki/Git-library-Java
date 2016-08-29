@@ -5,7 +5,7 @@
  * https://www.nayuki.io/
  */
 
-package nayugit;
+package io.nayuki.git;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
