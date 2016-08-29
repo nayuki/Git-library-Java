@@ -115,6 +115,13 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	}
 	
 	
+	/* Helper definitions for constructors */
+	
+	private static final Pattern HEX_STRING_PATTERN = Pattern.compile("[0-9a-fA-F]{" + (NUM_BYTES * 2) + "}");
+	
+	private static final char[] HEX_DIGITS = "0123456789abcdef".toCharArray();
+	
+	
 	
 	/*---- Methods ----*/
 	
@@ -141,17 +148,6 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	
 	
 	/**
-	 * Reads the object data for this object ID from the associated repository.
-	 * @return the object data (not {@code null})
-	 * @throws IOException if an I/O exception occurred
-	 * @throws DataFormatException if malformed data was encountered during reading
-	 */
-	public GitObject read() throws IOException, DataFormatException {
-		return getSourceRepository().readObject(this);
-	}
-	
-	
-	/**
 	 * Either returns the associated repository (not {@code null}) or throws an exception.
 	 * @return the associated repository (not {@code null})
 	 * @throws IllegalStateException if the reference object is
@@ -164,6 +160,17 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 		if (result == null)
 			throw new IllegalStateException("Weak reference to repository expired");
 		return result;
+	}
+	
+	
+	/**
+	 * Reads the object data for this object ID from the associated repository.
+	 * @return the object data (not {@code null})
+	 * @throws IOException if an I/O exception occurred
+	 * @throws DataFormatException if malformed data was encountered during reading
+	 */
+	public GitObject read() throws IOException, DataFormatException {
+		return getSourceRepository().readObject(this);
 	}
 	
 	
@@ -207,13 +214,5 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	public String toString() {
 		return String.format("ObjectId(value=%s)", hexString);
 	}
-	
-	
-	
-	/*---- Private static constants ----*/
-	
-	private static final Pattern HEX_STRING_PATTERN = Pattern.compile("[0-9a-fA-F]{" + (NUM_BYTES * 2) + "}");
-	
-	private static final char[] HEX_DIGITS = "0123456789abcdef".toCharArray();
 	
 }
