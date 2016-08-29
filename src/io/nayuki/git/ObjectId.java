@@ -181,11 +181,11 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	
 	
 	/**
-	 * Returns the hash code of this object.
+	 * Returns the hash code of this object. The formula is subject to change.
 	 * @code the hash code of this object
 	 */
 	public int hashCode() {
-		return bytes[0] << 24 | (bytes[1] & 0xFF) << 16 | (bytes[2] & 0xFF) << 8 | (bytes[3] & 0xFF);
+		return bytes[0] + (bytes[1] << 8) + (bytes[2] << 16) + (bytes[3] << 24);
 	}
 	
 	
