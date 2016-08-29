@@ -50,22 +50,7 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	 * @throws IllegalArgumentException if the string isn't length 40 or has characters outside {0-9, a-f, A-F}
 	 */
 	ObjectId(String hexStr, WeakReference<Repository> srcRepo) {
-		if (hexStr == null)
-			throw new NullPointerException();
-		if (!HEX_STRING_PATTERN.matcher(hexStr).matches())
-			throw new IllegalArgumentException();
-		
-		bytes = new byte[NUM_BYTES];
-		for (int i = 0; i < bytes.length; i++)
-			bytes[i] = (byte)Integer.parseInt(hexStr.substring(i * 2, (i + 1) * 2), 16);
-		
-		char[] chars = hexStr.toCharArray();
-		for (int i = 0; i < chars.length; i++) {  // Normalize to lowercase
-			if (chars[i] >= 'A' && chars[i] <= 'F')
-				chars[i] -= 'A' - 'a';
-		}
-		hexString = new String(chars);
-		sourceRepo = srcRepo;
+		this(hexHashToBytes(hexStr), srcRepo);
 	}
 	
 	
@@ -77,17 +62,7 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	 * @throws IllegalArgumentException if array isn't length 20
 	 */
 	ObjectId(byte[] bytes, WeakReference<Repository> srcRepo) {
-		if (bytes == null)
-			throw new NullPointerException();
-		if (bytes.length != NUM_BYTES)
-			throw new IllegalArgumentException("Invalid array length");
-		
-		this.bytes = bytes.clone();
-		StringBuilder sb = new StringBuilder();
-		for (byte b : this.bytes)
-			sb.append(HEX_DIGITS[(b >>> 4) & 0xF]).append(HEX_DIGITS[b & 0xF]);
-		hexString = sb.toString();
-		sourceRepo = srcRepo;
+		this(checkHashLength(bytes), 0, srcRepo);
 	}
 	
 	
@@ -117,6 +92,26 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	
 	/* Helper definitions for constructors */
 	
+	private static byte[] hexHashToBytes(String str) {
+		if (str == null)
+			throw new NullPointerException();
+		if (!HEX_STRING_PATTERN.matcher(str).matches())
+			throw new IllegalArgumentException("Invalid hexadecimal hash");
+		
+		byte[] result = new byte[NUM_BYTES];
+		for (int i = 0; i < result.length; i++)
+			result[i] = (byte)Integer.parseInt(str.substring(i * 2, (i + 1) * 2), 16);
+		return result;
+	}
+	
+	
+	private static byte[] checkHashLength(byte[] bytes) {
+		if (bytes.length != NUM_BYTES)
+			throw new IllegalArgumentException("Invalid array length");
+		return bytes;
+	}
+	
+	
 	private static final Pattern HEX_STRING_PATTERN = Pattern.compile("[0-9a-fA-F]{" + (NUM_BYTES * 2) + "}");
 	
 	private static final char[] HEX_DIGITS = "0123456789abcdef".toCharArray();
@@ -140,7 +135,7 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	
 	/**
 	 * Returns a new copy of the array of hash bytes.
-	 * @return an array of hash bytes
+	 * @return an array of hash bytes (not {@code null})
 	 */
 	public byte[] getBytes() {
 		return bytes.clone();
@@ -181,9 +176,7 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	 * an {@code ObjectId} with the same array of hash byte values
 	 */
 	public boolean equals(Object obj) {
-		if (!(obj instanceof ObjectId))
-			return false;
-		return Arrays.equals(bytes, ((ObjectId)obj).bytes);
+		return (obj instanceof ObjectId) && Arrays.equals(bytes, ((ObjectId)obj).bytes);
 	}
 	
 	
