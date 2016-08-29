@@ -14,20 +14,41 @@ import java.util.regex.Pattern;
 import java.util.zip.DataFormatException;
 
 
-// An immutable 160-bit (20-byte) SHA-1 hash
+/**
+ * A 160-bit (20-byte) SHA-1 hash with extra information. It has subtypes and an associated
+ * repository to allow the {@link #read()} method to be convenient. The hash value is immutable,
+ * but the weak reference and underlying repository object can change states.
+ */
 public abstract class ObjectId implements Comparable<ObjectId> {
+	
+	/*---- Public static constants ----*/
 	
 	public static final int NUM_BYTES = 20;
 	
 	
-	public final String hexString;  // 40 characters (NUM_BYTES * 2) of 0-9 and lowercase a-f
-	private final byte[] bytes;     // 20 bytes (NUM_BYTES)
 	
+	/*---- Fields ----*/
+	
+	/** The 40-character (NUM_BYTES * 2) hexadecimal representation of the hash, in lowercase. */
+	public final String hexString;
+	
+	// Not null, and always length 20 (NUM_BYTES).
+	private final byte[] bytes;
+	
+	// Can be null.
 	private final WeakReference<Repository> sourceRepo;
 	
 	
 	
-	// Accepts uppercase and lowercase
+	/*---- Constructors ----*/
+	
+	/**
+	 * Constructs an object ID from the specified hexadecimal string.
+	 * @param hexStr the hexadecimal string
+	 * @param srcRepo the repository to read from
+	 * @throws NullPointerException if the string is {@code null}
+	 * @throws IllegalArgumentException if the string isn't length 40 or has characters outside {0-9, a-f, A-F}
+	 */
 	ObjectId(String hexStr, WeakReference<Repository> srcRepo) {
 		if (hexStr == null)
 			throw new NullPointerException();
@@ -48,7 +69,13 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	}
 	
 	
-	// Array must be 20 bytes long
+	/**
+	 * Constructs an object ID from the specified 20-byte array.
+	 * @param bytes the byte array
+	 * @param srcRepo the repository to read from
+	 * @throws NullPointerException if the array is {@code null}
+	 * @throws IllegalArgumentException if array isn't length 20
+	 */
 	ObjectId(byte[] bytes, WeakReference<Repository> srcRepo) {
 		if (bytes == null)
 			throw new NullPointerException();
@@ -64,7 +91,15 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	}
 	
 	
-	// Array can be any length, only requiring (off + 20 <= bytes.length)
+	/**
+	 * Constructs an object ID from 20 bytes in the specified array starting at the specified offset.
+	 * @param bytes the byte array
+	 * @param off the offset to start at
+	 * @param srcRepo the repository to read from
+	 * @throws NullPointerException if the array is {@code null}
+	 * @throws IndexOutOfBoundsException if the offset is negative,
+	 * or there are fewer than 20 bytes remaining starting at that offset
+	 */
 	ObjectId(byte[] bytes, int off, WeakReference<Repository> srcRepo) {
 		if (bytes == null)
 			throw new NullPointerException();
@@ -81,6 +116,14 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	
 	
 	
+	/*---- Methods ----*/
+	
+	/**
+	 * Returns the hash byte at the specified index, requiring 0 &le; index &lt; 20.
+	 * @param index the byte index to read from
+	 * @return the hash byte at the index
+	 * @throws IndexOutOfBoundsException if the byte index is out of range
+	 */
 	public byte getByte(int index) {
 		if (index < 0 || index >= NUM_BYTES)
 			throw new IndexOutOfBoundsException();
@@ -88,16 +131,32 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	}
 	
 	
+	/**
+	 * Returns a new copy of the array of hash bytes.
+	 * @return an array of hash bytes
+	 */
 	public byte[] getBytes() {
 		return bytes.clone();
 	}
 	
 	
+	/**
+	 * Reads the object data for this object ID from the associated repository.
+	 * @return the object data (not {@code null})
+	 * @throws IOException if an I/O exception occurred
+	 * @throws DataFormatException if malformed data was encountered during reading
+	 */
 	public GitObject read() throws IOException, DataFormatException {
 		return getSourceRepository().readObject(this);
 	}
 	
 	
+	/**
+	 * Either returns the associated repository (not {@code null}) or throws an exception.
+	 * @return the associated repository (not {@code null})
+	 * @throws IllegalStateException if the reference object is
+	 * itself {@code null} or the weak reference has expired
+	 */
 	public Repository getSourceRepository() {
 		if (sourceRepo == null)
 			throw new IllegalStateException("Source repository set to null");
@@ -108,6 +167,12 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	}
 	
 	
+	/**
+	 * Tests whether the specified object is an {@code ObjectId} with the same hash bytes.
+	 * @param obj the object to test equality with
+	 * @return {@code true} if and only if the given object is
+	 * an {@code ObjectId} with the same array of hash byte values
+	 */
 	public boolean equals(Object obj) {
 		if (!(obj instanceof ObjectId))
 			return false;
@@ -115,23 +180,40 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	}
 	
 	
+	/**
+	 * Returns the hash code of this object.
+	 * @code the hash code of this object
+	 */
 	public int hashCode() {
 		return bytes[0] << 24 | (bytes[1] & 0xFF) << 16 | (bytes[2] & 0xFF) << 8 | (bytes[3] & 0xFF);
 	}
 	
 	
+	/**
+	 * Compares this hash to the given hash in standard big-endian order.
+	 * @param other the object to compare to
+	 * @return a negative number if {@code this < other}, zero if
+	 * {@code this == other}, or a positive number if {@code this > other}
+	 */
 	public int compareTo(ObjectId other) {
 		return hexString.compareTo(other.hexString);
 	}
 	
 	
+	/**
+	 * Returns a string representation of this object ID. The format is subject to change.
+	 * @return a string representation of this object ID
+	 */
 	public String toString() {
 		return String.format("ObjectId(value=%s)", hexString);
 	}
 	
 	
 	
+	/*---- Private static constants ----*/
+	
 	private static final Pattern HEX_STRING_PATTERN = Pattern.compile("[0-9a-fA-F]{" + (NUM_BYTES * 2) + "}");
+	
 	private static final char[] HEX_DIGITS = "0123456789abcdef".toCharArray();
 	
 }
