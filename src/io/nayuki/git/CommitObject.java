@@ -16,7 +16,13 @@ import java.util.regex.Pattern;
 import java.util.zip.DataFormatException;
 
 
+/**
+ * Represents a Git commit. Contains author information, committer information,
+ * a list of parent commit IDs, a tree ID, and a message. Mutable structure.
+ */
 public final class CommitObject extends GitObject {
+	
+	/*---- Fields ----*/
 	
 	public ObjectId tree;
 	public List<ObjectId> parents;
@@ -34,11 +40,23 @@ public final class CommitObject extends GitObject {
 	
 	
 	
+	/*---- Constructors ----*/
+	
+	/**
+	 * Constructs a blank commit object with an empty (but non-{@code null}) list of entries, and all other fields set to {@code null} or zero.
+	 */
 	public CommitObject() {
 		parents = new ArrayList<>();
 	}
 	
 	
+	/**
+	 * Constructs a commit object with the data initially set to the parsed interpretation of the specified bytes.
+	 * Every object ID that the commit refers to will have its repository set to the specified repo argument.
+	 * @param data the serialized commit data to read
+	 * @param srcRepo the repository to set for object IDs
+	 * @throws NullPointerException if the array is {@code null}
+	 */
 	public CommitObject(byte[] data, WeakReference<Repository> repo) throws DataFormatException {
 		this();
 		if (data == null)
@@ -105,6 +123,13 @@ public final class CommitObject extends GitObject {
 	
 	
 	
+	/*---- Methods ----*/
+	
+	/**
+	 * Returns the raw byte serialization of the current state of this commit object, including a lightweight header.
+	 * @return the raw byte serialization of this object
+	 * @throws NullPointerException if any fields are {@code null}
+	 */
 	public byte[] toBytes() {
 		if (tree == null || parents == null || message == null ||
 				authorName == null || authorEmail == null || committerName == null || committerEmail == null)
@@ -121,11 +146,17 @@ public final class CommitObject extends GitObject {
 	}
 	
 	
+	/**
+	 * Returns a string representation of this commit object. The format is subject to change.
+	 * @return a string representation of this commit object
+	 */
 	public String toString() {
 		return String.format("CommitObject(tree=%s)", tree.hexString);
 	}
 	
 	
+	
+	/*---- Static helper functions ----*/
 	
 	// For example: 0 -> "+0000"; 105 -> "+0145"; -240 -> "-0400".
 	private static String formatTimezone(int minutes) {

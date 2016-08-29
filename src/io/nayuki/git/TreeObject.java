@@ -16,17 +16,38 @@ import java.util.Arrays;
 import java.util.List;
 
 
+/**
+ * Represents a Git tree, which can be loosely thought of as a directory. Mutable structure.
+ */
 public final class TreeObject extends GitObject {
 	
+	/*---- Fields ----*/
+	
+	/**
+	 * The list of children of this tree node. Each element must be not {@code null},
+	 * and no two elements can have the same name.
+	 */
 	public List<TreeEntry> entries;
 	
 	
 	
+	/*---- Constructors ----*/
+	
+	/**
+	 * Constructs a tree object with an empty (but non-{@code null}) list of entries.
+	 */
 	public TreeObject() {
 		entries = new ArrayList<>();
 	}
 	
 	
+	/**
+	 * Constructs a tree object with the data initially set to the parsed interpretation of the specified bytes.
+	 * Every object ID that the tree refers to will have its repository set to the specified repo argument.
+	 * @param data the serialized tree data to read
+	 * @param srcRepo the repository to set for object IDs
+	 * @throws NullPointerException if the array is {@code null}
+	 */
 	public TreeObject(byte[] data, WeakReference<Repository> srcRepo) {
 		this();
 		if (data == null)
@@ -54,6 +75,14 @@ public final class TreeObject extends GitObject {
 	
 	
 	
+	/*---- Methods ----*/
+	
+	/**
+	 * Returns the list entry whose name matches the specified name, or {@code null} if none match.
+	 * Note that the functionality of this method dictates that the list should have no duplicate names.
+	 * @param name the name to query
+	 * @return an entry with a matching name, or {@code null}
+	 */
 	public TreeEntry getEntry(String name) {
 		if (name == null)
 			throw new NullPointerException();
@@ -65,6 +94,11 @@ public final class TreeObject extends GitObject {
 	}
 	
 	
+	/**
+	 * Returns the raw byte serialization of the current state of this tree object, including a lightweight header.
+	 * @return the raw byte serialization of this object
+	 * @throws NullPointerException if the list of entries is {@code null}
+	 */
 	public byte[] toBytes() {
 		if (entries == null)
 			throw new NullPointerException();
@@ -81,6 +115,10 @@ public final class TreeObject extends GitObject {
 	}
 	
 	
+	/**
+	 * Returns a string representation of this tree object. The format is subject to change.
+	 * @return a string representation of this tree object
+	 */
 	public String toString() {
 		return String.format("TreeObject(entries=%d)", entries.size());
 	}
