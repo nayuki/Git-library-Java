@@ -16,15 +16,20 @@ public final class TreeEntry {
 	
 	
 	
-	public TreeEntry(Type type, String name, ObjectId id) {
-		if (name == null || id == null)
+	public TreeEntry(Type type, String name, byte[] hash) {
+		if (name == null || hash == null)
 			throw new NullPointerException();
 		if (name.indexOf('\0') != -1)
 			throw new IllegalArgumentException("Name cannot contai null character");
 		
 		this.type = type;
 		this.name = name;
-		this.id = id;
+		if (type == Type.NORMAL_FILE || type == Type.EXECUTABLE_FILE)
+			id = new BlobId(hash);
+		else if (type == Type.DIRECTORY)
+			id = new TreeId(hash);
+		else
+			throw new IllegalArgumentException();
 	}
 	
 	

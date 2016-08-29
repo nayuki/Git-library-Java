@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 
 
 // An immutable 160-bit (20-byte) SHA-1 hash
-public final class ObjectId implements Comparable<ObjectId> {
+public abstract class ObjectId implements Comparable<ObjectId> {
 	
 	public static final int NUM_BYTES = 20;
 	
@@ -23,7 +23,7 @@ public final class ObjectId implements Comparable<ObjectId> {
 	
 	
 	// Accepts uppercase and lowercase
-	public ObjectId(String hexStr) {
+	ObjectId(String hexStr) {
 		if (hexStr == null)
 			throw new NullPointerException();
 		if (!HEX_STRING_PATTERN.matcher(hexStr).matches())
@@ -43,7 +43,7 @@ public final class ObjectId implements Comparable<ObjectId> {
 	
 	
 	// Array must be 20 bytes long
-	public ObjectId(byte[] bytes) {
+	ObjectId(byte[] bytes) {
 		if (bytes == null)
 			throw new NullPointerException();
 		if (bytes.length != NUM_BYTES)
@@ -58,7 +58,7 @@ public final class ObjectId implements Comparable<ObjectId> {
 	
 	
 	// Array can be any length, only requiring (off + 20 <= bytes.length)
-	public ObjectId(byte[] bytes, int off) {
+	ObjectId(byte[] bytes, int off) {
 		if (bytes == null)
 			throw new NullPointerException();
 		if (off < 0 || bytes.length - off < NUM_BYTES)

@@ -47,7 +47,7 @@ public final class CommitObject extends GitObject {
 		parts = line.split(" ", 2);
 		if (!parts[0].equals("tree"))
 			throw new DataFormatException("Tree field expected");
-		tree = new ObjectId(parts[1]);
+		tree = new TreeId(parts[1]);
 		index++;
 		
 		// Parse parent lines (0 or more)
@@ -57,7 +57,7 @@ public final class CommitObject extends GitObject {
 			parts = line.split(" ", 2);
 			if (!parts[0].equals("parent"))
 				break;
-			parents.add(new ObjectId(parts[1]));
+			parents.add(new CommitId(parts[1]));
 			index++;
 		}
 		

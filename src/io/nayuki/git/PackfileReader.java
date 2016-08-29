@@ -112,7 +112,7 @@ final class PackfileReader {
 				if (objectOffset >= totalObjects)
 					return null;  // Not found
 				indexRaf.readFully(b);
-				ObjectId temp = new ObjectId(b);
+				ObjectId temp = new CommitId(b);
 				int cmp = temp.compareTo(id);
 				if (cmp == 0)
 					break;

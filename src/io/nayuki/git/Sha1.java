@@ -15,12 +15,12 @@ public final class Sha1 {
 	
 	/* Convenience methods */
 	
-	public static ObjectId getHash(byte[] b) {
+	public static byte[] getHash(byte[] b) {
 		return getHash(b, 0, b.length);
 	}
 	
 	
-	public static ObjectId getHash(byte[] b, int off, int len) {
+	public static byte[] getHash(byte[] b, int off, int len) {
 		Sha1 hasher = new Sha1();
 		hasher.update(b, off, len);
 		return hasher.getHash();
@@ -123,7 +123,7 @@ public final class Sha1 {
 	private static final int[] K = {0x5A827999, 0x6ED9EBA1, 0x8F1BBCDC, 0xCA62C1D6};
 	
 	
-	public ObjectId getHash() {
+	public byte[] getHash() {
 		Sha1 copy = new Sha1();
 		copy.block = block.clone();
 		copy.blockFilled = blockFilled;
@@ -133,7 +133,7 @@ public final class Sha1 {
 	}
 	
 	
-	private ObjectId getHashDestructively() {
+	private byte[] getHashDestructively() {
 		block[blockFilled] = (byte)0x80;
 		blockFilled++;
 		Arrays.fill(block, blockFilled, block.length, (byte)0);
@@ -149,7 +149,7 @@ public final class Sha1 {
 		byte[] hash = new byte[state.length * 4];
 		for (int i = 0; i < hash.length; i++)
 			hash[i] = (byte)(state[i / 4] >>> (24 - i % 4 * 8));
-		return new ObjectId(hash);
+		return hash;
 	}
 	
 	

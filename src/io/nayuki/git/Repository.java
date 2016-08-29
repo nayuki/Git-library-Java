@@ -155,7 +155,7 @@ public final class Repository {
 	
 	
 	public void writeRawObject(byte[] obj) throws IOException {
-		File file = getLooseObjectFile(Sha1.getHash(obj));
+		File file = getLooseObjectFile(new RawId(Sha1.getHash(obj)));
 		if (file.isFile())
 			return;  // Object already exists in the loose objects database; no work to do
 		File dir = file.getParentFile();
@@ -279,7 +279,7 @@ public final class Repository {
 					}
 					if (!parts[1].startsWith("refs/"))
 						throw new DataFormatException("Invalid packed-refs file");
-					Reference ref = new Reference(parts[1].substring(5), new ObjectId(parts[0]));
+					Reference ref = new Reference(parts[1].substring(5), new CommitId(parts[0]));
 					if (!ref.name.startsWith("tags/"))
 						result.add(ref);
 				}
@@ -301,7 +301,7 @@ public final class Repository {
 		} finally {
 			in.close();
 		}
-		return new Reference(subDirName + "/" + file.getName(), new ObjectId(new String(buf, 0, 40, "US-ASCII")));
+		return new Reference(subDirName + "/" + file.getName(), new CommitId(new String(buf, 0, 40, "US-ASCII")));
 	}
 	
 	

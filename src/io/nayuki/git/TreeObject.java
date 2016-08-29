@@ -42,9 +42,9 @@ public final class TreeObject extends GitObject {
 			String name = new String(data, start, index - start, "UTF-8");
 			index++;
 			
-			ObjectId fileId = new ObjectId(Arrays.copyOfRange(data, index, index + ObjectId.NUM_BYTES));
+			byte[] hash = Arrays.copyOfRange(data, index, index + ObjectId.NUM_BYTES);
 			index += ObjectId.NUM_BYTES;
-			entries.add(new TreeEntry(TreeEntry.Type.fromMode(mode), name, fileId));
+			entries.add(new TreeEntry(TreeEntry.Type.fromMode(mode), name, hash));
 		}
 	}
 	
