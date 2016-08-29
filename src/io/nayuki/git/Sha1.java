@@ -13,7 +13,7 @@ import java.util.Arrays;
 /**
  * Computes the SHA-1 hash of binary data.
  */
-public final class Sha1 {
+final class Sha1 {
 	
 	/*---- Static functions for convenience ----*/
 	
