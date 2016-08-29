@@ -20,6 +20,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.lang.ref.WeakReference;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -116,7 +117,7 @@ public final class Repository {
 				index++;
 			if (index >= bytes.length)
 				throw new DataFormatException("Invalid object header");
-			String header = new String(bytes, 0, index, "US-ASCII");
+			String header = new String(bytes, 0, index, StandardCharsets.US_ASCII);
 			bytes = Arrays.copyOfRange(bytes, index + 1, bytes.length);
 			
 			// Parse header
@@ -241,7 +242,7 @@ public final class Repository {
 			throw new NullPointerException();
 		File looseRefFile = new File(directory, "refs" + File.separator + ref.name);
 		looseRefFile.getParentFile().mkdirs();
-		Writer out = new OutputStreamWriter(new FileOutputStream(looseRefFile), "US-ASCII");
+		Writer out = new OutputStreamWriter(new FileOutputStream(looseRefFile), StandardCharsets.US_ASCII);
 		boolean success = false;
 		try {
 			out.write(ref.target.hexString + "\n");
@@ -266,7 +267,7 @@ public final class Repository {
 		Collection<Reference> result = new ArrayList<Reference>();
 		File packedRefFile = new File(directory, "packed-refs");
 		if (packedRefFile.isFile()) {
-			BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(packedRefFile), "UTF-8"));
+			BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(packedRefFile), StandardCharsets.UTF_8));
 			try {
 				if (!"# pack-refs with: peeled ".equals(in.readLine()))
 					throw new DataFormatException("Invalid packed-refs file");
@@ -305,7 +306,7 @@ public final class Repository {
 		} finally {
 			in.close();
 		}
-		return new Reference(subDirName + "/" + file.getName(), new CommitId(new String(buf, 0, 40, "US-ASCII"), null));
+		return new Reference(subDirName + "/" + file.getName(), new CommitId(new String(buf, 0, 40, StandardCharsets.US_ASCII), null));
 	}
 	
 	

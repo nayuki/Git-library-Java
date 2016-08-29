@@ -9,8 +9,8 @@ package io.nayuki.git;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,20 +27,20 @@ public final class TreeObject extends GitObject {
 	}
 	
 	
-	public TreeObject(byte[] data, WeakReference<Repository> srcRepo) throws UnsupportedEncodingException {
+	public TreeObject(byte[] data, WeakReference<Repository> srcRepo) {
 		this();
 		int index = 0;
 		while (index < data.length) {
 			int start = index;
 			while (data[index] != ' ')
 				index++;
-			int mode = Integer.parseInt(new String(data, start, index - start, "US-ASCII"), 8);  // Parse number as octal
+			int mode = Integer.parseInt(new String(data, start, index - start, StandardCharsets.US_ASCII), 8);  // Parse number as octal
 			index++;
 			
 			start = index;
 			while (data[index] != 0)
 				index++;
-			String name = new String(data, start, index - start, "UTF-8");
+			String name = new String(data, start, index - start, StandardCharsets.UTF_8);
 			index++;
 			
 			byte[] hash = Arrays.copyOfRange(data, index, index + ObjectId.NUM_BYTES);
@@ -64,7 +64,7 @@ public final class TreeObject extends GitObject {
 		try {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			for (TreeEntry entry : entries) {
-				out.write(String.format("%o %s\0", entry.type.mode, entry.name).getBytes("UTF-8"));  // Format number as octal
+				out.write(String.format("%o %s\0", entry.type.mode, entry.name).getBytes(StandardCharsets.UTF_8));  // Format number as octal
 				out.write(entry.id.getBytes());
 			}
 			return addHeader("tree", out.toByteArray());

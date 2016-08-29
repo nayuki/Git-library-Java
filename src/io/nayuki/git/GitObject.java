@@ -7,7 +7,7 @@
 
 package io.nayuki.git;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 
 public abstract class GitObject {
@@ -25,15 +25,11 @@ public abstract class GitObject {
 	
 	
 	static byte[] addHeader(String type, byte[] data) {
-		try {
-			byte[] header = String.format("%s %d\0", type, data.length).getBytes("US-ASCII");
-			byte[] result = new byte[header.length + data.length];
-			System.arraycopy(header, 0, result, 0, header.length);
-			System.arraycopy(data, 0, result, header.length, data.length);
-			return result;
-		} catch (UnsupportedEncodingException e) {
-			throw new AssertionError(e);
-		}
+		byte[] header = String.format("%s %d\0", type, data.length).getBytes(StandardCharsets.US_ASCII);
+		byte[] result = new byte[header.length + data.length];
+		System.arraycopy(header, 0, result, 0, header.length);
+		System.arraycopy(data, 0, result, header.length, data.length);
+		return result;
 	}
 	
 }

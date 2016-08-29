@@ -7,8 +7,8 @@
 
 package io.nayuki.git;
 
-import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -34,7 +34,7 @@ public final class CommitObject extends GitObject {
 	
 	
 	
-	public CommitObject(byte[] data, WeakReference<Repository> repo) throws UnsupportedEncodingException, DataFormatException {
+	public CommitObject(byte[] data, WeakReference<Repository> repo) throws DataFormatException {
 		parents = new ArrayList<ObjectId>();
 		
 		int index = 0;
@@ -44,7 +44,7 @@ public final class CommitObject extends GitObject {
 		
 		// Parse tree line
 		for (start = index; data[index] != '\n'; index++);
-		line = new String(data, start, index - start, "UTF-8");
+		line = new String(data, start, index - start, StandardCharsets.UTF_8);
 		parts = line.split(" ", 2);
 		if (!parts[0].equals("tree"))
 			throw new DataFormatException("Tree field expected");
@@ -54,7 +54,7 @@ public final class CommitObject extends GitObject {
 		// Parse parent lines (0 or more)
 		while (true) {
 			for (start = index; data[index] != '\n'; index++);
-			line = new String(data, start, index - start, "UTF-8");
+			line = new String(data, start, index - start, StandardCharsets.UTF_8);
 			parts = line.split(" ", 2);
 			if (!parts[0].equals("parent"))
 				break;
@@ -76,7 +76,7 @@ public final class CommitObject extends GitObject {
 		
 		// Parse committer line
 		for (start = index; data[index] != '\n'; index++);
-		line = new String(data, start, index - start, "UTF-8");
+		line = new String(data, start, index - start, StandardCharsets.UTF_8);
 		parts = line.split(" ", 2);
 		if (!parts[0].equals("committer"))
 			throw new DataFormatException("Committer field expected");
@@ -93,24 +93,20 @@ public final class CommitObject extends GitObject {
 		if (data[index] != '\n')
 			throw new DataFormatException("Blank line expected");
 		index++;
-		message = new String(data, index, data.length - index, "UTF-8");
+		message = new String(data, index, data.length - index, StandardCharsets.UTF_8);
 	}
 	
 	
 	
 	public byte[] toBytes() {
-		try {
-			StringBuilder sb = new StringBuilder();
-			sb.append("tree ").append(tree.hexString).append("\n");
-			for (ObjectId parent : parents)
-				sb.append("parent ").append(parent.hexString).append("\n");
-			sb.append(String.format("author %s <%s> %d %s\n", authorName, authorEmail, authorTime, formatTimezone(authorTimezone)));
-			sb.append(String.format("committer %s <%s> %d %s\n", committerName, committerEmail, committerTime, formatTimezone(committerTimezone)));
-			sb.append("\n").append(message);
-			return addHeader("commit", sb.toString().getBytes("UTF-8"));
-		} catch (UnsupportedEncodingException e) {
-			throw new AssertionError(e);
-		}
+		StringBuilder sb = new StringBuilder();
+		sb.append("tree ").append(tree.hexString).append("\n");
+		for (ObjectId parent : parents)
+			sb.append("parent ").append(parent.hexString).append("\n");
+		sb.append(String.format("author %s <%s> %d %s\n", authorName, authorEmail, authorTime, formatTimezone(authorTimezone)));
+		sb.append(String.format("committer %s <%s> %d %s\n", committerName, committerEmail, committerTime, formatTimezone(committerTimezone)));
+		sb.append("\n").append(message);
+		return addHeader("commit", sb.toString().getBytes(StandardCharsets.UTF_8));
 	}
 	
 	
