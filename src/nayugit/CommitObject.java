@@ -1,3 +1,10 @@
+/* 
+ * Git library
+ * Copyright (c) Project Nayuki
+ * 
+ * https://www.nayuki.io/
+ */
+
 package nayugit;
 
 import java.io.UnsupportedEncodingException;
