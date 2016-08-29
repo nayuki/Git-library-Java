@@ -35,6 +35,8 @@ public final class CommitObject extends GitObject {
 	
 	
 	public CommitObject(byte[] data, WeakReference<Repository> repo) throws DataFormatException {
+		if (data == null)
+			throw new NullPointerException();
 		parents = new ArrayList<>();
 		
 		int index = 0;
@@ -99,6 +101,10 @@ public final class CommitObject extends GitObject {
 	
 	
 	public byte[] toBytes() {
+		if (tree == null || parents == null || message == null ||
+				authorName == null || authorEmail == null || committerName == null || committerEmail == null)
+			throw new NullPointerException();
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append("tree ").append(tree.hexString).append("\n");
 		for (ObjectId parent : parents)

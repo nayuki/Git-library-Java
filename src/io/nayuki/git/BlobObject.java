@@ -15,12 +15,16 @@ public final class BlobObject extends GitObject {
 	
 	
 	public BlobObject(byte[] data) {
+		if (data == null)
+			throw new NullPointerException();
 		this.data = data.clone();
 	}
 	
 	
 	
 	public byte[] toBytes() {
+		if (data == null)
+			throw new NullPointerException();
 		return addHeader("blob", data);
 	}
 	

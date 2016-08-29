@@ -29,6 +29,9 @@ public final class TreeObject extends GitObject {
 	
 	public TreeObject(byte[] data, WeakReference<Repository> srcRepo) {
 		this();
+		if (data == null)
+			throw new NullPointerException();
+		
 		int index = 0;
 		while (index < data.length) {
 			int start = index;
@@ -52,6 +55,8 @@ public final class TreeObject extends GitObject {
 	
 	
 	public TreeEntry getEntry(String name) {
+		if (name == null)
+			throw new NullPointerException();
 		for (TreeEntry entry : entries) {
 			if (entry.name.equals(name))
 				return entry;
@@ -61,6 +66,8 @@ public final class TreeObject extends GitObject {
 	
 	
 	public byte[] toBytes() {
+		if (entries == null)
+			throw new NullPointerException();
 		try {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			for (TreeEntry entry : entries) {
