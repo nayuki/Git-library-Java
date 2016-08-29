@@ -7,9 +7,11 @@
 
 package io.nayuki.git;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.regex.Pattern;
+import java.util.zip.DataFormatException;
 
 
 // An immutable 160-bit (20-byte) SHA-1 hash
@@ -88,6 +90,11 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	
 	public byte[] getBytes() {
 		return bytes.clone();
+	}
+	
+	
+	public GitObject read() throws IOException, DataFormatException {
+		return getSourceRepository().readObject(this);
 	}
 	
 	
