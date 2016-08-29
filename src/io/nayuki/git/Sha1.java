@@ -10,11 +10,19 @@ package io.nayuki.git;
 import java.util.Arrays;
 
 
-// Computes SHA-1 hashes of binary data
+/**
+ * Computes the SHA-1 hash of binary data.
+ */
 public final class Sha1 {
 	
-	/* Convenience methods */
+	/*---- Static functions for convenience ----*/
 	
+	/**
+	 * Returns the 20-byte SHA-1 hash of the specified byte array.
+	 * @param b the byte array to hash
+	 * @return the 20-byte SHA-1 hash
+	 * @throws NullPointerException if the array is {@code null}
+	 */
 	public static byte[] getHash(byte[] b) {
 		if (b == null)
 			throw new NullPointerException();
@@ -22,6 +30,15 @@ public final class Sha1 {
 	}
 	
 	
+	/**
+	 * Returns the 20-byte SHA-1 hash of the specified byte array subrange.
+	 * @param b the byte array to hash
+	 * @param off the offset into the byte array
+	 * @param len the length of the subrange
+	 * @return the 20-byte SHA-1 hash
+	 * @throws NullPointerException if the array is {@code null}
+	 * @throws ArrayIndexOutOfBoundsException if the offset or length is out of range
+	 */
 	public static byte[] getHash(byte[] b, int off, int len) {
 		if (b == null)
 			throw new NullPointerException();
@@ -34,7 +51,10 @@ public final class Sha1 {
 	
 	
 	
-	/* Stateful streaming hasher */
+	/*---- Stateful streaming hasher instances ----*/
+	
+	
+	/* Private fields */
 	
 	private byte[] block;
 	private int blockFilled;
@@ -43,6 +63,11 @@ public final class Sha1 {
 	
 	
 	
+	/* Constructor */
+	
+	/**
+	 * Constructs a SHA-1 hasher set to the initial state.
+	 */
 	public Sha1() {
 		block = new byte[64];
 		blockFilled = 0;
@@ -52,6 +77,13 @@ public final class Sha1 {
 	
 	
 	
+	/* Public methods */
+	
+	/**
+	 * Appends the specified bytes to the state of this hasher.
+	 * @param b the byte array to hash
+	 * @throws NullPointerException if the array is {@code null}
+	 */
 	public void update(byte[] b) {
 		if (b == null)
 			throw new NullPointerException();
@@ -59,6 +91,14 @@ public final class Sha1 {
 	}
 	
 	
+	/**
+	 * Appends the specified subrange of bytes to the state of this hasher.
+	 * @param b the byte array to hash
+	 * @param off the offset into the byte array
+	 * @param len the length of the subrange
+	 * @throws NullPointerException if the array is {@code null}
+	 * @throws ArrayIndexOutOfBoundsException if the offset or length is out of range
+	 */
 	public void update(byte[] b, int off, int len) {
 		if (b == null)
 			throw new NullPointerException();
@@ -89,6 +129,11 @@ public final class Sha1 {
 	}
 	
 	
+	/**
+	 * Returns the current 20-byte SHA-1 hash, based on the sequences of bytes supplied to previous calls of {@code update()}.
+	 * After calling this method, it is still okay to use {@code update()} and {@code getHash()}.
+	 * @return the 20-byte SHA-1 hash of the data seen so far
+	 */
 	public byte[] getHash() {
 		Sha1 copy = new Sha1();
 		copy.block = block.clone();
@@ -99,11 +144,18 @@ public final class Sha1 {
 	}
 	
 	
+	/**
+	 * Returns a string representation of this SHA-1 hasher. The format is subject to change.
+	 * @return a string representation of this hasher
+	 */
 	public String toString() {
 		return String.format("Sha1(length=%d, state=[%08x,%08x,%08x,%08x,%08x])",
 			length, state[0], state[1], state[2], state[3], state[4]);
 	}
 	
+	
+	
+	/* Private helper methods */
 	
 	private void compress(byte[] msg, int off, int len) {
 		if (len % block.length != 0)
