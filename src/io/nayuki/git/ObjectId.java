@@ -44,22 +44,24 @@ public final class ObjectId implements Comparable<ObjectId> {
 	
 	// Array must be 20 bytes long
 	public ObjectId(byte[] bytes) {
-		this(bytes, 0, bytes.length);
+		if (bytes == null)
+			throw new NullPointerException();
+		if (bytes.length != NUM_BYTES)
+			throw new IllegalArgumentException("Invalid array length");
+		
+		this.bytes = bytes.clone();
+		StringBuilder sb = new StringBuilder();
+		for (byte b : this.bytes)
+			sb.append(HEX_DIGITS[(b >>> 4) & 0xF]).append(HEX_DIGITS[b & 0xF]);
+		hexString = sb.toString();
 	}
 	
 	
 	// Array can be any length, only requiring (off + 20 <= bytes.length)
 	public ObjectId(byte[] bytes, int off) {
-		this(bytes, off, NUM_BYTES);
-	}
-	
-	
-	private ObjectId(byte[] bytes, int off, int len) {
 		if (bytes == null)
 			throw new NullPointerException();
-		if (len != NUM_BYTES)
-			throw new IllegalArgumentException("Invalid array length");
-		if (bytes.length - off < NUM_BYTES)
+		if (off < 0 || bytes.length - off < NUM_BYTES)
 			throw new IndexOutOfBoundsException();
 		
 		this.bytes = Arrays.copyOfRange(bytes, off, off + NUM_BYTES);
