@@ -89,6 +89,22 @@ public final class Sha1 {
 	}
 	
 	
+	public byte[] getHash() {
+		Sha1 copy = new Sha1();
+		copy.block = block.clone();
+		copy.blockFilled = blockFilled;
+		copy.length = length;
+		copy.state = state.clone();
+		return copy.getHashDestructively();
+	}
+	
+	
+	public String toString() {
+		return String.format("Sha1(length=%d, state=[%08x,%08x,%08x,%08x,%08x])",
+			length, state[0], state[1], state[2], state[3], state[4]);
+	}
+	
+	
 	private void compress(byte[] msg, int off, int len) {
 		if (len % block.length != 0)
 			throw new IllegalArgumentException();
@@ -136,16 +152,6 @@ public final class Sha1 {
 	private static final int[] K = {0x5A827999, 0x6ED9EBA1, 0x8F1BBCDC, 0xCA62C1D6};
 	
 	
-	public byte[] getHash() {
-		Sha1 copy = new Sha1();
-		copy.block = block.clone();
-		copy.blockFilled = blockFilled;
-		copy.length = length;
-		copy.state = state.clone();
-		return copy.getHashDestructively();
-	}
-	
-	
 	private byte[] getHashDestructively() {
 		block[blockFilled] = (byte)0x80;
 		blockFilled++;
@@ -163,11 +169,6 @@ public final class Sha1 {
 		for (int i = 0; i < hash.length; i++)
 			hash[i] = (byte)(state[i / 4] >>> (24 - i % 4 * 8));
 		return hash;
-	}
-	
-	
-	public String toString() {
-		return String.format("Sha1(length=%d, state=[%08x,%08x,%08x,%08x,%08x])", length, state[0], state[1], state[2], state[3], state[4]);
 	}
 	
 }
