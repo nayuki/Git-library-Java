@@ -181,7 +181,7 @@ public final class Repository {
 	
 	
 	private Collection<PackfileReader> listPackfiles() {
-		Collection<PackfileReader> result = new ArrayList<PackfileReader>();
+		Collection<PackfileReader> result = new ArrayList<>();
 		for (File item : new File(directory, "objects" + File.separator + "pack").listFiles()) {
 			String name = item.getName();
 			if (item.isFile() && name.startsWith("pack-") && name.endsWith(".idx")) {
@@ -196,7 +196,7 @@ public final class Repository {
 	
 	public Collection<Reference> listReferences() throws IOException, DataFormatException {
 		// Scan loose ref files
-		Collection<Reference> result = new ArrayList<Reference>();
+		Collection<Reference> result = new ArrayList<>();
 		File headsDir = new File(directory, "refs" + File.separator + "heads");
 		if (headsDir.isDirectory())
 			listReferences("heads", result);
@@ -208,7 +208,7 @@ public final class Repository {
 			}
 		}
 		
-		Set<String> names = new HashSet<String>();
+		Set<String> names = new HashSet<>();
 		for (Reference ref : result)
 			names.add(ref.name);
 		
@@ -264,7 +264,7 @@ public final class Repository {
 	
 	
 	private Collection<Reference> parsePackedRefsFile() throws IOException, DataFormatException {
-		Collection<Reference> result = new ArrayList<Reference>();
+		Collection<Reference> result = new ArrayList<>();
 		File packedRefFile = new File(directory, "packed-refs");
 		if (packedRefFile.isFile()) {
 			BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(packedRefFile), StandardCharsets.UTF_8));

@@ -35,7 +35,7 @@ public final class CommitObject extends GitObject {
 	
 	
 	public CommitObject(byte[] data, WeakReference<Repository> repo) throws DataFormatException {
-		parents = new ArrayList<ObjectId>();
+		parents = new ArrayList<>();
 		
 		int index = 0;
 		int start;

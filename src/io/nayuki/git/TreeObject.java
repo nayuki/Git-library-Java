@@ -23,7 +23,7 @@ public final class TreeObject extends GitObject {
 	
 	
 	public TreeObject() {
-		entries = new ArrayList<TreeEntry>();
+		entries = new ArrayList<>();
 	}
 	
 	
