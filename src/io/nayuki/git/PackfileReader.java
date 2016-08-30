@@ -141,7 +141,7 @@ final class PackfileReader {
 			throw new IllegalArgumentException();
 		InputStream in = new FileInputStream(packFile);
 		try {
-			IoUtils.skipFully(in, byteOffset);
+			skipFully(in, byteOffset);
 			
 			// Read decompressed size and type
 			int typeAndSize = decodeTypeAndSize(in);
@@ -205,12 +205,12 @@ final class PackfileReader {
 						int off = 0;
 						for (int i = 0; i < 4; i++) {
 							if (((op >>> i) & 1) != 0)
-								off |= IoUtils.readUnsignedNoEof(deltaIn) << (i * 8);
+								off |= readUnsignedNoEof(deltaIn) << (i * 8);
 						}
 						int len = 0;
 						for (int i = 0; i < 3; i++) {
 							if (((op >>> (i + 4)) & 1) != 0)
-								len |= IoUtils.readUnsignedNoEof(deltaIn) << (i * 8);
+								len |= readUnsignedNoEof(deltaIn) << (i * 8);
 						}
 						if (len == 0)
 							len = 0x10000;
@@ -233,14 +233,14 @@ final class PackfileReader {
 	/* Byte-level integer decoding functions */
 	
 	private static int decodeTypeAndSize(InputStream in) throws IOException, DataFormatException {
-		int b = IoUtils.readUnsignedNoEof(in);
+		int b = readUnsignedNoEof(in);
 		int type = (b >>> 4) & 7;
 		long size = b & 0xF;
 		
 		for (int i = 0; (b & 0x80) != 0; i++) {
 			if (i >= 6)
 				throw new DataFormatException("Variable-length integer too long");
-			b = IoUtils.readUnsignedNoEof(in);
+			b = readUnsignedNoEof(in);
 			size |= (b & 0x7FL) << (i * 7 + 4);
 		}
 		
@@ -256,7 +256,7 @@ final class PackfileReader {
 		for (int i = 0; ; i++) {
 			if (i >= 5)
 				throw new DataFormatException("Variable-length integer too long");
-			int b = IoUtils.readUnsignedNoEof(in);
+			int b = readUnsignedNoEof(in);
 			result |= b & 0x7F;
 			if ((b & 0x80) == 0)
 				break;
@@ -275,7 +275,7 @@ final class PackfileReader {
 		for (int i = 0; ; i++) {
 			if (i >= 6)
 				throw new DataFormatException("Variable-length integer too long");
-			int b = IoUtils.readUnsignedNoEof(in);
+			int b = readUnsignedNoEof(in);
 			result |= (b & 0x7FL) << (i * 7);
 			if ((b & 0x80) == 0)
 				break;
@@ -284,6 +284,30 @@ final class PackfileReader {
 		if ((int)result != result)
 			throw new DataFormatException("Variable-length integer too large");
 		return (int)result;
+	}
+	
+	
+	// Reads and returns the next unsigned byte (range 0 to 255) from the input stream,
+	// or throws an exception if the end of the stream is reached.
+	public static int readUnsignedNoEof(InputStream in) throws IOException {
+		int b = in.read();
+		if (b == -1)
+			throw new EOFException();
+		return b & 0xFF;
+	}
+	
+	
+	// Skips the given number of bytes in the given input stream, or throws EOFException
+	// if the end of stream is reached before that number of bytes was skipped.
+	public static void skipFully(InputStream in, long skip) throws IOException {
+		if (skip < 0)
+			throw new IllegalArgumentException();
+		while (skip > 0) {
+			long n = in.skip(skip);
+			if (n <= 0)
+				throw new EOFException();
+			skip -= n;
+		}
 	}
 	
 	
