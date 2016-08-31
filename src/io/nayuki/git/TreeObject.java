@@ -19,6 +19,9 @@ import java.util.zip.DataFormatException;
 
 /**
  * Represents a Git tree, which can be loosely thought of as a directory. Mutable structure.
+ * @see TreeId
+ * @see BlobObject
+ * @see CommitObject
  */
 public final class TreeObject extends GitObject {
 	

@@ -18,6 +18,10 @@ import java.util.zip.DataFormatException;
  * A 160-bit (20-byte) SHA-1 hash with extra information. It has subtypes and an
  * associated repository to allow the {@link #read()} method to be convenient.
  * The hash value is immutable, but reference to the repository is mutable.
+ * @see RawId
+ * @see BlobId
+ * @see TreeId
+ * @see CommitId
  */
 public abstract class ObjectId implements Comparable<ObjectId> {
 	

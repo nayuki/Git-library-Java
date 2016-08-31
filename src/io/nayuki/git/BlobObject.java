@@ -10,6 +10,8 @@ package io.nayuki.git;
 
 /**
  * A simple wrapper around a mutable byte array.
+ * @see BlobId
+ * @see TreeObject
  */
 public final class BlobObject extends GitObject {
 	

@@ -13,6 +13,9 @@ import java.nio.charset.StandardCharsets;
 /**
  * A hashable object that can be read from and written to a Git {@link Repository}.
  * Generally speaking, subclasses of {@code GitObject} are mutable.
+ * @see BlobObject
+ * @see TreeObject
+ * @see CommitObject
  */
 public abstract class GitObject {
 	

@@ -14,6 +14,7 @@ import java.util.zip.DataFormatException;
 
 /**
  * A 160-bit (20-byte) SHA-1 hash with extra information. The hash value should reflect a tree object.
+ * @see TreeObject
  */
 public class TreeId extends ObjectId {
 	

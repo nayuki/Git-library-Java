@@ -19,6 +19,9 @@ import java.util.zip.DataFormatException;
 /**
  * Represents a Git commit. Contains author information, committer information,
  * a list of parent commit IDs, a tree ID, and a message. Mutable structure.
+ * @see CommitId
+ * @see TreeObject
+ * @see BlobObject
  */
 public final class CommitObject extends GitObject {
 	
