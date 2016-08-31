@@ -181,7 +181,7 @@ public final class TreeObject extends GitObject {
 		
 		
 		public Entry(Type type, String name, byte[] hash, WeakReference<Repository> repo) {
-			if (name == null || hash == null)
+			if (type == null || name == null || hash == null)
 				throw new NullPointerException();
 			if (name.indexOf('\0') != -1)
 				throw new IllegalArgumentException("Name cannot contain NUL character");
@@ -193,7 +193,7 @@ public final class TreeObject extends GitObject {
 			else if (type == Type.DIRECTORY)
 				id = new TreeId(hash, repo);
 			else
-				throw new IllegalArgumentException();
+				id = new RawId(hash, repo);
 		}
 		
 		
