@@ -22,24 +22,24 @@ public final class CommitId extends ObjectId {
 	/**
 	 * Constructs a commit object ID from the specified hexadecimal string.
 	 * @param hexStr the hexadecimal string
-	 * @param srcRepo the repository to read from
+	 * @param repo the repository to set
 	 * @throws NullPointerException if the string is {@code null}
 	 * @throws IllegalArgumentException if the string isn't length 40 or has characters outside {0-9, a-f, A-F}
 	 */
-	public CommitId(String hexStr, WeakReference<Repository> srcRepo) {
-		super(hexStr, srcRepo);
+	public CommitId(String hexStr, WeakReference<Repository> repo) {
+		super(hexStr, repo);
 	}
 	
 	
 	/**
 	 * Constructs a commit object ID from the specified 20-byte array.
 	 * @param bytes the byte array
-	 * @param srcRepo the repository to read from
+	 * @param repo the repository to set
 	 * @throws NullPointerException if the array is {@code null}
 	 * @throws IllegalArgumentException if array isn't length 20
 	 */
-	public CommitId(byte[] bytes, WeakReference<Repository> srcRepo) {
-		super(bytes, srcRepo);
+	public CommitId(byte[] bytes, WeakReference<Repository> repo) {
+		super(bytes, repo);
 	}
 	
 	
@@ -47,13 +47,13 @@ public final class CommitId extends ObjectId {
 	 * Constructs a commit object ID from 20 bytes in the specified array starting at the specified offset.
 	 * @param bytes the byte array
 	 * @param off the offset to start at
-	 * @param srcRepo the repository to read from
+	 * @param repo the repository to set
 	 * @throws NullPointerException if the array is {@code null}
 	 * @throws IndexOutOfBoundsException if the offset is negative,
 	 * or there are fewer than 20 bytes remaining starting at that offset
 	 */
-	public CommitId(byte[] bytes, int off, WeakReference<Repository> srcRepo) {
-		super(bytes, off, srcRepo);
+	public CommitId(byte[] bytes, int off, WeakReference<Repository> repo) {
+		super(bytes, off, repo);
 	}
 	
 	

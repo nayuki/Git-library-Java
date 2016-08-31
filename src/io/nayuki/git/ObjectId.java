@@ -15,9 +15,9 @@ import java.util.zip.DataFormatException;
 
 
 /**
- * A 160-bit (20-byte) SHA-1 hash with extra information. It has subtypes and an associated
- * repository to allow the {@link #read()} method to be convenient. The hash value is immutable,
- * but the weak reference and underlying repository object can change states.
+ * A 160-bit (20-byte) SHA-1 hash with extra information. It has subtypes and an
+ * associated repository to allow the {@link #read()} method to be convenient.
+ * The hash value is immutable, but reference to the repository is mutable.
  */
 public abstract class ObjectId implements Comparable<ObjectId> {
 	
@@ -35,8 +35,18 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	// Not null, and always length 20 (NUM_BYTES).
 	private final byte[] bytes;
 	
-	// Can be null.
-	private final WeakReference<Repository> sourceRepo;
+	/**
+	 * This controls which repository to use when {@link #read()} is called. This field can be {@code null}.
+	 * <p>Other than the behavior of {@code read()}, the semantics of this field are user-defined.
+	 * For example, it can reflect the repository that an object ID was learned from, or it can be changed
+	 * so that the next read comes from a different repository which also has a copy of the object data.</p>
+	 * <p>This field is a weak reference instead of a standard strong reference because many functions implicitly
+	 * copy the repository reference, but it would be a mistake to keep the repository object alive when only
+	 * object IDs and raw data is needed (I/O resources from the repository not needed). Therefore due to this
+	 * weak reference, it is the responsibility of the higher level application to maintain a strong reference
+	 * to the repository for the duration that it is needed for reading/writing.</p>
+	 */
+	public WeakReference<Repository> repository;
 	
 	
 	
@@ -45,24 +55,24 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	/**
 	 * Constructs an object ID from the specified hexadecimal string.
 	 * @param hexStr the hexadecimal string
-	 * @param srcRepo the repository to read from
+	 * @param repo the repository to set
 	 * @throws NullPointerException if the string is {@code null}
 	 * @throws IllegalArgumentException if the string isn't length 40 or has characters outside {0-9, a-f, A-F}
 	 */
-	ObjectId(String hexStr, WeakReference<Repository> srcRepo) {
-		this(hexHashToBytes(hexStr), srcRepo);
+	ObjectId(String hexStr, WeakReference<Repository> repo) {
+		this(hexHashToBytes(hexStr), repo);
 	}
 	
 	
 	/**
 	 * Constructs an object ID from the specified 20-byte array.
 	 * @param bytes the byte array
-	 * @param srcRepo the repository to read from
+	 * @param repo the repository to set
 	 * @throws NullPointerException if the array is {@code null}
 	 * @throws IllegalArgumentException if array isn't length 20
 	 */
-	ObjectId(byte[] bytes, WeakReference<Repository> srcRepo) {
-		this(checkHashLength(bytes), 0, srcRepo);
+	ObjectId(byte[] bytes, WeakReference<Repository> repo) {
+		this(checkHashLength(bytes), 0, repo);
 	}
 	
 	
@@ -70,12 +80,12 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	 * Constructs an object ID from 20 bytes in the specified array starting at the specified offset.
 	 * @param bytes the byte array
 	 * @param off the offset to start at
-	 * @param srcRepo the repository to read from
+	 * @param repo the repository to set
 	 * @throws NullPointerException if the array is {@code null}
 	 * @throws IndexOutOfBoundsException if the offset is negative,
 	 * or there are fewer than 20 bytes remaining starting at that offset
 	 */
-	ObjectId(byte[] bytes, int off, WeakReference<Repository> srcRepo) {
+	ObjectId(byte[] bytes, int off, WeakReference<Repository> repo) {
 		if (bytes == null)
 			throw new NullPointerException();
 		if (off < 0 || bytes.length - off < NUM_BYTES)
@@ -86,7 +96,7 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 		for (byte b : this.bytes)
 			sb.append(HEX_DIGITS[(b >>> 4) & 0xF]).append(HEX_DIGITS[b & 0xF]);
 		hexString = sb.toString();
-		sourceRepo = srcRepo;
+		repository = repo;
 	}
 	
 	
@@ -143,15 +153,15 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	
 	
 	/**
-	 * Either returns the associated repository (not {@code null}) or throws an exception.
-	 * @return the associated repository (not {@code null})
+	 * Either returns the repository field (not {@code null}) or throws an exception.
+	 * @return the repository field (not {@code null})
 	 * @throws IllegalStateException if the reference object is
 	 * itself {@code null} or the weak reference has expired
 	 */
-	public Repository getSourceRepository() {
-		if (sourceRepo == null)
-			throw new IllegalStateException("Source repository set to null");
-		Repository result = sourceRepo.get();
+	public Repository getRepository() {
+		if (repository == null)
+			throw new IllegalStateException("Repository set to null");
+		Repository result = repository.get();
 		if (result == null)
 			throw new IllegalStateException("Weak reference to repository expired");
 		return result;
@@ -159,13 +169,15 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	
 	
 	/**
-	 * Reads the object data for this object ID from the associated repository.
+	 * Reads the object data for this object ID by using the repository field.
 	 * @return the object data (not {@code null})
+	 * @throws IllegalStateException if the repository reference object
+	 * is itself {@code null} or the weak reference has expired
 	 * @throws IOException if an I/O exception occurred
 	 * @throws DataFormatException if malformed data was encountered during reading
 	 */
 	public GitObject read() throws IOException, DataFormatException {
-		return getSourceRepository().readObject(this);
+		return getRepository().readObject(this);
 	}
 	
 	
