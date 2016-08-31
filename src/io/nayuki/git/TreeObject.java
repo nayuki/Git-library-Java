@@ -172,16 +172,31 @@ public final class TreeObject extends GitObject {
 	
 	/*---- Nested classes ----*/
 	
+	/**
+	 * A child item of a tree; loosely speaking, a file or subdirectory entry. Immutable structure.
+	 */
 	public final static class Entry {
 		
+		/** The type of the entry (e.g. file or directory) (not {@code null}). */
 		public final Type type;
 		
+		/** The name of the entry (not {@code null}, and does not contain the ASCII NUL character). */
 		public final String name;
 		
+		/** The hash of the child item (not {@code null}). */
 		public final ObjectId id;
 		
 		
 		
+		/**
+		 * Constructs a tree entry with the specified values.
+		 * @param type the file type (not {@code null})
+		 * @param name the file/subdirectory name (not {@code null})
+		 * @param hash the 20-byte hash of the child item (not {@code null})
+		 * @param repo the repository to set for object IDs (can be {@code null})
+		 * @throws NullPointerException if the type, name, or hash is {@code null}
+		 * @throws IllegalArgumentException if the name contains a NUL character
+		 */
 		public Entry(Type type, String name, byte[] hash, WeakReference<Repository> repo) {
 			if (type == null || name == null || hash == null)
 				throw new NullPointerException();
@@ -206,19 +221,25 @@ public final class TreeObject extends GitObject {
 		
 		
 		
+		/**
+		 * The file type of a tree entry.
+		 */
 		public enum Type {
 			
-			// Numbers are in octal
-			
+			/** A directory, with mode 040000 (octal). */
 			DIRECTORY(0040000),
 			
+			/** A normal file, with mode 0100644 (octal). */
 			NORMAL_FILE(0100644),
 			
+			/** An executable file, with mode 0100755 (octal). */
 			EXECUTABLE_FILE(0100755),
 			
+			/** A symbolic link (symlink), with mode 0120000 (octal). */
 			SYMBOLIC_LINK(0120000);
 			
 			
+			/** The numeric mode of this entry type. */
 			public final int mode;
 			
 			
@@ -227,6 +248,12 @@ public final class TreeObject extends GitObject {
 			}
 			
 			
+			/**
+			 * Returns the type whose mode equals the specified value.
+			 * @param mode the mode to look up
+			 * @return the matching type object (not {@code null})
+			 * @throws IllegalArgumentException if no known type matches the mode
+			 */
 			public static Type fromMode(int mode) {
 				for (Type type : VALUES) {
 					if (mode == type.mode)
@@ -236,6 +263,7 @@ public final class TreeObject extends GitObject {
 			}
 			
 			
+			// A cached array because values() always returns a new array.
 			private static final Type[] VALUES = values();
 			
 		}
