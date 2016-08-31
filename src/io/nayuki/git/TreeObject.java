@@ -175,7 +175,9 @@ public final class TreeObject extends GitObject {
 	public final static class Entry {
 		
 		public final Type type;
+		
 		public final String name;
+		
 		public final ObjectId id;
 		
 		
@@ -207,10 +209,14 @@ public final class TreeObject extends GitObject {
 		public enum Type {
 			
 			// Numbers are in octal
-			DIRECTORY      (0040000),
-			NORMAL_FILE    (0100644),
+			
+			DIRECTORY(0040000),
+			
+			NORMAL_FILE(0100644),
+			
 			EXECUTABLE_FILE(0100755),
-			SYMBOLIC_LINK  (0120000);
+			
+			SYMBOLIC_LINK(0120000);
 			
 			
 			public final int mode;
