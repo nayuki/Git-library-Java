@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.zip.DataFormatException;
 
 
 /**
@@ -47,29 +48,61 @@ public final class TreeObject extends GitObject {
 	 * @param data the serialized tree data to read
 	 * @param srcRepo the repository to set for object IDs
 	 * @throws NullPointerException if the array is {@code null}
+	 * @throws DataFormatException if malformed data was encountered during reading
 	 */
-	public TreeObject(byte[] data, WeakReference<Repository> srcRepo) {
+	public TreeObject(byte[] data, WeakReference<Repository> srcRepo) throws DataFormatException {
 		this();
 		if (data == null)
 			throw new NullPointerException();
 		
 		int index = 0;
 		while (index < data.length) {
+			// Scan for the next space
 			int start = index;
-			while (data[index] != ' ')
-				index++;
-			int mode = Integer.parseInt(new String(data, start, index - start, StandardCharsets.US_ASCII), 8);  // Parse number as octal
+			while (true) {
+				if (index >= data.length)
+					throw new DataFormatException("Unexpected end of tree data");
+				else if (data[index] == ' ')
+					break;
+				else
+					index++;
+			}
+			
+			// Resolve the mode value
+			String modeStr = new String(data, start, index - start, StandardCharsets.US_ASCII);
+			int modeInt;
+			try {
+				modeInt = Integer.parseInt(modeStr, 8);  // Parse number as octal
+			} catch (NumberFormatException e) {
+				throw new DataFormatException("Invalid mode value");
+			}
+			Entry.Type mode;
+			try {
+				mode = Entry.Type.fromMode(modeInt);
+			} catch (IllegalArgumentException e) {
+				throw new DataFormatException("Unrecognized mode value");
+			}
 			index++;
 			
+			// Scan for the next NUL and decode the item name
 			start = index;
-			while (data[index] != 0)
-				index++;
+			while (true) {
+				if (index >= data.length)
+					throw new DataFormatException("Unexpected end of tree data");
+				else if (data[index] == '\0')
+					break;
+				else
+					index++;
+			}
 			String name = new String(data, start, index - start, StandardCharsets.UTF_8);
 			index++;
 			
+			// Grab the hash bytes and create new entry
+			if (data.length - index < ObjectId.NUM_BYTES)
+				throw new DataFormatException("Unexpected end of tree data");
 			byte[] hash = Arrays.copyOfRange(data, index, index + ObjectId.NUM_BYTES);
 			index += ObjectId.NUM_BYTES;
-			entries.add(new Entry(Entry.Type.fromMode(mode), name, hash, srcRepo));
+			entries.add(new Entry(mode, name, hash, srcRepo));
 		}
 	}
 	
