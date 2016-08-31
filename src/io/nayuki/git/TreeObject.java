@@ -116,6 +116,15 @@ public final class TreeObject extends GitObject {
 	
 	
 	/**
+	 * Returns the hash ID of the current state of this tree object.
+	 * @return the hash ID of this tree object
+	 */
+	public TreeId getId() {
+		return new TreeId(Sha1.getHash(toBytes()), null);
+	}
+	
+	
+	/**
 	 * Returns a string representation of this tree object. The format is subject to change.
 	 * @return a string representation of this tree object
 	 */

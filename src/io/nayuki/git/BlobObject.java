@@ -60,6 +60,15 @@ public final class BlobObject extends GitObject {
 	
 	
 	/**
+	 * Returns the hash ID of the current state of this blob object.
+	 * @return the hash ID of this blob object
+	 */
+	public BlobId getId() {
+		return new BlobId(Sha1.getHash(toBytes()), null);
+	}
+	
+	
+	/**
 	 * Returns a string representation of this blob object. The format is subject to change.
 	 * @return a string representation of this blob object
 	 */

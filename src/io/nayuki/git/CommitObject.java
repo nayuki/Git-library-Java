@@ -147,6 +147,15 @@ public final class CommitObject extends GitObject {
 	
 	
 	/**
+	 * Returns the hash ID of the current state of this commit object.
+	 * @return the hash ID of this commit object
+	 */
+	public CommitId getId() {
+		return new CommitId(Sha1.getHash(toBytes()), null);
+	}
+	
+	
+	/**
 	 * Returns a string representation of this commit object. The format is subject to change.
 	 * @return a string representation of this commit object
 	 */
