@@ -27,7 +27,7 @@ public final class TreeObject extends GitObject {
 	 * The list of children of this tree node. Each element must be not {@code null},
 	 * and no two elements can have the same name.
 	 */
-	public List<TreeEntry> entries;
+	public List<Entry> entries;
 	
 	
 	
@@ -69,7 +69,7 @@ public final class TreeObject extends GitObject {
 			
 			byte[] hash = Arrays.copyOfRange(data, index, index + ObjectId.NUM_BYTES);
 			index += ObjectId.NUM_BYTES;
-			entries.add(new TreeEntry(TreeEntry.Type.fromMode(mode), name, hash, srcRepo));
+			entries.add(new Entry(Entry.Type.fromMode(mode), name, hash, srcRepo));
 		}
 	}
 	
@@ -83,10 +83,10 @@ public final class TreeObject extends GitObject {
 	 * @param name the name to query
 	 * @return an entry with a matching name, or {@code null}
 	 */
-	public TreeEntry getEntry(String name) {
+	public Entry getEntry(String name) {
 		if (name == null)
 			throw new NullPointerException();
-		for (TreeEntry entry : entries) {
+		for (Entry entry : entries) {
 			if (entry.name.equals(name))
 				return entry;
 		}
@@ -104,7 +104,7 @@ public final class TreeObject extends GitObject {
 			throw new NullPointerException();
 		try {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			for (TreeEntry entry : entries) {
+			for (Entry entry : entries) {
 				out.write(String.format("%o %s\0", entry.type.mode, entry.name).getBytes(StandardCharsets.UTF_8));  // Format number as octal
 				out.write(entry.id.getBytes());
 			}
@@ -130,6 +130,74 @@ public final class TreeObject extends GitObject {
 	 */
 	public String toString() {
 		return String.format("TreeObject(entries=%d)", entries.size());
+	}
+	
+	
+	
+	/*---- Nested classes ----*/
+	
+	public final static class Entry {
+		
+		public final Type type;
+		public final String name;
+		public final ObjectId id;
+		
+		
+		
+		public Entry(Type type, String name, byte[] hash, WeakReference<Repository> srcRepo) {
+			if (name == null || hash == null)
+				throw new NullPointerException();
+			if (name.indexOf('\0') != -1)
+				throw new IllegalArgumentException("Name cannot contain NUL character");
+			
+			this.type = type;
+			this.name = name;
+			if (type == Type.NORMAL_FILE || type == Type.EXECUTABLE_FILE)
+				id = new BlobId(hash, srcRepo);
+			else if (type == Type.DIRECTORY)
+				id = new TreeId(hash, srcRepo);
+			else
+				throw new IllegalArgumentException();
+		}
+		
+		
+		
+		public String toString() {
+			return String.format("TreeEntry(mode=%s, name=\"%s\", id=%s)", Integer.toString(type.mode, 8), name, id.hexString);
+		}
+		
+		
+		
+		public enum Type {
+			
+			// Numbers are in octal
+			DIRECTORY      (0040000),
+			NORMAL_FILE    (0100644),
+			EXECUTABLE_FILE(0100755),
+			SYMBOLIC_LINK  (0120000);
+			
+			
+			public final int mode;
+			
+			
+			private Type(int mode) {
+				this.mode = mode;
+			}
+			
+			
+			public static Type fromMode(int mode) {
+				for (Type type : VALUES) {
+					if (mode == type.mode)
+						return type;
+				}
+				throw new IllegalArgumentException("Unknown mode: octal " + Integer.toString(mode, 8));
+			}
+			
+			
+			private static final Type[] VALUES = values();
+			
+		}
+		
 	}
 	
 }
