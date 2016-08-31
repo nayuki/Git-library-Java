@@ -24,19 +24,75 @@ public final class CommitObject extends GitObject {
 	
 	/*---- Fields ----*/
 	
+	// Note: All fields must be non-null when getBytes() or getId() is called!
+	
+	
+	/* Miscellaneous fields */
+	
+	/**
+	 * The hash of the root directory of files in this commit.
+	 */
 	public TreeId tree;
+	
+	/**
+	 * The list of zero or more parents of this commit, which must not contain duplicates.
+	 */
 	public List<CommitId> parents;
+	
+	/**
+	 * The message for this commit, which can be multi-line.
+	 */
 	public String message;
 	
-	public String authorName;
-	public String authorEmail;
-	public int authorTime;      // Unix time in seconds
-	public int authorTimezone;  // In minutes from UTC
 	
+	/* Author fields */
+	
+	/**
+	 * The name of the author of this commit, for example "Alice Margatroid".
+	 */
+	public String authorName;
+	
+	/**
+	 * The email address of the author of this commit, for example "bob@smith.com".
+	 */
+	public String authorEmail;
+	
+	/**
+	 * The time this commit was authored, in Unix epoch seconds.
+	 */
+	public int authorTime;
+	
+	/**
+	 * The time zone of the author when this commit was created, in minutes ahead of UTC. For example 180 represents UTC+3 hours.
+	 */
+	public int authorTimezone;
+	
+	
+	/* Committer fields */
+	
+	/**
+	 * The name of the committer of this commit. Normally this is the same as the author, but if the author's patch (changeset)
+	 * was applied by a different person, then the committer is the one who applied the patch and created the Git commit.
+	 */
 	public String committerName;
+	
+	/**
+	 * The email address of the committer of this commit. Normally this is the same as the author's email,
+	 * but otherwise it follows the same rules as the committer name.
+	 */
 	public String committerEmail;
-	public int committerTime;      // Unix time in seconds
-	public int committerTimezone;  // In minutes from UTC
+	
+	/**
+	 * The time this Git commit object was created, in Unix epoch seconds. Normally this is the same as the author's time,
+	 * but if the author's patch was transplanted to a different location and/or tweaked after the initial creation,
+	 * then this timestamp reflects the time that this particular application of the patch was created.
+	 */
+	public int committerTime;
+	
+	/**
+	 * The time zone of the committer when this commit was created, in minutes ahead of UTC. For example -105 represents UTC-1:45.
+	 */
+	public int committerTimezone;
 	
 	
 	
