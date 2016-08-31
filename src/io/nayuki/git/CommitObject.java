@@ -59,6 +59,7 @@ public final class CommitObject extends GitObject {
 	
 	/**
 	 * The time this commit was authored, in Unix epoch seconds.
+	 * Note that this value is always given in UTC and does not depend on the time zone field.
 	 */
 	public int authorTime;
 	
@@ -86,6 +87,7 @@ public final class CommitObject extends GitObject {
 	 * The time this Git commit object was created, in Unix epoch seconds. Normally this is the same as the author's time,
 	 * but if the author's patch was transplanted to a different location and/or tweaked after the initial creation,
 	 * then this timestamp reflects the time that this particular application of the patch was created.
+	 * Note that this value is always given in UTC and does not depend on the time zone field.
 	 */
 	public int committerTime;
 	
