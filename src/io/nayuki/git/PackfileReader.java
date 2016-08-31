@@ -26,18 +26,18 @@ final class PackfileReader {
 	private final File indexFile;
 	private final File packFile;
 	
-	private final WeakReference<Repository> sourceRepo;
+	private final WeakReference<Repository> repository;
 	
 	
 	
-	public PackfileReader(File index, File pack, WeakReference<Repository> srcRepo) {
+	public PackfileReader(File index, File pack, WeakReference<Repository> repo) {
 		if (index == null || pack == null)
 			throw new NullPointerException();
 		if (!index.isFile() || !pack.isFile())
 			throw new IllegalArgumentException("File does not exist");
 		indexFile = index;
 		packFile = pack;
-		sourceRepo = srcRepo;
+		repository = repo;
 	}
 	
 	
@@ -74,9 +74,9 @@ final class PackfileReader {
 		
 		// Parse object
 		if (type == 1)
-			return new CommitObject(data, sourceRepo);
+			return new CommitObject(data, repository);
 		else if (type == 2)
-			return new TreeObject(data, sourceRepo);
+			return new TreeObject(data, repository);
 		else if (type == 3)
 			return new BlobObject(data);
 		else
@@ -117,7 +117,7 @@ final class PackfileReader {
 				if (objectOffset >= totalObjects)
 					return null;  // Not found
 				indexRaf.readFully(b);
-				ObjectId temp = new CommitId(b, sourceRepo);
+				ObjectId temp = new CommitId(b, repository);
 				int cmp = temp.compareTo(id);
 				if (cmp == 0)
 					break;

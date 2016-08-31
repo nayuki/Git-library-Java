@@ -46,11 +46,11 @@ public final class TreeObject extends GitObject {
 	 * Constructs a tree object with the data initially set to the parsed interpretation of the specified bytes.
 	 * Every object ID that the tree refers to will have its repository set to the specified repo argument.
 	 * @param data the serialized tree data to read
-	 * @param srcRepo the repository to set for object IDs
+	 * @param repo the repository to set for object IDs
 	 * @throws NullPointerException if the array is {@code null}
 	 * @throws DataFormatException if malformed data was encountered during reading
 	 */
-	public TreeObject(byte[] data, WeakReference<Repository> srcRepo) throws DataFormatException {
+	public TreeObject(byte[] data, WeakReference<Repository> repo) throws DataFormatException {
 		this();
 		if (data == null)
 			throw new NullPointerException();
@@ -102,7 +102,7 @@ public final class TreeObject extends GitObject {
 				throw new DataFormatException("Unexpected end of tree data");
 			byte[] hash = Arrays.copyOfRange(data, index, index + ObjectId.NUM_BYTES);
 			index += ObjectId.NUM_BYTES;
-			entries.add(new Entry(mode, name, hash, srcRepo));
+			entries.add(new Entry(mode, name, hash, repo));
 		}
 	}
 	
@@ -177,7 +177,7 @@ public final class TreeObject extends GitObject {
 		
 		
 		
-		public Entry(Type type, String name, byte[] hash, WeakReference<Repository> srcRepo) {
+		public Entry(Type type, String name, byte[] hash, WeakReference<Repository> repo) {
 			if (name == null || hash == null)
 				throw new NullPointerException();
 			if (name.indexOf('\0') != -1)
@@ -186,9 +186,9 @@ public final class TreeObject extends GitObject {
 			this.type = type;
 			this.name = name;
 			if (type == Type.NORMAL_FILE || type == Type.EXECUTABLE_FILE)
-				id = new BlobId(hash, srcRepo);
+				id = new BlobId(hash, repo);
 			else if (type == Type.DIRECTORY)
-				id = new TreeId(hash, srcRepo);
+				id = new TreeId(hash, repo);
 			else
 				throw new IllegalArgumentException();
 		}
