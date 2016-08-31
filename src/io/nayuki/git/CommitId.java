@@ -68,7 +68,7 @@ public final class CommitId extends ObjectId {
 	 * @throws ClassCastException if an object was successfully read but its type is not a commit object
 	 */
 	public CommitObject read() throws IOException, DataFormatException {
-		return (CommitObject)getSourceRepository().readObject(this);
+		return (CommitObject)super.read();
 	}
 	
 }

@@ -68,7 +68,7 @@ public class TreeId extends ObjectId {
 	 * @throws ClassCastException if an object was successfully read but its type is not a tree object
 	 */
 	public TreeObject read() throws IOException, DataFormatException {
-		return (TreeObject)getSourceRepository().readObject(this);
+		return (TreeObject)super.read();
 	}
 	
 }

@@ -68,7 +68,7 @@ public final class BlobId extends ObjectId {
 	 * @throws ClassCastException if an object was successfully read but its type is not a blob object
 	 */
 	public BlobObject read() throws IOException, DataFormatException {
-		return (BlobObject)getSourceRepository().readObject(this);
+		return (BlobObject)super.read();
 	}
 	
 }
