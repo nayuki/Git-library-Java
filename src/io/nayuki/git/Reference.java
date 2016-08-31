@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 public final class Reference {
 	
 	public final String name;
-	public ObjectId target;  // Can be null
+	public CommitId target;  // Can be null
 	
 	
 	
@@ -23,7 +23,7 @@ public final class Reference {
 	}
 	
 	
-	public Reference(String name, ObjectId target) {
+	public Reference(String name, CommitId target) {
 		checkName(name);
 		this.name = name;
 		this.target = target;

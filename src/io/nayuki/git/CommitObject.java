@@ -24,8 +24,8 @@ public final class CommitObject extends GitObject {
 	
 	/*---- Fields ----*/
 	
-	public ObjectId tree;
-	public List<ObjectId> parents;
+	public TreeId tree;
+	public List<CommitId> parents;
 	public String message;
 	
 	public String authorName;
