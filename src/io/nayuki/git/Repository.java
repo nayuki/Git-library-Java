@@ -102,7 +102,7 @@ public final class Repository {
 			}
 		}
 		
-		if (result != null && !Sha1.getHash(result).equals(id))
+		if (result != null && !Arrays.equals(Sha1.getHash(result), id.getBytes()))
 			throw new DataFormatException("Hash of data mismatches object ID");
 		return result;
 	}
@@ -269,7 +269,7 @@ public final class Repository {
 		if (packedRefFile.isFile()) {
 			BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(packedRefFile), StandardCharsets.UTF_8));
 			try {
-				if (!"# pack-refs with: peeled ".equals(in.readLine()))
+				if (!checkPackedRefsFileHeaderLine(in.readLine()))
 					throw new DataFormatException("Invalid packed-refs file");
 				while (true) {
 					String line = in.readLine();
@@ -296,6 +296,11 @@ public final class Repository {
 	}
 	
 	
+	private static boolean checkPackedRefsFileHeaderLine(String line) {
+		return line.equals("# pack-refs with: peeled ") || line.equals("# pack-refs with: peeled fully-peeled ");
+	}
+	
+	
 	private Reference parseReferenceFile(String subDirName, File file) throws IOException, DataFormatException {
 		byte[] buf = new byte[41];
 		DataInputStream in = new DataInputStream(new FileInputStream(file));
@@ -306,7 +311,7 @@ public final class Repository {
 		} finally {
 			in.close();
 		}
-		return new Reference(subDirName + "/" + file.getName(), new CommitId(new String(buf, 0, 40, StandardCharsets.US_ASCII), null));
+		return new Reference(subDirName + "/" + file.getName(), new CommitId(new String(buf, 0, 40, StandardCharsets.US_ASCII), weakThis));
 	}
 	
 	

@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.lang.ref.WeakReference;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.zip.DataFormatException;
 import java.util.zip.InflaterInputStream;
 
@@ -69,7 +70,7 @@ final class PackfileReader {
 		Sha1 hasher = new Sha1();
 		hasher.update((TYPE_NAMES[type] + " " + data.length + "\0").getBytes(StandardCharsets.US_ASCII));
 		hasher.update(data);
-		if (!hasher.getHash().equals(id))
+		if (!Arrays.equals(hasher.getHash(), id.getBytes()))
 			throw new DataFormatException("Hash of data mismatches object ID");
 		
 		// Parse object
