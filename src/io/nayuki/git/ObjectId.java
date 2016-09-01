@@ -226,7 +226,7 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	 * @return a string representation of this object ID
 	 */
 	public String toString() {
-		return String.format(getClass().getSimpleName() + "(value=%s)", hexString);
+		return String.format(getClass().getSimpleName() + "(%s)", hexString);
 	}
 	
 }
