@@ -88,8 +88,7 @@ final class PackfileReader {
 	/* Low-level read methods */
 	
 	private Long readDataOffset(ObjectId id) throws IOException, DataFormatException {
-		RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
-		try {
+		try (RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r")) {
 			// Check header; this logic only supports version 2 indexes
 			byte[] b = new byte[4];
 			indexRaf.readFully(b);
@@ -131,8 +130,6 @@ final class PackfileReader {
 			indexRaf.seek(8 + 256 * 4 + totalObjects * ObjectId.NUM_BYTES + totalObjects * 4 + objectOffset * 4);
 			return (long)indexRaf.readInt();
 			
-		} finally {
-			indexRaf.close();
 		}
 	}
 	
@@ -140,8 +137,7 @@ final class PackfileReader {
 	private Object[] readObjectHeaderless(long byteOffset) throws IOException, DataFormatException {
 		if (byteOffset < 0)
 			throw new IllegalArgumentException();
-		InputStream in = new FileInputStream(packFile);
-		try {
+		try (InputStream in = new FileInputStream(packFile)) {
 			skipFully(in, byteOffset);
 			
 			// Read decompressed size and type
@@ -159,9 +155,8 @@ final class PackfileReader {
 				deltaOffset = -1;
 			
 			// Decompress data
-			InputStream inflateIn = new InflaterInputStream(in);
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			try {
+			try (InputStream inflateIn = new InflaterInputStream(in)) {
 				byte[] buf = new byte[1024];
 				while (true) {
 					int n = inflateIn.read(buf);
@@ -169,8 +164,6 @@ final class PackfileReader {
 						break;
 					out.write(buf, 0, n);
 				}
-			} finally {
-				inflateIn.close();
 			}
 			byte[] data = out.toByteArray();
 			if (data.length != size)
@@ -225,8 +218,6 @@ final class PackfileReader {
 			
 			// Done
 			return new Object[]{type, data};
-		} finally {
-			in.close();
 		}
 	}
 	

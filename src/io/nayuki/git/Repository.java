@@ -78,8 +78,7 @@ public final class Repository {
 		byte[] result = null;
 		if (file.isFile()) {
 			// Read from loose object store
-			InputStream in = new InflaterInputStream(new FileInputStream(file));
-			try {
+			try (InputStream in = new InflaterInputStream(new FileInputStream(file))) {
 				ByteArrayOutputStream out = new ByteArrayOutputStream();
 				byte[] buf = new byte[1024];
 				while (true) {
@@ -89,8 +88,6 @@ public final class Repository {
 					out.write(buf, 0, n);
 				}
 				result = out.toByteArray();
-			} finally {
-				in.close();
 			}
 			
 		} else {
@@ -167,16 +164,13 @@ public final class Repository {
 		if (!dir.exists())
 			dir.mkdirs();
 		
-		OutputStream out = new DeflaterOutputStream(new FileOutputStream(file));
 		boolean success = false;
-		try {
+		try (OutputStream out = new DeflaterOutputStream(new FileOutputStream(file))) {
 			out.write(obj);
 			success = true;
-		} finally {
-			out.close();
-			if (!success)
-				file.delete();
 		}
+		if (!success)
+			file.delete();
 	}
 	
 	
@@ -242,13 +236,10 @@ public final class Repository {
 			throw new NullPointerException();
 		File looseRefFile = new File(directory, "refs" + File.separator + ref.name);
 		looseRefFile.getParentFile().mkdirs();
-		Writer out = new OutputStreamWriter(new FileOutputStream(looseRefFile), StandardCharsets.US_ASCII);
 		boolean success = false;
-		try {
+		try (Writer out = new OutputStreamWriter(new FileOutputStream(looseRefFile), StandardCharsets.US_ASCII)) {
 			out.write(ref.target.hexString + "\n");
 			success = true;
-		} finally {
-			out.close();
 		}
 		if (!success)
 			looseRefFile.delete();
@@ -267,8 +258,7 @@ public final class Repository {
 		Collection<Reference> result = new ArrayList<>();
 		File packedRefFile = new File(directory, "packed-refs");
 		if (packedRefFile.isFile()) {
-			BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(packedRefFile), StandardCharsets.UTF_8));
-			try {
+			try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(packedRefFile), StandardCharsets.UTF_8))) {
 				if (!checkPackedRefsFileHeaderLine(in.readLine()))
 					throw new DataFormatException("Invalid packed-refs file");
 				while (true) {
@@ -288,8 +278,6 @@ public final class Repository {
 					if (!ref.name.startsWith("tags/"))
 						result.add(ref);
 				}
-			} finally {
-				in.close();
 			}
 		}
 		return result;
@@ -303,13 +291,10 @@ public final class Repository {
 	
 	private Reference parseReferenceFile(String subDirName, File file) throws IOException, DataFormatException {
 		byte[] buf = new byte[41];
-		DataInputStream in = new DataInputStream(new FileInputStream(file));
-		try {
+		try (DataInputStream in = new DataInputStream(new FileInputStream(file))) {
 			in.readFully(buf);
 			if (buf[40] != '\n' || in.read() != -1)
 				throw new DataFormatException("Invalid reference file");
-		} finally {
-			in.close();
 		}
 		return new Reference(subDirName + "/" + file.getName(), new CommitId(new String(buf, 0, 40, StandardCharsets.US_ASCII), weakThis));
 	}
