@@ -24,12 +24,16 @@ import java.util.zip.InflaterInputStream;
 
 final class PackfileReader {
 	
+	/*---- Fields ----*/
+	
 	private final File indexFile;
 	private final File packFile;
 	
 	private final WeakReference<Repository> repository;
 	
 	
+	
+	/*---- Constructors ----*/
 	
 	public PackfileReader(File index, File pack, WeakReference<Repository> repo) {
 		if (index == null || pack == null)
@@ -42,6 +46,8 @@ final class PackfileReader {
 	}
 	
 	
+	
+	/*---- Methods ----*/
 	
 	/* High-level query methods */
 	

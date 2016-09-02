@@ -33,11 +33,15 @@ import java.util.zip.InflaterInputStream;
 
 public final class Repository {
 	
+	/*---- Fields ----*/
+	
 	private final File directory;
 	
 	private final WeakReference<Repository> weakThis;
 	
 	
+	
+	/*---- Constructors ----*/
 	
 	public Repository(File dir) {
 		if (dir == null)
@@ -56,6 +60,8 @@ public final class Repository {
 	}
 	
 	
+	
+	/*---- Methods ----*/
 	
 	public File getDirectory() {
 		return directory;
@@ -246,6 +252,8 @@ public final class Repository {
 	}
 	
 	
+	/*---- Private helper methods ----*/
+	
 	private void listReferences(String subDirName, Collection<Reference> result) throws IOException, DataFormatException {
 		for (File item : new File(directory, "refs" + File.separator + subDirName.replace('/', File.separatorChar)).listFiles()) {
 			if (item.isFile() && !item.getName().equals("HEAD"))
@@ -254,6 +262,8 @@ public final class Repository {
 	}
 	
 	
+	// Returns an unordered collection of references (pairs of name, commit ID) from parsing the "packed-refs" file in the repository.
+	// Note that the returned reference names are like "heads/master", and do not contain a "refs/" prefix.
 	private Collection<Reference> parsePackedRefsFile() throws IOException, DataFormatException {
 		Collection<Reference> result = new ArrayList<>();
 		File packedRefFile = new File(directory, "packed-refs");
@@ -284,11 +294,14 @@ public final class Repository {
 	}
 	
 	
+	// Tests whether the given string is a valid header line for the packed-refs text file.
 	private static boolean checkPackedRefsFileHeaderLine(String line) {
 		return line.equals("# pack-refs with: peeled ") || line.equals("# pack-refs with: peeled fully-peeled ");
 	}
 	
 	
+	// Reads the file at the given location and returns the SHA-1 hash string that was in the file.
+	// subDirName is usually something like "heads" or "remotes/origin" or "tags".
 	private Reference parseReferenceFile(String subDirName, File file) throws IOException, DataFormatException {
 		byte[] buf = new byte[41];
 		try (DataInputStream in = new DataInputStream(new FileInputStream(file))) {
@@ -300,6 +313,7 @@ public final class Repository {
 	}
 	
 	
+	// Returns the expected location of a loose object file with the given hash. This performs no I/O and always succeeds.
 	private File getLooseObjectFile(ObjectId id) {
 		return new File(directory, "objects" + File.separator + id.hexString.substring(0, 2) + File.separator + id.hexString.substring(2));
 	}
