@@ -66,7 +66,7 @@ public final class BlobObject extends GitObject {
 	 * @return the hash ID of this blob object
 	 */
 	public BlobId getId() {
-		return new BlobId(Sha1.getHash(toBytes()), null);
+		return new BlobId(Sha1.getHash(toBytes()));
 	}
 	
 	

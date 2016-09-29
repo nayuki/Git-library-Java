@@ -19,7 +19,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.lang.ref.WeakReference;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,8 +35,6 @@ public final class Repository implements AutoCloseable {
 	/*---- Fields ----*/
 	
 	private final File directory;
-	
-	private final WeakReference<Repository> weakThis;
 	
 	
 	
@@ -56,7 +53,6 @@ public final class Repository implements AutoCloseable {
 			throw new IllegalArgumentException("Invalid repository format");
 		
 		directory = dir;
-		weakThis = new WeakReference<>(this);
 	}
 	
 	
@@ -148,9 +144,9 @@ public final class Repository implements AutoCloseable {
 			if (type.equals("blob"))
 				return new BlobObject(bytes);
 			if (type.equals("tree"))
-				return new TreeObject(bytes, weakThis);
+				return new TreeObject(bytes);
 			if (type.equals("commit"))
-				return new CommitObject(bytes, weakThis);
+				return new CommitObject(bytes);
 			else
 				throw new DataFormatException("Unknown object type: " + type);
 			
@@ -171,7 +167,7 @@ public final class Repository implements AutoCloseable {
 	
 	
 	public void writeRawObject(byte[] obj) throws IOException {
-		File file = getLooseObjectFile(new RawId(Sha1.getHash(obj), null));
+		File file = getLooseObjectFile(new RawId(Sha1.getHash(obj)));
 		if (file.isFile())
 			return;  // Object already exists in the loose objects database; no work to do
 		File dir = file.getParentFile();
@@ -195,7 +191,7 @@ public final class Repository implements AutoCloseable {
 			if (item.isFile() && name.startsWith("pack-") && name.endsWith(".idx")) {
 				File packfile = new File(item.getParentFile(), name.substring(0, name.length() - 3) + "pack");
 				if (packfile.isFile())
-					result.add(new PackfileReader(item, packfile, weakThis));
+					result.add(new PackfileReader(item, packfile));
 			}
 		}
 		return result;
@@ -294,7 +290,7 @@ public final class Repository implements AutoCloseable {
 				} else if (parts.length == 2) {
 					if (!parts[1].startsWith("refs/"))
 						throw new DataFormatException("Invalid packed-refs file");
-					Reference ref = new Reference(parts[1].substring("refs/".length()), new CommitId(parts[0], weakThis));
+					Reference ref = new Reference(parts[1].substring("refs/".length()), new CommitId(parts[0]));
 					if (!ref.name.startsWith("tags/"))
 						result.add(ref);
 				} else
@@ -320,7 +316,7 @@ public final class Repository implements AutoCloseable {
 			if (buf[40] != '\n' || in.read() != -1)
 				throw new DataFormatException("Invalid reference file");
 		}
-		return new Reference(subDirName + "/" + file.getName(), new CommitId(new String(buf, 0, 40, StandardCharsets.US_ASCII), weakThis));
+		return new Reference(subDirName + "/" + file.getName(), new CommitId(new String(buf, 0, 40, StandardCharsets.US_ASCII)));
 	}
 	
 	

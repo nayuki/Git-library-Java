@@ -7,7 +7,6 @@
 
 package io.nayuki.git;
 
-import java.lang.ref.WeakReference;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -115,11 +114,10 @@ public final class CommitObject extends GitObject {
 	 * Constructs a commit object with the data initially set to the parsed interpretation of the specified bytes.
 	 * Every object ID that the commit refers to will have its repository set to the specified repo argument.
 	 * @param data the serialized commit data to read
-	 * @param repo the repository to set for object IDs (can be {@code null})
 	 * @throws NullPointerException if the array is {@code null}
 	 * @throws DataFormatException if malformed data was encountered during reading
 	 */
-	public CommitObject(byte[] data, WeakReference<Repository> repo) throws DataFormatException {
+	public CommitObject(byte[] data) throws DataFormatException {
 		this();
 		if (data == null)
 			throw new NullPointerException();
@@ -131,14 +129,14 @@ public final class CommitObject extends GitObject {
 			String[] parts = parser.nextLineAsPair();
 			if (!parts[0].equals("tree"))
 				throw new DataFormatException("Tree field expected");
-			tree = new TreeId(parts[1], repo);
+			tree = new TreeId(parts[1]);
 			
 			// Parse parent lines (zero or more)
 			while (true) {
 				parts = parser.nextLineAsPair();
 				if (!parts[0].equals("parent"))
 					break;
-				parents.add(new CommitId(parts[1], repo));
+				parents.add(new CommitId(parts[1]));
 			}
 			
 			// Parse author line
@@ -204,7 +202,7 @@ public final class CommitObject extends GitObject {
 	 * @return the hash ID of this commit object
 	 */
 	public CommitId getId() {
-		return new CommitId(Sha1.getHash(toBytes()), null);
+		return new CommitId(Sha1.getHash(toBytes()));
 	}
 	
 	

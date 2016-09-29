@@ -9,7 +9,6 @@ package io.nayuki.git;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,11 +48,10 @@ public final class TreeObject extends GitObject {
 	 * Constructs a tree object with the data initially set to the parsed interpretation of the specified bytes.
 	 * Every object ID that the tree refers to will have its repository set to the specified repo argument.
 	 * @param data the serialized tree data to read
-	 * @param repo the repository to set for object IDs (can be {@code null})
 	 * @throws NullPointerException if the array is {@code null}
 	 * @throws DataFormatException if malformed data was encountered during reading
 	 */
-	public TreeObject(byte[] data, WeakReference<Repository> repo) throws DataFormatException {
+	public TreeObject(byte[] data) throws DataFormatException {
 		this();
 		if (data == null)
 			throw new NullPointerException();
@@ -105,7 +103,7 @@ public final class TreeObject extends GitObject {
 				throw new DataFormatException("Unexpected end of tree data");
 			byte[] hash = Arrays.copyOfRange(data, index, index + ObjectId.NUM_BYTES);
 			index += ObjectId.NUM_BYTES;
-			entries.add(new Entry(mode, name, hash, repo));
+			entries.add(new Entry(mode, name, hash));
 		}
 	}
 	
@@ -156,7 +154,7 @@ public final class TreeObject extends GitObject {
 	 * @return the hash ID of this tree object
 	 */
 	public TreeId getId() {
-		return new TreeId(Sha1.getHash(toBytes()), null);
+		return new TreeId(Sha1.getHash(toBytes()));
 	}
 	
 	
@@ -193,11 +191,10 @@ public final class TreeObject extends GitObject {
 		 * @param type the file type (not {@code null})
 		 * @param name the file/subdirectory name (not {@code null})
 		 * @param hash the 20-byte hash of the child item (not {@code null})
-		 * @param repo the repository to set for object IDs (can be {@code null})
 		 * @throws NullPointerException if the type, name, or hash is {@code null}
 		 * @throws IllegalArgumentException if the name contains a NUL character
 		 */
-		public Entry(Type type, String name, byte[] hash, WeakReference<Repository> repo) {
+		public Entry(Type type, String name, byte[] hash) {
 			if (type == null || name == null || hash == null)
 				throw new NullPointerException();
 			if (name.indexOf('\0') != -1)
@@ -206,11 +203,11 @@ public final class TreeObject extends GitObject {
 			this.type = type;
 			this.name = name;
 			if (type == Type.NORMAL_FILE || type == Type.EXECUTABLE_FILE)
-				id = new BlobId(hash, repo);
+				id = new BlobId(hash);
 			else if (type == Type.DIRECTORY)
-				id = new TreeId(hash, repo);
+				id = new TreeId(hash);
 			else
-				id = new RawId(hash, repo);
+				id = new RawId(hash);
 		}
 		
 		

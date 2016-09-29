@@ -40,7 +40,7 @@ public abstract class GitObject {
 	 * @return the hash ID of this object
 	 */
 	public ObjectId getId() {
-		return new RawId(Sha1.getHash(toBytes()), null);
+		return new RawId(Sha1.getHash(toBytes()));
 	}
 	
 	
