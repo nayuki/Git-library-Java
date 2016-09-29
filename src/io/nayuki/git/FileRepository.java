@@ -218,7 +218,6 @@ public final class FileRepository implements Repository {
 		
 		// Parse packed refs file
 		for (Reference ref : parsePackedRefsFile()) {
-			System.out.println(ref);
 			if (names.add(ref.name))
 				result.add(ref);
 		}
