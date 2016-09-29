@@ -6,6 +6,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 
+/**
+ * Tests the functionality of class {@link Sha1}.
+ */
 public final class Sha1Test {
 	
 	@Test public void testHashFunction() {

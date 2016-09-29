@@ -8,6 +8,8 @@ import java.util.zip.DataFormatException;
 /**
  * Represents a Git repository - which could be on disk or in memory or over the network, and mutable or immutable.
  * @see FileRepository
+ * @see ObjectId
+ * @see GitObject
  */
 public interface Repository extends AutoCloseable {
 	

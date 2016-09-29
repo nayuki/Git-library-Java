@@ -9,7 +9,7 @@ package io.nayuki.git;
 
 
 /**
- * A simple wrapper around a mutable byte array.
+ * A simple wrapper around a mutable byte array. Mutable structure.
  * @see BlobId
  * @see TreeObject
  */
@@ -18,8 +18,8 @@ public final class BlobObject extends GitObject {
 	/*---- Fields ----*/
 	
 	/**
-	 * The payload data. If a blob object was created from reading an on-disk repository, then this value is
-	 * not {@code null}. Likewise, when writing out a {@code BlobObject} to disk, this value must not be {@code null}.
+	 * The payload data. If a blob object was created by reading from a repository, then this value is not {@code null}.
+	 * Likewise, when writing out a {@code BlobObject} to a repository, this value must not be {@code null}.
 	 */
 	public byte[] data;
 	

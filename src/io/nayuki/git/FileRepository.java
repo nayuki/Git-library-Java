@@ -30,6 +30,9 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
 
+/**
+ * A repository based on files and directories in the file system.
+ */
 public final class FileRepository implements Repository {
 	
 	/*---- Fields ----*/

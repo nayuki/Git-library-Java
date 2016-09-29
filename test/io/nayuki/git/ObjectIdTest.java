@@ -6,6 +6,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 
+/**
+ * Tests the functionality of class {@link ObjectId}.
+ */
 public final class ObjectIdTest {
 	
 	@Test public void testHexadecimal() {
