@@ -31,7 +31,7 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
 
-public final class Repository {
+public final class Repository implements AutoCloseable {
 	
 	/*---- Fields ----*/
 	
@@ -66,6 +66,14 @@ public final class Repository {
 	public File getDirectory() {
 		return directory;
 	}
+	
+	
+	/**
+	 * Invalidates this repository object, which may close file streams and removed cached data.
+	 * This must be called when finished using a repository.
+	 * @throws IOException if an I/O exception occurred
+	 */
+	public void close() throws IOException {}
 	
 	
 	public boolean containsObject(ObjectId id) throws IOException, DataFormatException {
