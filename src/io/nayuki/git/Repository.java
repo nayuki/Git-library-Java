@@ -275,27 +275,28 @@ public final class Repository implements AutoCloseable {
 	private Collection<Reference> parsePackedRefsFile() throws IOException, DataFormatException {
 		Collection<Reference> result = new ArrayList<>();
 		File packedRefFile = new File(directory, "packed-refs");
-		if (packedRefFile.isFile()) {
-			try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(packedRefFile), StandardCharsets.UTF_8))) {
-				if (!checkPackedRefsFileHeaderLine(in.readLine()))
-					throw new DataFormatException("Invalid packed-refs file");
-				while (true) {
-					String line = in.readLine();
-					if (line == null)
-						break;
-					String[] parts = line.split(" ", 2);
-					if (parts.length == 1) {
-						if (parts[0].startsWith("^"))
-							continue;
-						else
-							throw new DataFormatException("Invalid packed-refs file");
-					}
-					if (!parts[1].startsWith("refs/"))
+		if (!packedRefFile.isFile())
+			return result;  // Empty but valid collection
+		
+		try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(packedRefFile), StandardCharsets.UTF_8))) {
+			if (!checkPackedRefsFileHeaderLine(in.readLine()))
+				throw new DataFormatException("Invalid packed-refs file");
+			while (true) {
+				String line = in.readLine();
+				if (line == null)
+					break;
+				String[] parts = line.split(" ", 2);
+				if (parts.length == 1) {
+					if (parts[0].startsWith("^"))
+						continue;
+					else
 						throw new DataFormatException("Invalid packed-refs file");
-					Reference ref = new Reference(parts[1].substring(5), new CommitId(parts[0], weakThis));
-					if (!ref.name.startsWith("tags/"))
-						result.add(ref);
 				}
+				if (!parts[1].startsWith("refs/"))
+					throw new DataFormatException("Invalid packed-refs file");
+				Reference ref = new Reference(parts[1].substring(5), new CommitId(parts[0], weakThis));
+				if (!ref.name.startsWith("tags/"))
+					result.add(ref);
 			}
 		}
 		return result;
