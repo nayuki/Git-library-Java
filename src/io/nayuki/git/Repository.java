@@ -291,12 +291,14 @@ public final class Repository implements AutoCloseable {
 						continue;
 					else
 						throw new DataFormatException("Invalid packed-refs file");
-				}
-				if (!parts[1].startsWith("refs/"))
-					throw new DataFormatException("Invalid packed-refs file");
-				Reference ref = new Reference(parts[1].substring(5), new CommitId(parts[0], weakThis));
-				if (!ref.name.startsWith("tags/"))
-					result.add(ref);
+				} else if (parts.length == 2) {
+					if (!parts[1].startsWith("refs/"))
+						throw new DataFormatException("Invalid packed-refs file");
+					Reference ref = new Reference(parts[1].substring("refs/".length()), new CommitId(parts[0], weakThis));
+					if (!ref.name.startsWith("tags/"))
+						result.add(ref);
+				} else
+					throw new AssertionError();
 			}
 		}
 		return result;
