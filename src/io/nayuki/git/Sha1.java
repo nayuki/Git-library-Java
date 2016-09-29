@@ -19,8 +19,8 @@ final class Sha1 {
 	
 	/**
 	 * Returns the 20-byte SHA-1 hash of the specified byte array.
-	 * @param b the byte array to hash
-	 * @return the 20-byte SHA-1 hash
+	 * @param b the byte array to hash (not {@code null})
+	 * @return a new 20-byte array representing the SHA-1 hash
 	 * @throws NullPointerException if the array is {@code null}
 	 */
 	public static byte[] getHash(byte[] b) {
@@ -32,10 +32,10 @@ final class Sha1 {
 	
 	/**
 	 * Returns the 20-byte SHA-1 hash of the specified byte array subrange.
-	 * @param b the byte array to hash
+	 * @param b the byte array to hash (not {@code null})
 	 * @param off the offset into the byte array
 	 * @param len the length of the subrange
-	 * @return the 20-byte SHA-1 hash
+	 * @return a new 20-byte array representing the SHA-1 hash
 	 * @throws NullPointerException if the array is {@code null}
 	 * @throws ArrayIndexOutOfBoundsException if the offset or length is out of range
 	 */
@@ -56,10 +56,10 @@ final class Sha1 {
 	
 	/* Private fields */
 	
-	private byte[] block;
-	private int blockFilled;
-	private long length;
-	private int[] state;
+	private byte[] block;     // Partially filled block before compressing
+	private int blockFilled;  // In the range [0, block.length)
+	private long length;      // Total number of bytes processed
+	private int[] state;      // Length 5 (i.e. 160 bits)
 	
 	
 	
@@ -81,7 +81,7 @@ final class Sha1 {
 	
 	/**
 	 * Appends the specified bytes to the state of this hasher.
-	 * @param b the byte array to hash
+	 * @param b the byte array to hash (not {@code null})
 	 * @throws NullPointerException if the array is {@code null}
 	 */
 	public void update(byte[] b) {
@@ -93,7 +93,7 @@ final class Sha1 {
 	
 	/**
 	 * Appends the specified subrange of bytes to the state of this hasher.
-	 * @param b the byte array to hash
+	 * @param b the byte array to hash (not {@code null})
 	 * @param off the offset into the byte array
 	 * @param len the length of the subrange
 	 * @throws NullPointerException if the array is {@code null}
@@ -130,9 +130,9 @@ final class Sha1 {
 	
 	
 	/**
-	 * Returns the current 20-byte SHA-1 hash, based on the sequences of bytes supplied to previous calls of {@code update()}.
-	 * After calling this method, it is still okay to use {@code update()} and {@code getHash()}.
-	 * @return the 20-byte SHA-1 hash of the data seen so far
+	 * Returns the SHA-1 hash of all the bytes seen so far (based on the calls to {@code update()}).
+	 * After calling this method, it is okay to continue using {@code update()} and {@code getHash()}.
+	 * @return a new 20-byte array representing the SHA-1 hash of the data seen so far
 	 */
 	public byte[] getHash() {
 		Sha1 copy = new Sha1();
@@ -157,6 +157,8 @@ final class Sha1 {
 	
 	/* Private helper methods */
 	
+	// Compresses the given blocks of message bytes into the current hasher's state.
+	// This method only updates the 'state' field, but not {block, blockFilled, length}.
 	private void compress(byte[] msg, int off, int len) {
 		if (len % block.length != 0)
 			throw new IllegalArgumentException();
@@ -201,9 +203,11 @@ final class Sha1 {
 		}
 	}
 	
+	// Round constants for compress().
 	private static final int[] K = {0x5A827999, 0x6ED9EBA1, 0x8F1BBCDC, 0xCA62C1D6};
 	
 	
+	// Performs 1 or 2 final compressions on the state, and returns the resulting state serialized as bytes.
 	private byte[] getHashDestructively() {
 		block[blockFilled] = (byte)0x80;
 		blockFilled++;
