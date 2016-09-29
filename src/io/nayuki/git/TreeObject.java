@@ -47,7 +47,7 @@ public final class TreeObject extends GitObject {
 	/**
 	 * Constructs a tree object with the data initially set to the parsed interpretation of the specified bytes.
 	 * Every object ID that the tree refers to will have its repository set to the specified repo argument.
-	 * @param data the serialized tree data to read
+	 * @param data the serialized tree data to read (not {@code null})
 	 * @throws NullPointerException if the array is {@code null}
 	 * @throws DataFormatException if malformed data was encountered during reading
 	 */
@@ -114,7 +114,7 @@ public final class TreeObject extends GitObject {
 	/**
 	 * Returns the list entry whose name matches the specified name, or {@code null} if none match.
 	 * Note that the functionality of this method dictates that the list should have no duplicate names.
-	 * @param name the name to query
+	 * @param name the name to query (not {@code null})
 	 * @return an entry with a matching name, or {@code null}
 	 */
 	public Entry getEntry(String name) {
@@ -130,7 +130,7 @@ public final class TreeObject extends GitObject {
 	
 	/**
 	 * Returns the raw byte serialization of the current state of this tree object, including a lightweight header.
-	 * @return the raw byte serialization of this object
+	 * @return the raw byte serialization of this object (not {@code null})
 	 * @throws NullPointerException if the list of entries is {@code null}
 	 */
 	public byte[] toBytes() {
@@ -151,7 +151,7 @@ public final class TreeObject extends GitObject {
 	
 	/**
 	 * Returns the hash ID of the current state of this tree object.
-	 * @return the hash ID of this tree object
+	 * @return the hash ID of this tree object (not {@code null})
 	 */
 	public TreeId getId() {
 		return new TreeId(Sha1.getHash(toBytes()));

@@ -113,7 +113,7 @@ public final class CommitObject extends GitObject {
 	/**
 	 * Constructs a commit object with the data initially set to the parsed interpretation of the specified bytes.
 	 * Every object ID that the commit refers to will have its repository set to the specified repo argument.
-	 * @param data the serialized commit data to read
+	 * @param data the serialized commit data to read (not {@code null})
 	 * @throws NullPointerException if the array is {@code null}
 	 * @throws DataFormatException if malformed data was encountered during reading
 	 */
@@ -178,7 +178,7 @@ public final class CommitObject extends GitObject {
 	
 	/**
 	 * Returns the raw byte serialization of the current state of this commit object, including a lightweight header.
-	 * @return the raw byte serialization of this object
+	 * @return the raw byte serialization of this object (not {@code null})
 	 * @throws NullPointerException if any fields are {@code null}
 	 */
 	public byte[] toBytes() {
@@ -199,7 +199,7 @@ public final class CommitObject extends GitObject {
 	
 	/**
 	 * Returns the hash ID of the current state of this commit object.
-	 * @return the hash ID of this commit object
+	 * @return the hash ID of this commit object (not {@code null})
 	 */
 	public CommitId getId() {
 		return new CommitId(Sha1.getHash(toBytes()));

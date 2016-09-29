@@ -30,14 +30,14 @@ public abstract class GitObject {
 	
 	/**
 	 * Returns the raw byte serialization of this object, including a lightweight header.
-	 * @return the raw byte serialization of this object
+	 * @return the raw byte serialization of this object (not {@code null})
 	 */
 	public abstract byte[] toBytes();
 	
 	
 	/**
 	 * Returns the hash ID of the current state of this object.
-	 * @return the hash ID of this object
+	 * @return the hash ID of this object (not {@code null})
 	 */
 	public ObjectId getId() {
 		return new RawId(Sha1.getHash(toBytes()));
