@@ -9,7 +9,7 @@ package io.nayuki.git;
 
 
 /**
- * A 160-bit (20-byte) SHA-1 hash with extra information. The object type is unknown,
+ * An immutable 160-bit (20-byte) SHA-1 hash. The object type is unknown,
  * and can be either a new type or one of the known types (commit, tree, blob, etc.)
  */
 public final class RawId extends ObjectId {

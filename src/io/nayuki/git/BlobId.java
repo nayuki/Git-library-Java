@@ -12,7 +12,7 @@ import java.util.zip.DataFormatException;
 
 
 /**
- * A 160-bit (20-byte) SHA-1 hash with extra information. The hash value should reflect a blob object.
+ * An immutable 160-bit (20-byte) SHA-1 hash, whose value should reflect a blob object.
  * @see BlobObject
  */
 public final class BlobId extends ObjectId {
