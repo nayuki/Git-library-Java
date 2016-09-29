@@ -199,12 +199,12 @@ public final class Repository {
 		Collection<Reference> result = new ArrayList<>();
 		File headsDir = new File(directory, "refs" + File.separator + "heads");
 		if (headsDir.isDirectory())
-			listReferences("heads", result);
+			listLooseReferences("heads", result);
 		File remotesDir = new File(directory, "refs" + File.separator + "remotes");
 		if (remotesDir.isDirectory()) {
 			for (File item : remotesDir.listFiles()) {
 				if (item.isDirectory())
-					listReferences("remotes/" + item.getName(), result);
+					listLooseReferences("remotes/" + item.getName(), result);
 			}
 		}
 		
@@ -254,7 +254,7 @@ public final class Repository {
 	
 	/*---- Private helper methods ----*/
 	
-	private void listReferences(String subDirName, Collection<Reference> result) throws IOException, DataFormatException {
+	private void listLooseReferences(String subDirName, Collection<Reference> result) throws IOException, DataFormatException {
 		for (File item : new File(directory, "refs" + File.separator + subDirName.replace('/', File.separatorChar)).listFiles()) {
 			if (item.isFile() && !item.getName().equals("HEAD"))
 				result.add(parseReferenceFile(subDirName, item));
