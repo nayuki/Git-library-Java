@@ -181,31 +181,34 @@ final class PackfileReader {
 			deltaOffset = -1;
 		
 		// Decompress data
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		Inflater inf = new Inflater(false);
-		try {
-			byte[] inbuf  = new byte[1024];
-			byte[] outbuf = new byte[1024];
-			while (true) {
-				int outn = inf.inflate(outbuf);
-				if (outn > 0)
-					out.write(outbuf, 0, outn);
-				else if (inf.needsInput()) {
-					int inn = raf.read(inbuf);
-					if (inn == -1)
-						throw new EOFException();
-					inf.setInput(inbuf, 0, inn);
-				} else if (inf.finished())
-					break;
-				else
-					throw new DataFormatException();
+		byte[] data;
+		{
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			Inflater inf = new Inflater(false);
+			try {
+				byte[] inbuf  = new byte[1024];
+				byte[] outbuf = new byte[1024];
+				while (true) {
+					int outn = inf.inflate(outbuf);
+					if (outn > 0)
+						out.write(outbuf, 0, outn);
+					else if (inf.needsInput()) {
+						int inn = raf.read(inbuf);
+						if (inn == -1)
+							throw new EOFException();
+						inf.setInput(inbuf, 0, inn);
+					} else if (inf.finished())
+						break;
+					else
+						throw new DataFormatException();
+				}
+			} finally {
+				inf.end();
 			}
-		} finally {
-			inf.end();
+			data = out.toByteArray();
+			if (data.length != size)
+				throw new DataFormatException("Data length mismatch");
 		}
-		byte[] data = out.toByteArray();
-		if (data.length != size)
-			throw new DataFormatException("Data length mismatch");
 		
 		// Handle delta encoding
 		if (type == 6) {
@@ -222,7 +225,7 @@ final class PackfileReader {
 			int dataLen = decodeDeltaHeaderInt(deltaIn);
 			
 			// Decode the delta format's operations
-			out = new ByteArrayOutputStream();
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			while (true) {
 				int op = deltaIn.read();
 				if (op == -1)
