@@ -60,7 +60,7 @@ public final class CommitId extends ObjectId {
 	/**
 	 * Reads the object data for this object ID from the specified repository.
 	 * @param repo the repository to read from (not {@code null})
-	 * @return the object data (not {@code null})
+	 * @return the object data, or {@code null} if not found in the repo
 	 * @throws IOException if an I/O exception occurred
 	 * @throws DataFormatException if malformed data was encountered during reading
 	 * @throws ClassCastException if an object was successfully read but its type is not a commit object

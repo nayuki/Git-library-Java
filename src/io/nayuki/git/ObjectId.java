@@ -23,8 +23,11 @@ import java.util.zip.DataFormatException;
  */
 public abstract class ObjectId implements Comparable<ObjectId> {
 	
-	/*---- Public static constants ----*/
+	/*---- Public constants ----*/
 	
+	/**
+	 * The number of bytes in a SHA-1 hash, which is defined to be 20.
+	 */
 	public static final int NUM_BYTES = 20;
 	
 	
@@ -43,6 +46,8 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	
 	
 	/*---- Constructors ----*/
+	
+	// Note: Constructors are package-private to prevent foreign subclasses, which could break immutability.
 	
 	/**
 	 * Constructs an object ID from the specified hexadecimal string.
@@ -88,7 +93,7 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	}
 	
 	
-	/* Helper definitions for constructors */
+	/* Private helper methods and constants for constructors */
 	
 	private static byte[] hexHashToBytes(String str) {
 		if (str == null)
@@ -142,8 +147,10 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	
 	/**
 	 * Reads the object data for this object ID from the specified repository.
+	 * Note that subclasses of {@code ObjectId} will override this method
+	 * and specify a subclass of {@code GitObject} as the return type, for convenience.
 	 * @param repo the repository to read from (not {@code null})
-	 * @return the object data (not {@code null})
+	 * @return the object data, or {@code null} if not found in the repo
 	 * @throws IOException if an I/O exception occurred
 	 * @throws DataFormatException if malformed data was encountered during reading
 	 */
