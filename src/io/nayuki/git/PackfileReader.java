@@ -57,37 +57,19 @@ final class PackfileReader {
 	
 	
 	public byte[] readRawObject(ObjectId id) throws IOException, DataFormatException {
-		Object[] pair = readObjectHeaderless(readDataOffset(id));
-		int type = (Integer)pair[0];
-		String typeStr = TYPE_NAMES[type];
-		if (typeStr == null)
-			throw new DataFormatException("Unknown object type: " + type);
-		return GitObject.addHeader(typeStr, (byte[])pair[1]);
+		Object[] pair = readObjectHeaderless(id);
+		return GitObject.addHeader((String)pair[0], (byte[])pair[1]);
 	}
 	
 	
 	public GitObject readObject(ObjectId id) throws IOException, DataFormatException {
-		// Read data
-		Object[] pair = readObjectHeaderless(readDataOffset(id));
-		int typeIndex = (Integer)pair[0];
+		Object[] pair = readObjectHeaderless(id);
 		byte[] bytes = (byte[])pair[1];
-		
-		// Check hash
-		String typeName = TYPE_NAMES[typeIndex];
-		if (typeName == null)
-			throw new DataFormatException("Unknown object type: " + typeIndex);
-		Sha1 hasher = new Sha1();
-		hasher.update((TYPE_NAMES[typeIndex] + " " + bytes.length + "\0").getBytes(StandardCharsets.US_ASCII));
-		hasher.update(bytes);
-		if (!Arrays.equals(hasher.getHash(), id.getBytes()))
-			throw new DataFormatException("Hash of data mismatches object ID");
-		
-		// Parse bytes into object
-		switch (typeName) {
+		switch ((String)pair[0]) {
 			case "blob"  :  return new BlobObject  (bytes);
 			case "tree"  :  return new TreeObject  (bytes);
 			case "commit":  return new CommitObject(bytes);
-			default:  throw new DataFormatException("Unknown object type: " + typeIndex);
+			default:  throw new AssertionError();
 		}
 	}
 	
@@ -150,10 +132,28 @@ final class PackfileReader {
 	}
 	
 	
-	private Object[] readObjectHeaderless(long byteOffset) throws IOException, DataFormatException {
+	private Object[] readObjectHeaderless(ObjectId id) throws IOException, DataFormatException {
+		// Read byte data
+		int typeIndex;
+		byte[] bytes;
 		try (RandomAccessFile raf = new RandomAccessFile(packFile, "r")) {
-			return readObjectHeaderless(raf, byteOffset);
+			Object[] temp = readObjectHeaderless(raf, readDataOffset(id));
+			typeIndex = (Integer)temp[0];
+			bytes = (byte[])temp[1];
 		}
+		if (typeIndex >>> 3 != 0)
+			throw new AssertionError();
+		
+		// Check hash
+		String typeName = TYPE_NAMES[typeIndex];
+		if (typeName == null)
+			throw new DataFormatException("Unknown object type: " + typeIndex);
+		Sha1 hasher = new Sha1();
+		hasher.update((typeName + " " + bytes.length + "\0").getBytes(StandardCharsets.US_ASCII));
+		hasher.update(bytes);
+		if (!Arrays.equals(hasher.getHash(), id.getBytes()))
+			throw new DataFormatException("Hash of data mismatches object ID");
+		return new Object[]{typeName, bytes};
 	}
 	
 	
