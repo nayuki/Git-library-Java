@@ -262,7 +262,7 @@ final class PackfileReader {
 	/* Byte-level integer decoding functions */
 	
 	// Reads one or more bytes from the input and returns (size << 3) | type, where size is uint61 and type is uint3.
-	private static long decodeTypeAndSize(DataInput in) throws IOException, DataFormatException {
+	static long decodeTypeAndSize(DataInput in) throws IOException, DataFormatException {
 		int b = in.readUnsignedByte();
 		int type = (b >>> 4) & 7;
 		long size = b & 0xF;
@@ -277,7 +277,7 @@ final class PackfileReader {
 	
 	
 	// Returns a uint64 value.
-	private static long decodeOffsetDelta(DataInput in) throws IOException, DataFormatException {
+	static long decodeOffsetDelta(DataInput in) throws IOException, DataFormatException {
 		long result = 0;
 		while (true) {  // Big endian
 			int b = in.readUnsignedByte();
@@ -294,7 +294,7 @@ final class PackfileReader {
 	
 	
 	// Returns a uint64 value.
-	private static long decodeDeltaHeaderInt(DataInput in) throws IOException, DataFormatException {
+	static long decodeDeltaHeaderInt(DataInput in) throws IOException, DataFormatException {
 		long result = 0;
 		for (int shift = 0; ; shift += 7) {  // Little endian
 			int b = in.readUnsignedByte();
