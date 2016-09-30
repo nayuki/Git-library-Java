@@ -55,8 +55,9 @@ public final class FileRepository implements Repository {
 	 * @param dir the repository directory (not {@code null})
 	 * @throws NullPointerException if the directory is null
 	 * @throws IllegalArgumentException if the directory does not contain a valid existing Git repository
+	 * @throws IOException if an I/O exception occurred while reading the repository
 	 */
-	public FileRepository(File dir) {
+	public FileRepository(File dir) throws IOException {
 		if (dir == null)
 			throw new NullPointerException();
 		if (!dir.isDirectory())
