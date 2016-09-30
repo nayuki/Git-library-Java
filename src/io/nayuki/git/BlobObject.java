@@ -37,13 +37,13 @@ public final class BlobObject extends GitObject {
 	
 	/**
 	 * Constructs a blob object with the data initially set to a clone of the specified array.
-	 * @param data the byte array to clone (not {@code null})
+	 * @param b the byte array to clone (not {@code null})
 	 * @throws NullPointerException if the array is {@code null}
 	 */
-	public BlobObject(byte[] data) {
-		if (data == null)
+	public BlobObject(byte[] b) {
+		if (b == null)
 			throw new NullPointerException();
-		this.data = data.clone();
+		data = b.clone();
 	}
 	
 	
@@ -53,10 +53,10 @@ public final class BlobObject extends GitObject {
 	/**
 	 * Returns the raw byte serialization of the current state of this blob object, including a lightweight header.
 	 * @return the raw byte serialization of this object (not {@code null})
+	 * @throws IllegalStateException if the data field is {@code null}
 	 */
 	public byte[] toBytes() {
-		if (data == null)
-			throw new NullPointerException();
+		checkState();
 		return addHeader("blob", data);
 	}
 	
@@ -76,6 +76,12 @@ public final class BlobObject extends GitObject {
 	 */
 	public String toString() {
 		return String.format("BlobObject(length=%d)", data.length);
+	}
+	
+	
+	private void checkState() {
+		if (data == null)
+			throw new IllegalStateException("Data field is null");
 	}
 	
 }

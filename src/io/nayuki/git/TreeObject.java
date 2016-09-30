@@ -131,11 +131,10 @@ public final class TreeObject extends GitObject {
 	/**
 	 * Returns the raw byte serialization of the current state of this tree object, including a lightweight header.
 	 * @return the raw byte serialization of this object (not {@code null})
-	 * @throws NullPointerException if the list of entries is {@code null}
+	 * @throws IllegalStateException if the list of entries or any entry is {@code null}
 	 */
 	public byte[] toBytes() {
-		if (entries == null)
-			throw new NullPointerException();
+		checkState();
 		try {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			for (Entry entry : entries) {
@@ -164,6 +163,16 @@ public final class TreeObject extends GitObject {
 	 */
 	public String toString() {
 		return String.format("TreeObject(entries=%d)", entries.size());
+	}
+	
+	
+	private void checkState() {
+		if (entries == null)
+			throw new IllegalStateException("List is null");
+		for (Entry entry : entries) {
+			if (entry == null)
+				throw new IllegalStateException("List element is null");
+		}
 	}
 	
 	

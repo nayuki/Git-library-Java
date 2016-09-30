@@ -179,13 +179,10 @@ public final class CommitObject extends GitObject {
 	/**
 	 * Returns the raw byte serialization of the current state of this commit object, including a lightweight header.
 	 * @return the raw byte serialization of this object (not {@code null})
-	 * @throws NullPointerException if any fields are {@code null}
+	 * @throws IllegalStateException if any fields are {@code null}
 	 */
 	public byte[] toBytes() {
-		if (tree == null || parents == null || message == null ||
-				authorName == null || authorEmail == null || committerName == null || committerEmail == null)
-			throw new NullPointerException();
-		
+		checkState();
 		StringBuilder sb = new StringBuilder();
 		sb.append("tree ").append(tree.hexString).append("\n");
 		for (ObjectId parent : parents)
@@ -212,6 +209,28 @@ public final class CommitObject extends GitObject {
 	 */
 	public String toString() {
 		return String.format("CommitObject(tree=%s)", tree.hexString);
+	}
+	
+	
+	private void checkState() {
+		if (tree == null)
+			throw new IllegalStateException("Tree hash is null");
+		if (parents == null)
+			throw new IllegalStateException("List of parents is null");
+		for (CommitId id : parents) {
+			if (id == null)
+				throw new IllegalStateException("List element is null");
+		}
+		if (message == null)
+			throw new IllegalStateException("Commit message is null");
+		if (authorName == null)
+			throw new IllegalStateException("Author name is null");
+		if (authorEmail == null)
+			throw new IllegalStateException("Author email is null");
+		if (committerName == null)
+			throw new IllegalStateException("Committer name is null");
+		if (committerEmail == null)
+			throw new IllegalStateException("Committer email is null");
 	}
 	
 	
