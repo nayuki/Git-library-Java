@@ -64,6 +64,8 @@ public final class BlobObject extends GitObject {
 	/**
 	 * Returns the hash ID of the current state of this blob object.
 	 * @return the hash ID of this blob object (not {@code null})
+	 * @throws IllegalStateException if this object has invalid field values
+	 * that prevent it from being serialized (see {@link #toBytes()})
 	 */
 	public BlobId getId() {
 		return new BlobId(Sha1.getHash(toBytes()));

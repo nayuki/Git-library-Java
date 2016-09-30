@@ -9,6 +9,7 @@ package io.nayuki.git;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -179,7 +180,8 @@ public final class CommitObject extends GitObject {
 	/**
 	 * Returns the raw byte serialization of the current state of this commit object, including a lightweight header.
 	 * @return the raw byte serialization of this object (not {@code null})
-	 * @throws IllegalStateException if any fields are {@code null}
+	 * @throws IllegalStateException if any field is {@code null}, the list of parents has {@code null} elements,
+	 * the list of parents contains duplicates, or some field contains invalid characters
 	 */
 	public byte[] toBytes() {
 		checkState();
@@ -197,6 +199,8 @@ public final class CommitObject extends GitObject {
 	/**
 	 * Returns the hash ID of the current state of this commit object.
 	 * @return the hash ID of this commit object (not {@code null})
+	 * @throws IllegalStateException if this object has invalid field values
+	 * that prevent it from being serialized (see {@link #toBytes()})
 	 */
 	public CommitId getId() {
 		return new CommitId(Sha1.getHash(toBytes()));
@@ -221,16 +225,27 @@ public final class CommitObject extends GitObject {
 			if (id == null)
 				throw new IllegalStateException("List element is null");
 		}
+		if (new HashSet<>(parents).size() != parents.size())
+			throw new IllegalStateException("List of parents contains duplicates");
 		if (message == null)
 			throw new IllegalStateException("Commit message is null");
+		
 		if (authorName == null)
 			throw new IllegalStateException("Author name is null");
+		if (authorName.indexOf('\n') != -1)
+			throw new IllegalStateException("Author name contains illegal characters");
 		if (authorEmail == null)
 			throw new IllegalStateException("Author email is null");
+		if (authorEmail.indexOf('\n') != -1)
+			throw new IllegalStateException("Author email contains illegal characters");
 		if (committerName == null)
 			throw new IllegalStateException("Committer name is null");
+		if (committerName.indexOf('\n') != -1)
+			throw new IllegalStateException("Committer name contains illegal characters");
 		if (committerEmail == null)
 			throw new IllegalStateException("Committer email is null");
+		if (committerEmail.indexOf('\n') != -1)
+			throw new IllegalStateException("Committer email contains illegal characters");
 	}
 	
 	

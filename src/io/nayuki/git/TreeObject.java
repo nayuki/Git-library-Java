@@ -12,7 +12,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.zip.DataFormatException;
 
 
@@ -131,7 +133,8 @@ public final class TreeObject extends GitObject {
 	/**
 	 * Returns the raw byte serialization of the current state of this tree object, including a lightweight header.
 	 * @return the raw byte serialization of this object (not {@code null})
-	 * @throws IllegalStateException if the list of entries or any entry is {@code null}
+	 * @throws IllegalStateException if the list of entries or any entry is {@code null},
+	 * or the same name occurs in more than one tree entry
 	 */
 	public byte[] toBytes() {
 		checkState();
@@ -151,6 +154,8 @@ public final class TreeObject extends GitObject {
 	/**
 	 * Returns the hash ID of the current state of this tree object.
 	 * @return the hash ID of this tree object (not {@code null})
+	 * @throws IllegalStateException if this object has invalid field values
+	 * that prevent it from being serialized (see {@link #toBytes()})
 	 */
 	public TreeId getId() {
 		return new TreeId(Sha1.getHash(toBytes()));
@@ -169,9 +174,12 @@ public final class TreeObject extends GitObject {
 	private void checkState() {
 		if (entries == null)
 			throw new IllegalStateException("List is null");
+		Set<String> names = new HashSet<>();
 		for (Entry entry : entries) {
 			if (entry == null)
 				throw new IllegalStateException("List element is null");
+			if (!names.add(entry.name))
+				throw new IllegalStateException("List contains duplicate name");
 		}
 	}
 	
@@ -221,6 +229,10 @@ public final class TreeObject extends GitObject {
 		
 		
 		
+		/**
+		 * Returns a string representation of this tree entry. The format is subject to change.
+		 * @return a string representation of this tree entry
+		 */
 		public String toString() {
 			return String.format("TreeEntry(mode=%s, name=\"%s\", id=%s)", Integer.toString(type.mode, 8), name, id.hexString);
 		}
