@@ -167,14 +167,14 @@ final class PackfileReader {
 		raf.seek(byteOffset);
 		
 		// Read decompressed size and type
-		int typeAndSize = decodeTypeAndSize(raf);
-		int type = typeAndSize & 7;  // 3-bit unsigned
+		long typeAndSize = decodeTypeAndSize(raf);
+		int type = (int)typeAndSize & 7;  // 3-bit unsigned
 		if (type == 0 || type == 5 || type == 7)
 			throw new DataFormatException("Unknown object type: " + type);
-		int size = typeAndSize >>> 3;
+		long size = typeAndSize >>> 3;
 		
 		// Read delta offset
-		int deltaOffset;
+		long deltaOffset;
 		if (type == 6)
 			deltaOffset = decodeOffsetDelta(raf);
 		else
@@ -219,10 +219,10 @@ final class PackfileReader {
 			
 			// Decode delta header
 			DataInputStream deltaIn = new DataInputStream(new ByteArrayInputStream(data));
-			int baseLen = decodeDeltaHeaderInt(deltaIn);
+			long baseLen = decodeDeltaHeaderInt(deltaIn);
 			if (baseLen != base.length)
 				throw new DataFormatException("Base data length mismatch");
-			int dataLen = decodeDeltaHeaderInt(deltaIn);
+			long dataLen = decodeDeltaHeaderInt(deltaIn);
 			
 			// Decode the delta format's operations
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -261,58 +261,50 @@ final class PackfileReader {
 	
 	/* Byte-level integer decoding functions */
 	
-	private static int decodeTypeAndSize(DataInput in) throws IOException, DataFormatException {
+	// Reads one or more bytes from the input and returns (size << 3) | type, where size is uint61 and type is uint3.
+	private static long decodeTypeAndSize(DataInput in) throws IOException, DataFormatException {
 		int b = in.readUnsignedByte();
 		int type = (b >>> 4) & 7;
 		long size = b & 0xF;
-		
-		for (int i = 0; (b & 0x80) != 0; i++) {
-			if (i >= 6)
-				throw new DataFormatException("Variable-length integer too long");
+		for (int shift = 4; (b & 0x80) != 0; shift += 7) {  // Little endian
 			b = in.readUnsignedByte();
-			size |= (b & 0x7FL) << (i * 7 + 4);
+			if ((b & 0x7F) >>> Math.max(Math.min(61 - shift, 7), 0) != 0)  // Overflow
+				throw new DataFormatException("Variable-length integer too large");
+			size |= (b & 0x7FL) << shift;
 		}
-		
-		long result = size << 3 | type;
-		if ((int)result != result)
-			throw new DataFormatException("Variable-length integer too large");
-		return (int)result;
+		return size << 3 | type;
 	}
 	
 	
-	private static int decodeOffsetDelta(DataInput in) throws IOException, DataFormatException {
+	// Returns a uint64 value.
+	private static long decodeOffsetDelta(DataInput in) throws IOException, DataFormatException {
 		long result = 0;
-		for (int i = 0; ; i++) {
-			if (i >= 5)
-				throw new DataFormatException("Variable-length integer too long");
+		while (true) {  // Big endian
 			int b = in.readUnsignedByte();
 			result |= b & 0x7F;
 			if ((b & 0x80) == 0)
 				break;
+			if ((result + 1) >>> 57 != 0)  // Overflow
+				throw new DataFormatException("Variable-length integer too large");
 			result++;
 			result <<= 7;
 		}
-		
-		if ((int)result != result)
-			throw new DataFormatException("Variable-length integer too large");
-		return (int)result;
+		return result;
 	}
 	
 	
-	private static int decodeDeltaHeaderInt(DataInput in) throws IOException, DataFormatException {
+	// Returns a uint64 value.
+	private static long decodeDeltaHeaderInt(DataInput in) throws IOException, DataFormatException {
 		long result = 0;
-		for (int i = 0; ; i++) {
-			if (i >= 6)
-				throw new DataFormatException("Variable-length integer too long");
+		for (int shift = 0; ; shift += 7) {  // Little endian
 			int b = in.readUnsignedByte();
-			result |= (b & 0x7FL) << (i * 7);
+			if ((b & 0x7F) >>> Math.max(Math.min(64 - shift, 7), 0) != 0)  // Overflow
+				throw new DataFormatException("Variable-length integer too large");
+			result |= (b & 0x7FL) << shift;
 			if ((b & 0x80) == 0)
 				break;
 		}
-		
-		if ((int)result != result)
-			throw new DataFormatException("Variable-length integer too large");
-		return (int)result;
+		return result;
 	}
 	
 	
