@@ -1,3 +1,10 @@
+/* 
+ * Git library
+ * Copyright (c) Project Nayuki
+ * 
+ * https://www.nayuki.io/
+ */
+
 package io.nayuki.git;
 
 import java.io.IOException;
