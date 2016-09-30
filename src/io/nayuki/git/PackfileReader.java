@@ -133,6 +133,8 @@ final class PackfileReader {
 	}
 	
 	
+	// Reads the object data, checks the data hash against the argument,
+	// and returns (String typeName, byte[] bytes). The type name is not null.
 	private Object[] readObjectHeaderless(ObjectId id) throws IOException, DataFormatException {
 		// Read byte data
 		int typeIndex;
@@ -158,6 +160,7 @@ final class PackfileReader {
 	}
 	
 	
+	// Reads the raw object data, and returns a pair (uint3 typeIndex, byte[] bytes).
 	private Object[] readObjectHeaderless(RandomAccessFile raf, long byteOffset) throws IOException, DataFormatException {
 		if (byteOffset < 0)
 			throw new IllegalArgumentException();
@@ -206,7 +209,7 @@ final class PackfileReader {
 		
 		// Handle delta encoding
 		if (type == 6) {
-			// Recurse
+			// Recurse on delta base
 			Object[] temp = readObjectHeaderless(raf, byteOffset - deltaOffset);
 			type = (Integer)temp[0];
 			byte[] base = (byte[])temp[1];
@@ -218,7 +221,7 @@ final class PackfileReader {
 				throw new DataFormatException("Base data length mismatch");
 			int dataLen = decodeDeltaHeaderInt(deltaIn);
 			
-			// Decode delta format
+			// Decode the delta format's operations
 			out = new ByteArrayOutputStream();
 			while (true) {
 				int op = deltaIn.read();
@@ -249,7 +252,6 @@ final class PackfileReader {
 				throw new DataFormatException("Data length mismatch");
 		}
 		
-		// Done
 		return new Object[]{type, data};
 	}
 	
