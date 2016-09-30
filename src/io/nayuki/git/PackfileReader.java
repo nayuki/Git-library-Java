@@ -11,7 +11,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
@@ -154,11 +153,11 @@ final class PackfileReader {
 	private Object[] readObjectHeaderless(long byteOffset) throws IOException, DataFormatException {
 		if (byteOffset < 0)
 			throw new IllegalArgumentException();
-		try (InputStream in = new FileInputStream(packFile)) {
-			skipFully(in, byteOffset);
+		try (RandomAccessFile raf = new RandomAccessFile(packFile, "r")) {
+			raf.seek(byteOffset);
 			
 			// Read decompressed size and type
-			int typeAndSize = decodeTypeAndSize(in);
+			int typeAndSize = decodeTypeAndSize(raf);
 			int type = typeAndSize & 7;  // 3-bit unsigned
 			if (type == 0 || type == 5 || type == 7)
 				throw new DataFormatException("Unknown object type: " + type);
@@ -167,7 +166,7 @@ final class PackfileReader {
 			// Read delta offset
 			int deltaOffset;
 			if (type == 6)
-				deltaOffset = decodeOffsetDelta(in);
+				deltaOffset = decodeOffsetDelta(raf);
 			else
 				deltaOffset = -1;
 			
@@ -182,7 +181,7 @@ final class PackfileReader {
 					if (outn > 0)
 						out.write(outbuf, 0, outn);
 					else if (inf.needsInput()) {
-						int inn = in.read(inbuf);
+						int inn = raf.read(inbuf);
 						if (inn == -1)
 							throw new EOFException();
 						inf.setInput(inbuf, 0, inn);
@@ -253,15 +252,15 @@ final class PackfileReader {
 	
 	/* Byte-level integer decoding functions */
 	
-	private static int decodeTypeAndSize(InputStream in) throws IOException, DataFormatException {
-		int b = readUnsignedNoEof(in);
+	private static int decodeTypeAndSize(RandomAccessFile in) throws IOException, DataFormatException {
+		int b = in.readUnsignedByte();
 		int type = (b >>> 4) & 7;
 		long size = b & 0xF;
 		
 		for (int i = 0; (b & 0x80) != 0; i++) {
 			if (i >= 6)
 				throw new DataFormatException("Variable-length integer too long");
-			b = readUnsignedNoEof(in);
+			b = in.readUnsignedByte();
 			size |= (b & 0x7FL) << (i * 7 + 4);
 		}
 		
@@ -272,12 +271,12 @@ final class PackfileReader {
 	}
 	
 	
-	private static int decodeOffsetDelta(InputStream in) throws IOException, DataFormatException {
+	private static int decodeOffsetDelta(RandomAccessFile in) throws IOException, DataFormatException {
 		long result = 0;
 		for (int i = 0; ; i++) {
 			if (i >= 5)
 				throw new DataFormatException("Variable-length integer too long");
-			int b = readUnsignedNoEof(in);
+			int b = in.readUnsignedByte();
 			result |= b & 0x7F;
 			if ((b & 0x80) == 0)
 				break;
@@ -315,20 +314,6 @@ final class PackfileReader {
 		if (b == -1)
 			throw new EOFException();
 		return b & 0xFF;
-	}
-	
-	
-	// Skips the given number of bytes in the given input stream, or throws EOFException
-	// if the end of stream is reached before that number of bytes was skipped.
-	private static void skipFully(InputStream in, long skip) throws IOException {
-		if (skip < 0)
-			throw new IllegalArgumentException();
-		while (skip > 0) {
-			long n = in.skip(skip);
-			if (n <= 0)
-				throw new EOFException();
-			skip -= n;
-		}
 	}
 	
 	
