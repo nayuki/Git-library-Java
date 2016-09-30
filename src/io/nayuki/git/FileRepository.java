@@ -86,7 +86,7 @@ public final class FileRepository implements Repository {
 	}
 	
 	
-	public byte[] readRawObject(ObjectId id) throws IOException, DataFormatException {
+	private byte[] readRawObject(ObjectId id) throws IOException, DataFormatException {
 		File file = getLooseObjectFile(id);
 		byte[] result = null;
 		if (file.isFile()) {
@@ -169,7 +169,7 @@ public final class FileRepository implements Repository {
 	}
 	
 	
-	public void writeRawObject(byte[] obj) throws IOException {
+	private void writeRawObject(byte[] obj) throws IOException {
 		File file = getLooseObjectFile(new RawId(Sha1.getHash(obj)));
 		if (file.isFile())
 			return;  // Object already exists in the loose objects database; no work to do

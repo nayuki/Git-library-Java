@@ -283,7 +283,7 @@ final class PackfileReader {
 	
 	// Reads and returns the next unsigned byte (range 0 to 255) from the input stream,
 	// or throws an exception if the end of the stream is reached.
-	public static int readUnsignedNoEof(InputStream in) throws IOException {
+	private static int readUnsignedNoEof(InputStream in) throws IOException {
 		int b = in.read();
 		if (b == -1)
 			throw new EOFException();
@@ -293,7 +293,7 @@ final class PackfileReader {
 	
 	// Skips the given number of bytes in the given input stream, or throws EOFException
 	// if the end of stream is reached before that number of bytes was skipped.
-	public static void skipFully(InputStream in, long skip) throws IOException {
+	private static void skipFully(InputStream in, long skip) throws IOException {
 		if (skip < 0)
 			throw new IllegalArgumentException();
 		while (skip > 0) {
