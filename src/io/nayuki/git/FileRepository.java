@@ -50,7 +50,6 @@ public final class FileRepository implements Repository {
 			throw new IllegalArgumentException("Repository directory does not exist");
 		if (!new File(dir, "config").isFile() || !new File(dir, "objects").isDirectory())
 			throw new IllegalArgumentException("Invalid repository format");
-		
 		directory = dir;
 	}
 	
@@ -244,8 +243,8 @@ public final class FileRepository implements Repository {
 		Reference.checkName(name);
 		if (directory == null)
 			throw new IllegalStateException("Repository already closed");
-		File looseRefFile = new File(new File(directory, "refs"), name);
 		
+		File looseRefFile = new File(new File(directory, "refs"), name);
 		if (looseRefFile.isFile())
 			return parseReferenceFile(name.substring(0, name.lastIndexOf('/')), looseRefFile);
 		else {
@@ -263,8 +262,8 @@ public final class FileRepository implements Repository {
 			throw new NullPointerException();
 		if (directory == null)
 			throw new IllegalStateException("Repository already closed");
-		File looseRefFile = new File(new File(directory, "refs"), ref.name);
 		
+		File looseRefFile = new File(new File(directory, "refs"), ref.name);
 		looseRefFile.getParentFile().mkdirs();
 		boolean success = false;
 		try (Writer out = new OutputStreamWriter(new FileOutputStream(looseRefFile), StandardCharsets.US_ASCII)) {

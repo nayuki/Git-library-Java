@@ -131,7 +131,6 @@ final class PackfileReader {
 			// Read the data packfile offset of the object
 			indexRaf.seek(8 + 256 * 4 + totalObjects * ObjectId.NUM_BYTES + totalObjects * 4 + objectOffset * 4);
 			return (long)indexRaf.readInt();
-			
 		}
 	}
 	
