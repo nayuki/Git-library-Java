@@ -37,7 +37,7 @@ public final class FileRepository implements Repository {
 	
 	/*---- Fields ----*/
 	
-	private final File directory;
+	private File directory;
 	
 	
 	
@@ -72,10 +72,14 @@ public final class FileRepository implements Repository {
 	 * This must be called when finished using a repository.
 	 * @throws IOException if an I/O exception occurred
 	 */
-	public void close() throws IOException {}
+	public void close() throws IOException {
+		directory = null;
+	}
 	
 	
 	public boolean containsObject(ObjectId id) throws IOException, DataFormatException {
+		if (directory == null)
+			throw new IllegalStateException("Repository already closed");
 		if (getLooseObjectFile(id).isFile())
 			return true;
 		for (PackfileReader pfr : listPackfiles()) {
@@ -119,6 +123,9 @@ public final class FileRepository implements Repository {
 	
 	
 	public GitObject readObject(ObjectId id) throws IOException, DataFormatException {
+		if (directory == null)
+			throw new IllegalStateException("Repository already closed");
+		
 		if (getLooseObjectFile(id).isFile()) {
 			// Read object bytes and extract header
 			byte[] bytes = readRawObject(id);
@@ -165,6 +172,8 @@ public final class FileRepository implements Repository {
 	
 	
 	public void writeObject(GitObject obj) throws IOException {
+		if (directory == null)
+			throw new IllegalStateException("Repository already closed");
 		writeRawObject(obj.toBytes());
 	}
 	
@@ -202,6 +211,9 @@ public final class FileRepository implements Repository {
 	
 	
 	public Collection<Reference> listReferences() throws IOException, DataFormatException {
+		if (directory == null)
+			throw new IllegalStateException("Repository already closed");
+		
 		// Scan loose ref files
 		Collection<Reference> result = new ArrayList<>();
 		File headsDir = new File(directory, "refs" + File.separator + "heads");
@@ -230,7 +242,10 @@ public final class FileRepository implements Repository {
 	
 	public Reference readReference(String name) throws IOException, DataFormatException {
 		Reference.checkName(name);
+		if (directory == null)
+			throw new IllegalStateException("Repository already closed");
 		File looseRefFile = new File(directory, "refs" + File.separator + name);
+		
 		if (looseRefFile.isFile())
 			return parseReferenceFile(name.substring(0, name.lastIndexOf('/')), looseRefFile);
 		else {
@@ -246,7 +261,10 @@ public final class FileRepository implements Repository {
 	public void writeReference(Reference ref) throws IOException {
 		if (ref.target == null)
 			throw new NullPointerException();
+		if (directory == null)
+			throw new IllegalStateException("Repository already closed");
 		File looseRefFile = new File(directory, "refs" + File.separator + ref.name);
+		
 		looseRefFile.getParentFile().mkdirs();
 		boolean success = false;
 		try (Writer out = new OutputStreamWriter(new FileOutputStream(looseRefFile), StandardCharsets.US_ASCII)) {
