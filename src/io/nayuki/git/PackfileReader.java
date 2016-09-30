@@ -131,8 +131,14 @@ final class PackfileReader {
 			}
 			
 			// Read the data packfile offset of the object
-			raf.seek(HEADER_LEN + FANOUT_LEN + totalObjects * (ObjectId.NUM_BYTES + 4) + objectOffset * 4);
-			return (long)raf.readInt();
+			int offsetTablesStart = HEADER_LEN + FANOUT_LEN + totalObjects * (ObjectId.NUM_BYTES + 4);
+			raf.seek(offsetTablesStart + objectOffset * 4);
+			long result = raf.readInt();
+			if (result < 0) {  // Most significant bit is set; do more processing
+				raf.seek(offsetTablesStart + totalObjects * 4 + (result & 0x7FFFFFFF) * 8);
+				result = raf.readLong();
+			}
+			return result;
 		}
 	}
 	
