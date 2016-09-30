@@ -12,16 +12,23 @@ import java.util.regex.Pattern;
 
 
 /**
- * A name that refers to a commit ID. Partially mutable structure.
+ * A name that maps to a commit ID. Partially mutable structure.
+ * @see Repository
+ * @see CommitId
  */
 public final class Reference {
 	
 	/*---- Fields ----*/
 	
-	/** The name of the reference, such as "master". Immutable and not {@code null}. */
+	/**
+	 * The formal name of the reference, such as "heads/master". Immutable and not {@code null}.
+	 */
 	public final String name;
 	
-	/** The commit hash that this reference points to. Can be {@code null}. */
+	/**
+	 * The commit hash that this reference points to. Can be {@code null} temporarily, but functions
+	 * that consume a reference object will generally expect the target to be non-{@code null}.
+	 */
 	public CommitId target;
 	
 	
@@ -29,8 +36,8 @@ public final class Reference {
 	/*---- Constructors ----*/
 	
 	/**
-	 * Constructs a reference with the specified name and a {@code null} hash.
-	 * @param name the name of the reference
+	 * Constructs a reference with the specified name and a {@code null} commit hash.
+	 * @param name the name of the reference (not {@code null})
 	 * @throws NullPointerException if the name is {@code null}
 	 * @throws IllegalArgumentException if the reference name is invalid
 	 */
@@ -60,8 +67,8 @@ public final class Reference {
 	 *   <li>remotes/what</li>
 	 *   <li>tags/subdir/onetwo</li>
 	 * </ul>
-	 * @param name the name of the reference
-	 * @param target the hash of the target
+	 * @param name the name of the reference (not {@code null})
+	 * @param target the hash of the target (can be {@code null})
 	 * @throws NullPointerException if the name is {@code null}
 	 * @throws IllegalArgumentException if the reference name is invalid
 	 */

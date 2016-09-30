@@ -32,17 +32,30 @@ import java.util.zip.InflaterOutputStream;
 
 /**
  * A repository based on files and directories in the file system.
+ * @see ObjectId
+ * @see GitObject
+ * @see Reference
  */
 public final class FileRepository implements Repository {
 	
 	/*---- Fields ----*/
 	
+	// Initially not null, but becomes null after close() is called.
 	private File directory;
 	
 	
 	
 	/*---- Constructors ----*/
 	
+	/**
+	 * Constructs a repository object based on the specified directory path.
+	 * <p>The directory must exist and already be initialized as a Git repository.
+	 * The directory must be either a bare repository or the repository subdirectory (".git") of a particular working tree;
+	 * in particular a working tree directory will not be searched to find where the repository is actually located.</p>
+	 * @param dir the repository directory (not {@code null})
+	 * @throws NullPointerException if the directory is null
+	 * @throws IllegalArgumentException if the directory does not contain a valid existing Git repository
+	 */
 	public FileRepository(File dir) {
 		if (dir == null)
 			throw new NullPointerException();
@@ -57,14 +70,21 @@ public final class FileRepository implements Repository {
 	
 	/*---- Methods ----*/
 	
+	/**
+	 * Returns the directory associated with this repository object,
+	 * or {@code null} if and only if the repository has been closed.
+	 * @return the repository's directory or {@code null}
+	 */
 	public File getDirectory() {
 		return directory;
 	}
 	
 	
 	/**
-	 * Invalidates this repository object, which may close file streams and removed cached data.
-	 * This must be called when finished using a repository.
+	 * Disposes any resources associated with this repository object and invalidates this object.
+	 * This method must be called when finished using a repository. This has no effect if called more than once.
+	 * <p>The method may close file streams and removed cached data. It is illegal
+	 * to use fields or call methods on this repository object after closing.</p>
 	 * @throws IOException if an I/O exception occurred
 	 */
 	public void close() throws IOException {
@@ -72,6 +92,15 @@ public final class FileRepository implements Repository {
 	}
 	
 	
+	/**
+	 * Tests whether this repository contains an object with the specified hash.
+	 * @param id the hash of the object (not {@code null})
+	 * @return {@code true} if the repo has at least one copy of the object, {@code false} if it has none
+	 * @throws NullPointerException if the ID is {@code null}
+	 * @throws IllegalStateException if this repository is already closed
+	 * @throws IOException if an I/O exception occurred while testing for the object
+	 * @throws DataFormatException if malformed data was encountered while testing for the object
+	 */
 	public boolean containsObject(ObjectId id) throws IOException, DataFormatException {
 		if (directory == null)
 			throw new IllegalStateException("Repository already closed");
@@ -85,19 +114,20 @@ public final class FileRepository implements Repository {
 	}
 	
 	
+	// Reads the object in the repository with the given hash, checks the hash, and returns the byte array.
+	// This does not check whether the object has a valid header or data format.
 	private byte[] readRawObject(ObjectId id) throws IOException, DataFormatException {
+		// Try to read the object data bytes from loose file or pack files
 		byte[] result = null;
 		File looseFile = getLooseObjectFile(id);
-		if (looseFile.isFile()) {
-			// Read from loose object store
+		if (looseFile.isFile()) {  // Read from loose object store
 			ByteArrayOutputStream bout = new ByteArrayOutputStream();
 			try (OutputStream out = new InflaterOutputStream(bout)) {
 				Files.copy(looseFile.toPath(), out);
 			}
 			result = bout.toByteArray();
 			
-		} else {
-			// Scan pack files
+		} else {  // Scan pack files
 			for (PackfileReader pfr : listPackfiles()) {
 				result = pfr.readRawObject(id);
 				if (result != null)
@@ -105,12 +135,23 @@ public final class FileRepository implements Repository {
 			}
 		}
 		
+		// Check the bytes and return result
 		if (result != null && !Arrays.equals(Sha1.getHash(result), id.getBytes()))
 			throw new DataFormatException("Hash of data mismatches object ID");
 		return result;
 	}
 	
 	
+	/**
+	 * Reads the Git object with the specified hash from this repository,
+	 * parses it, and returns it - or {@code null} if the object was not found.
+	 * @param id the hash of the object (not {@code null})
+	 * @return the parsed object with the specified hash, or {@code null} if not found in the repo
+	 * @throws NullPointerException if the ID is {@code null}
+	 * @throws IllegalStateException if this repository is already closed
+	 * @throws IOException if an I/O exception occurred while reading the object
+	 * @throws DataFormatException if malformed data was encountered while reading the object
+	 */
 	public GitObject readObject(ObjectId id) throws IOException, DataFormatException {
 		if (id == null)
 			throw new NullPointerException();
@@ -141,7 +182,7 @@ public final class FileRepository implements Repository {
 			if (length != bytes.length)
 				throw new DataFormatException("Data length mismatch");
 			
-			// Select object type
+			// Parse bytes into object
 			switch (type) {
 				case "blob"  :  return new BlobObject  (bytes);
 				case "tree"  :  return new TreeObject  (bytes);
@@ -160,6 +201,13 @@ public final class FileRepository implements Repository {
 	}
 	
 	
+	/**
+	 * Writes the specified Git object to this repository if it doesn't already exist.
+	 * @param obj the object to write (not {@code null})
+	 * @throws NullPointerException if the object is {@code null}
+	 * @throws IllegalStateException if this repository is already closed
+	 * @throws IOException if an I/O exception occurred while writing the object
+	 */
 	public void writeObject(GitObject obj) throws IOException {
 		if (obj == null)
 			throw new NullPointerException();
@@ -169,14 +217,19 @@ public final class FileRepository implements Repository {
 	}
 	
 	
+	// Writes the given raw byte array (which should normally include headers)
+	// to this repository's on-disk storage as a loose object file.
+	// This does not check whether the object has a valid header or data format.
 	private void writeRawObject(byte[] b) throws IOException {
+		// Handle the file path and the 2-digit directory
 		File file = getLooseObjectFile(new RawId(Sha1.getHash(b)));
 		if (file.isFile())
-			return;  // Object already exists in the loose objects database; no work to do
+			return;  // Object already stored; do nothing
 		File dir = file.getParentFile();
 		if (!dir.exists())
 			dir.mkdirs();
 		
+		// Write the file or delete if unsuccessful
 		boolean success = false;
 		try (OutputStream out = new DeflaterOutputStream(new FileOutputStream(file))) {
 			out.write(b);
@@ -187,11 +240,12 @@ public final class FileRepository implements Repository {
 	}
 	
 	
+	// Scans the "objects/pack" directory and returns a collection of pack file reader objects.
 	private Collection<PackfileReader> listPackfiles() {
 		Collection<PackfileReader> result = new ArrayList<>();
 		File dir = new File(new File(directory, "objects"), "pack");
 		final String IDX_EXT = ".idx";
-		for (File item : dir.listFiles()) {
+		for (File item : dir.listFiles()) {  // Look for index files
 			String name = item.getName();
 			if (item.isFile() && name.startsWith("pack-") && name.endsWith(IDX_EXT)) {
 				File packfile = new File(dir, name.substring(0, name.length() - IDX_EXT.length()) + ".pack");
@@ -203,6 +257,13 @@ public final class FileRepository implements Repository {
 	}
 	
 	
+	/**
+	 * Reads and returns a collection of all known references in this repository.
+	 * @return a new collection of references based on this repo's data (not {@code null})
+	 * @throws IllegalStateException if this repository is already closed
+	 * @throws IOException if an I/O exception occurred while reading references
+	 * @throws DataFormatException if malformed data was encountered while reading references
+	 */
 	public Collection<Reference> listReferences() throws IOException, DataFormatException {
 		if (directory == null)
 			throw new IllegalStateException("Repository already closed");
@@ -233,6 +294,15 @@ public final class FileRepository implements Repository {
 	}
 	
 	
+	/**
+	 * Reads and returns a reference for the specified name, or {@code null} if not found.
+	 * @param name the name to query (not {@code null})
+	 * @return a new reference of the specified name or {@code null}
+	 * @throws NullPointerException if the name is {@code null}
+	 * @throws IllegalStateException if this repository is already closed
+	 * @throws IOException if an I/O exception occurred while reading references
+	 * @throws DataFormatException if malformed data was encountered while reading references
+	 */
 	public Reference readReference(String name) throws IOException, DataFormatException {
 		Reference.checkName(name);
 		if (directory == null)
@@ -251,6 +321,13 @@ public final class FileRepository implements Repository {
 	}
 	
 	
+	/**
+	 * Writes the specified reference to the repository.
+	 * @param ref the reference to write (not {@code null})
+	 * @throws NullPointerException if the reference or target is {@code null}
+	 * @throws IllegalStateException if this repository is already closed
+	 * @throws IOException if an I/O exception occurred while writing references
+	 */
 	public void writeReference(Reference ref) throws IOException {
 		if (ref == null || ref.target == null)
 			throw new NullPointerException();
@@ -271,6 +348,7 @@ public final class FileRepository implements Repository {
 	
 	/*---- Private helper methods ----*/
 	
+	// Scans all loose reference files in the given subdirectory name and adds them to the given collection of results.
 	private void listLooseReferences(String subDirName, Collection<Reference> result) throws IOException, DataFormatException {
 		for (File item : new File(new File(directory, "refs"), subDirName.replace('/', File.separatorChar)).listFiles()) {
 			if (item.isFile() && !item.getName().equals("HEAD"))
@@ -322,6 +400,7 @@ public final class FileRepository implements Repository {
 	
 	// Reads the file at the given location and returns the SHA-1 hash string that was in the file.
 	// subDirName is usually something like "heads" or "remotes/origin" or "tags".
+	// The file must contain exactly 40 hexadecimal digits followed by a newline (total 41 bytes).
 	private Reference parseReferenceFile(String subDirName, File file) throws IOException, DataFormatException {
 		byte[] buf = new byte[41];
 		try (DataInputStream in = new DataInputStream(new FileInputStream(file))) {
@@ -334,6 +413,7 @@ public final class FileRepository implements Repository {
 	
 	
 	// Returns the expected location of a loose object file with the given hash. This performs no I/O and always succeeds.
+	// For example, a repo at "user/project.git" has a loose object of hash 12345xyz at "user/project.git/objects/12/345xyz".
 	private File getLooseObjectFile(ObjectId id) {
 		File temp = new File(directory, "objects");
 		temp = new File(temp, id.hexString.substring(0, 2));

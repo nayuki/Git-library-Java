@@ -14,6 +14,7 @@ import java.util.zip.DataFormatException;
 /**
  * An immutable 160-bit (20-byte) SHA-1 hash, whose value should reflect a commit object.
  * @see CommitObject
+ * @see Reference
  */
 public final class CommitId extends ObjectId {
 	

@@ -21,6 +21,11 @@ import java.util.zip.DataFormatException;
 import java.util.zip.InflaterInputStream;
 
 
+/**
+ * Manages the state and logic for reading from a Git pack file and index file.
+ * A helper class for {@link FileRepository}. Currently, pack file reader objects
+ * are immutable and hold no resources or file handles outside of method calls.
+ */
 final class PackfileReader {
 	
 	/*---- Fields ----*/
@@ -78,7 +83,7 @@ final class PackfileReader {
 		if (!Arrays.equals(hasher.getHash(), id.getBytes()))
 			throw new DataFormatException("Hash of data mismatches object ID");
 		
-		// Parse object
+		// Parse bytes into object
 		switch (typeName) {
 			case "blob"  :  return new BlobObject  (bytes);
 			case "tree"  :  return new TreeObject  (bytes);
@@ -90,12 +95,14 @@ final class PackfileReader {
 	
 	/* Low-level read methods */
 	
+	// Reads the index file to find the pack file byte offset of the given hash,
+	// returning an integer value if found or null if not found.
 	private Long readDataOffset(ObjectId id) throws IOException, DataFormatException {
 		final int HEADER_LEN = 8;
 		final int FANOUT_LEN = 256 * 4;
 		
 		try (RandomAccessFile raf = new RandomAccessFile(indexFile, "r")) {
-			// Check header; this logic only supports version 2 indexes
+			// Check file header; this logic only supports version 2 indexes
 			byte[] b = new byte[4];
 			raf.readFully(b);
 			if (b[0] != (byte)0xFF || b[1] != 't' || b[2] != 'O' || b[3] != 'c')
@@ -127,6 +134,7 @@ final class PackfileReader {
 					break;
 				else if (cmp > 0)
 					return null;  // Not found
+				// Else cmp < 0
 				objectOffset++;
 			}
 			
