@@ -9,10 +9,11 @@ package io.nayuki.git;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
+import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -211,7 +212,7 @@ final class PackfileReader {
 			byte[] base = (byte[])temp[1];
 			
 			// Decode delta header
-			InputStream deltaIn = new ByteArrayInputStream(data);
+			DataInputStream deltaIn = new DataInputStream(new ByteArrayInputStream(data));
 			int baseLen = decodeDeltaHeaderInt(deltaIn);
 			if (baseLen != base.length)
 				throw new DataFormatException("Base data length mismatch");
@@ -225,20 +226,18 @@ final class PackfileReader {
 					break;
 				if ((op & 0x80) == 0) {  // Insert
 					byte[] buf = new byte[op];
-					int n = deltaIn.read(buf);
-					if (n != buf.length)
-						throw new EOFException();
+					deltaIn.readFully(buf);
 					out.write(buf);
 				} else {  // Copy
 					int off = 0;
 					for (int i = 0; i < 4; i++) {
 						if (((op >>> i) & 1) != 0)
-							off |= readUnsignedNoEof(deltaIn) << (i * 8);
+							off |= deltaIn.readUnsignedByte() << (i * 8);
 					}
 					int len = 0;
 					for (int i = 0; i < 3; i++) {
 						if (((op >>> (i + 4)) & 1) != 0)
-							len |= readUnsignedNoEof(deltaIn) << (i * 8);
+							len |= deltaIn.readUnsignedByte() << (i * 8);
 					}
 					if (len == 0)
 						len = 0x10000;
@@ -257,7 +256,7 @@ final class PackfileReader {
 	
 	/* Byte-level integer decoding functions */
 	
-	private static int decodeTypeAndSize(RandomAccessFile in) throws IOException, DataFormatException {
+	private static int decodeTypeAndSize(DataInput in) throws IOException, DataFormatException {
 		int b = in.readUnsignedByte();
 		int type = (b >>> 4) & 7;
 		long size = b & 0xF;
@@ -276,7 +275,7 @@ final class PackfileReader {
 	}
 	
 	
-	private static int decodeOffsetDelta(RandomAccessFile in) throws IOException, DataFormatException {
+	private static int decodeOffsetDelta(DataInput in) throws IOException, DataFormatException {
 		long result = 0;
 		for (int i = 0; ; i++) {
 			if (i >= 5)
@@ -295,12 +294,12 @@ final class PackfileReader {
 	}
 	
 	
-	private static int decodeDeltaHeaderInt(InputStream in) throws IOException, DataFormatException {
+	private static int decodeDeltaHeaderInt(DataInput in) throws IOException, DataFormatException {
 		long result = 0;
 		for (int i = 0; ; i++) {
 			if (i >= 6)
 				throw new DataFormatException("Variable-length integer too long");
-			int b = readUnsignedNoEof(in);
+			int b = in.readUnsignedByte();
 			result |= (b & 0x7FL) << (i * 7);
 			if ((b & 0x80) == 0)
 				break;
@@ -309,16 +308,6 @@ final class PackfileReader {
 		if ((int)result != result)
 			throw new DataFormatException("Variable-length integer too large");
 		return (int)result;
-	}
-	
-	
-	// Reads and returns the next unsigned byte (range 0 to 255) from the input stream,
-	// or throws an exception if the end of the stream is reached.
-	private static int readUnsignedNoEof(InputStream in) throws IOException {
-		int b = in.read();
-		if (b == -1)
-			throw new EOFException();
-		return b & 0xFF;
 	}
 	
 	
