@@ -65,60 +65,60 @@ final class PackfileReader {
 	public GitObject readObject(ObjectId id) throws IOException, DataFormatException {
 		// Read data
 		Object[] pair = readObjectHeaderless(readDataOffset(id));
-		int type = (Integer)pair[0];
-		byte[] data = (byte[])pair[1];
+		int typeIndex = (Integer)pair[0];
+		byte[] bytes = (byte[])pair[1];
 		
 		// Check hash
 		Sha1 hasher = new Sha1();
-		hasher.update((TYPE_NAMES[type] + " " + data.length + "\0").getBytes(StandardCharsets.US_ASCII));
-		hasher.update(data);
+		hasher.update((TYPE_NAMES[typeIndex] + " " + bytes.length + "\0").getBytes(StandardCharsets.US_ASCII));
+		hasher.update(bytes);
 		if (!Arrays.equals(hasher.getHash(), id.getBytes()))
 			throw new DataFormatException("Hash of data mismatches object ID");
 		
 		// Parse object
-		if (type == 1)
-			return new CommitObject(data);
-		else if (type == 2)
-			return new TreeObject(data);
-		else if (type == 3)
-			return new BlobObject(data);
+		if (typeIndex == 1)
+			return new CommitObject(bytes);
+		else if (typeIndex == 2)
+			return new TreeObject(bytes);
+		else if (typeIndex == 3)
+			return new BlobObject(bytes);
 		else
-			throw new DataFormatException("Unknown object type: " + type);
+			throw new DataFormatException("Unknown object type: " + typeIndex);
 	}
 	
 	
 	/* Low-level read methods */
 	
 	private Long readDataOffset(ObjectId id) throws IOException, DataFormatException {
-		try (RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r")) {
+		try (RandomAccessFile raf = new RandomAccessFile(indexFile, "r")) {
 			// Check header; this logic only supports version 2 indexes
 			byte[] b = new byte[4];
-			indexRaf.readFully(b);
+			raf.readFully(b);
 			if (b[0] != -1 || b[1] != 't' || b[2] != 'O' || b[3] != 'c')
 				throw new DataFormatException("Pack index header expected");
-			if (indexRaf.readInt() != 2)
+			if (raf.readInt() != 2)
 				throw new DataFormatException("Index version 2 expected");
 			
 			// Read pack size
-			if (indexRaf.skipBytes(255 * 4) != 255 * 4)
+			if (raf.skipBytes(255 * 4) != 255 * 4)
 				throw new EOFException();
-			int totalObjects = indexRaf.readInt();
+			int totalObjects = raf.readInt();
 			
 			// Skip over some index entries based on head byte
 			int headByte = id.getByte(0) & 0xFF;
 			int objectOffset = 0;
 			if (headByte > 0) {
-				indexRaf.seek(8 + (headByte - 1) * 4);
-				objectOffset = indexRaf.readInt();
+				raf.seek(8 + (headByte - 1) * 4);
+				objectOffset = raf.readInt();
 			}
 			
 			// Find object ID in index (which is in ascending order)
-			indexRaf.seek(8 + 256 * 4 + objectOffset * ObjectId.NUM_BYTES);
+			raf.seek(8 + 256 * 4 + objectOffset * ObjectId.NUM_BYTES);
 			b = new byte[ObjectId.NUM_BYTES];
 			while (true) {
 				if (objectOffset >= totalObjects)
 					return null;  // Not found
-				indexRaf.readFully(b);
+				raf.readFully(b);
 				ObjectId temp = new CommitId(b);
 				int cmp = temp.compareTo(id);
 				if (cmp == 0)
@@ -129,8 +129,8 @@ final class PackfileReader {
 			}
 			
 			// Read the data packfile offset of the object
-			indexRaf.seek(8 + 256 * 4 + totalObjects * ObjectId.NUM_BYTES + totalObjects * 4 + objectOffset * 4);
-			return (long)indexRaf.readInt();
+			raf.seek(8 + 256 * 4 + totalObjects * ObjectId.NUM_BYTES + totalObjects * 4 + objectOffset * 4);
+			return (long)raf.readInt();
 		}
 	}
 	

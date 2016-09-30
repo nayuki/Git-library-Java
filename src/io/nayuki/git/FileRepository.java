@@ -86,11 +86,11 @@ public final class FileRepository implements Repository {
 	
 	
 	private byte[] readRawObject(ObjectId id) throws IOException, DataFormatException {
-		File file = getLooseObjectFile(id);
+		File looseFile = getLooseObjectFile(id);
 		byte[] result = null;
-		if (file.isFile()) {
+		if (looseFile.isFile()) {
 			// Read from loose object store
-			try (InputStream in = new InflaterInputStream(new FileInputStream(file))) {
+			try (InputStream in = new InflaterInputStream(new FileInputStream(looseFile))) {
 				ByteArrayOutputStream out = new ByteArrayOutputStream();
 				byte[] buf = new byte[1024];
 				while (true) {
@@ -177,8 +177,8 @@ public final class FileRepository implements Repository {
 	}
 	
 	
-	private void writeRawObject(byte[] obj) throws IOException {
-		File file = getLooseObjectFile(new RawId(Sha1.getHash(obj)));
+	private void writeRawObject(byte[] b) throws IOException {
+		File file = getLooseObjectFile(new RawId(Sha1.getHash(b)));
 		if (file.isFile())
 			return;  // Object already exists in the loose objects database; no work to do
 		File dir = file.getParentFile();
@@ -187,7 +187,7 @@ public final class FileRepository implements Repository {
 		
 		boolean success = false;
 		try (OutputStream out = new DeflaterOutputStream(new FileOutputStream(file))) {
-			out.write(obj);
+			out.write(b);
 			success = true;
 		}
 		if (!success)
