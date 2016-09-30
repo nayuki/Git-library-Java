@@ -105,14 +105,14 @@ final class PackfileReader {
 			
 			// Read pack size
 			raf.seek(HEADER_LEN + FANOUT_LEN - 4);
-			int totalObjects = raf.readInt();
+			long totalObjects = raf.readInt() & 0xFFFFFFFFL;
 			
 			// Skip over some index entries based on head byte
 			int headByte = id.getByte(0) & 0xFF;
-			int objectOffset = 0;
+			long objectOffset = 0;
 			if (headByte > 0) {
 				raf.seek(HEADER_LEN + (headByte - 1) * 4);
-				objectOffset = raf.readInt();
+				objectOffset = raf.readInt() & 0xFFFFFFFFL;
 			}
 			
 			// Find object ID in index (which is in ascending order)
@@ -131,7 +131,7 @@ final class PackfileReader {
 			}
 			
 			// Read the data packfile offset of the object
-			int offsetTablesStart = HEADER_LEN + FANOUT_LEN + totalObjects * (ObjectId.NUM_BYTES + 4);
+			long offsetTablesStart = HEADER_LEN + FANOUT_LEN + totalObjects * (ObjectId.NUM_BYTES + 4);
 			raf.seek(offsetTablesStart + objectOffset * 4);
 			long result = raf.readInt();
 			if (result < 0) {  // Most significant bit is set; do more processing
