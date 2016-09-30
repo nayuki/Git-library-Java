@@ -18,7 +18,7 @@ import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.zip.DataFormatException;
-import java.util.zip.InflaterInputStream;
+import java.util.zip.Inflater;
 
 
 /**
@@ -173,14 +173,26 @@ final class PackfileReader {
 			
 			// Decompress data
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			try (InputStream inflateIn = new InflaterInputStream(in)) {
-				byte[] buf = new byte[1024];
+			Inflater inf = new Inflater(false);
+			try {
+				byte[] inbuf  = new byte[1024];
+				byte[] outbuf = new byte[1024];
 				while (true) {
-					int n = inflateIn.read(buf);
-					if (n == -1)
+					int outn = inf.inflate(outbuf);
+					if (outn > 0)
+						out.write(outbuf, 0, outn);
+					else if (inf.needsInput()) {
+						int inn = in.read(inbuf);
+						if (inn == -1)
+							throw new EOFException();
+						inf.setInput(inbuf, 0, inn);
+					} else if (inf.finished())
 						break;
-					out.write(buf, 0, n);
+					else
+						throw new DataFormatException();
 				}
+			} finally {
+				inf.end();
 			}
 			byte[] data = out.toByteArray();
 			if (data.length != size)
