@@ -198,7 +198,7 @@ public final class FileRepository implements Repository {
 	
 	private Collection<PackfileReader> listPackfiles() {
 		Collection<PackfileReader> result = new ArrayList<>();
-		for (File item : new File(directory, "objects" + File.separator + "pack").listFiles()) {
+		for (File item : new File(new File(directory, "objects"), "pack").listFiles()) {
 			String name = item.getName();
 			if (item.isFile() && name.startsWith("pack-") && name.endsWith(".idx")) {
 				File packfile = new File(item.getParentFile(), name.substring(0, name.length() - 3) + "pack");
@@ -216,10 +216,10 @@ public final class FileRepository implements Repository {
 		
 		// Scan loose ref files
 		Collection<Reference> result = new ArrayList<>();
-		File headsDir = new File(directory, "refs" + File.separator + "heads");
+		File headsDir = new File(new File(directory, "refs"), "heads");
 		if (headsDir.isDirectory())
 			listLooseReferences("heads", result);
-		File remotesDir = new File(directory, "refs" + File.separator + "remotes");
+		File remotesDir = new File(new File(directory, "refs"), "remotes");
 		if (remotesDir.isDirectory()) {
 			for (File item : remotesDir.listFiles()) {
 				if (item.isDirectory())
@@ -244,7 +244,7 @@ public final class FileRepository implements Repository {
 		Reference.checkName(name);
 		if (directory == null)
 			throw new IllegalStateException("Repository already closed");
-		File looseRefFile = new File(directory, "refs" + File.separator + name);
+		File looseRefFile = new File(new File(directory, "refs"), name);
 		
 		if (looseRefFile.isFile())
 			return parseReferenceFile(name.substring(0, name.lastIndexOf('/')), looseRefFile);
@@ -263,7 +263,7 @@ public final class FileRepository implements Repository {
 			throw new NullPointerException();
 		if (directory == null)
 			throw new IllegalStateException("Repository already closed");
-		File looseRefFile = new File(directory, "refs" + File.separator + ref.name);
+		File looseRefFile = new File(new File(directory, "refs"), ref.name);
 		
 		looseRefFile.getParentFile().mkdirs();
 		boolean success = false;
@@ -279,7 +279,7 @@ public final class FileRepository implements Repository {
 	/*---- Private helper methods ----*/
 	
 	private void listLooseReferences(String subDirName, Collection<Reference> result) throws IOException, DataFormatException {
-		for (File item : new File(directory, "refs" + File.separator + subDirName.replace('/', File.separatorChar)).listFiles()) {
+		for (File item : new File(new File(directory, "refs"), subDirName.replace('/', File.separatorChar)).listFiles()) {
 			if (item.isFile() && !item.getName().equals("HEAD"))
 				result.add(parseReferenceFile(subDirName, item));
 		}
@@ -342,7 +342,9 @@ public final class FileRepository implements Repository {
 	
 	// Returns the expected location of a loose object file with the given hash. This performs no I/O and always succeeds.
 	private File getLooseObjectFile(ObjectId id) {
-		return new File(directory, "objects" + File.separator + id.hexString.substring(0, 2) + File.separator + id.hexString.substring(2));
+		File temp = new File(directory, "objects");
+		temp = new File(temp, id.hexString.substring(0, 2));
+		return new File(temp, id.hexString.substring(2));
 	}
 	
 }
