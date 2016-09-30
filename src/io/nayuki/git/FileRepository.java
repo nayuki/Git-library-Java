@@ -14,12 +14,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,7 +27,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.zip.DataFormatException;
 import java.util.zip.DeflaterOutputStream;
-import java.util.zip.InflaterInputStream;
+import java.util.zip.InflaterOutputStream;
 
 
 /**
@@ -86,21 +86,15 @@ public final class FileRepository implements Repository {
 	
 	
 	private byte[] readRawObject(ObjectId id) throws IOException, DataFormatException {
-		File looseFile = getLooseObjectFile(id);
 		byte[] result = null;
+		File looseFile = getLooseObjectFile(id);
 		if (looseFile.isFile()) {
 			// Read from loose object store
-			try (InputStream in = new InflaterInputStream(new FileInputStream(looseFile))) {
-				ByteArrayOutputStream out = new ByteArrayOutputStream();
-				byte[] buf = new byte[1024];
-				while (true) {
-					int n = in.read(buf);
-					if (n == -1)
-						break;
-					out.write(buf, 0, n);
-				}
-				result = out.toByteArray();
+			ByteArrayOutputStream bout = new ByteArrayOutputStream();
+			try (OutputStream out = new InflaterOutputStream(bout)) {
+				Files.copy(looseFile.toPath(), out);
 			}
+			result = bout.toByteArray();
 			
 		} else {
 			// Scan pack files
@@ -195,10 +189,12 @@ public final class FileRepository implements Repository {
 	
 	private Collection<PackfileReader> listPackfiles() {
 		Collection<PackfileReader> result = new ArrayList<>();
-		for (File item : new File(new File(directory, "objects"), "pack").listFiles()) {
+		File dir = new File(new File(directory, "objects"), "pack");
+		final String IDX_EXT = ".idx";
+		for (File item : dir.listFiles()) {
 			String name = item.getName();
-			if (item.isFile() && name.startsWith("pack-") && name.endsWith(".idx")) {
-				File packfile = new File(item.getParentFile(), name.substring(0, name.length() - 3) + "pack");
+			if (item.isFile() && name.startsWith("pack-") && name.endsWith(IDX_EXT)) {
+				File packfile = new File(dir, name.substring(0, name.length() - IDX_EXT.length()) + ".pack");
 				if (packfile.isFile())
 					result.add(new PackfileReader(item, packfile));
 			}

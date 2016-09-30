@@ -95,14 +95,13 @@ final class PackfileReader {
 			// Check header; this logic only supports version 2 indexes
 			byte[] b = new byte[4];
 			raf.readFully(b);
-			if (b[0] != -1 || b[1] != 't' || b[2] != 'O' || b[3] != 'c')
+			if (b[0] != (byte)0xFF || b[1] != 't' || b[2] != 'O' || b[3] != 'c')
 				throw new DataFormatException("Pack index header expected");
 			if (raf.readInt() != 2)
 				throw new DataFormatException("Index version 2 expected");
 			
 			// Read pack size
-			if (raf.skipBytes(255 * 4) != 255 * 4)
-				throw new EOFException();
+			raf.seek(8 + 255 * 4);
 			int totalObjects = raf.readInt();
 			
 			// Skip over some index entries based on head byte
@@ -120,8 +119,7 @@ final class PackfileReader {
 				if (objectOffset >= totalObjects)
 					return null;  // Not found
 				raf.readFully(b);
-				ObjectId temp = new CommitId(b);
-				int cmp = temp.compareTo(id);
+				int cmp = new CommitId(b).compareTo(id);
 				if (cmp == 0)
 					break;
 				else if (cmp > 0)
