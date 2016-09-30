@@ -31,21 +31,23 @@ public final class ListAllHistoricalFilePaths {
 			return;
 		}
 		
-		// Parse command line arguments
-		Repository repo = new FileRepository(new File(args[0]));
-		String branch = "master";
-		if (args.length == 2)
-			branch = args[1];
-		Reference ref = repo.readReference("heads/" + branch);
-		
-		// Scan the graph of commits and collect file paths
 		Set<String> filePaths = new TreeSet<>();
-		Queue<CommitId> queue = new ArrayDeque<>();
-		queue.add(ref.target);
-		while (!queue.isEmpty()) {  // Breadth-first search
-			CommitObject commit = queue.remove().read(repo);
-			scanFilePaths(repo, commit.tree.read(repo), "/", filePaths);
-			queue.addAll(commit.parents);
+		
+		// Parse command line arguments
+		try (Repository repo = new FileRepository(new File(args[0]))) {
+			String branch = "master";
+			if (args.length == 2)
+				branch = args[1];
+			Reference ref = repo.readReference("heads/" + branch);
+			
+			// Scan the graph of commits and collect file paths
+			Queue<CommitId> queue = new ArrayDeque<>();
+			queue.add(ref.target);
+			while (!queue.isEmpty()) {  // Breadth-first search
+				CommitObject commit = queue.remove().read(repo);
+				scanFilePaths(repo, commit.tree.read(repo), "/", filePaths);
+				queue.addAll(commit.parents);
+			}
 		}
 		
 		// Print results
