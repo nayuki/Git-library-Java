@@ -48,11 +48,7 @@ public final class FileRepository implements Repository {
 			throw new NullPointerException();
 		if (!dir.isDirectory())
 			throw new IllegalArgumentException("Repository directory does not exist");
-		if (!dir.getName().endsWith(".git"))
-			throw new IllegalArgumentException("Invalid Git repository directory name");
-		if (!new File(dir, "HEAD").isFile()
-				|| !new File(dir, "objects").isDirectory()
-				|| !new File(dir, "refs").isDirectory())
+		if (!new File(dir, "config").isFile() || !new File(dir, "objects").isDirectory())
 			throw new IllegalArgumentException("Invalid repository format");
 		
 		directory = dir;
@@ -123,6 +119,8 @@ public final class FileRepository implements Repository {
 	
 	
 	public GitObject readObject(ObjectId id) throws IOException, DataFormatException {
+		if (id == null)
+			throw new NullPointerException();
 		if (directory == null)
 			throw new IllegalStateException("Repository already closed");
 		
@@ -172,6 +170,8 @@ public final class FileRepository implements Repository {
 	
 	
 	public void writeObject(GitObject obj) throws IOException {
+		if (obj == null)
+			throw new NullPointerException();
 		if (directory == null)
 			throw new IllegalStateException("Repository already closed");
 		writeRawObject(obj.toBytes());
@@ -259,7 +259,7 @@ public final class FileRepository implements Repository {
 	
 	
 	public void writeReference(Reference ref) throws IOException {
-		if (ref.target == null)
+		if (ref == null || ref.target == null)
 			throw new NullPointerException();
 		if (directory == null)
 			throw new IllegalStateException("Repository already closed");
