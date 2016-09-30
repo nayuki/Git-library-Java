@@ -91,6 +91,9 @@ final class PackfileReader {
 	/* Low-level read methods */
 	
 	private Long readDataOffset(ObjectId id) throws IOException, DataFormatException {
+		final int HEADER_LEN = 8;
+		final int FANOUT_LEN = 256 * 4;
+		
 		try (RandomAccessFile raf = new RandomAccessFile(indexFile, "r")) {
 			// Check header; this logic only supports version 2 indexes
 			byte[] b = new byte[4];
@@ -101,19 +104,19 @@ final class PackfileReader {
 				throw new DataFormatException("Index version 2 expected");
 			
 			// Read pack size
-			raf.seek(8 + 255 * 4);
+			raf.seek(HEADER_LEN + FANOUT_LEN - 4);
 			int totalObjects = raf.readInt();
 			
 			// Skip over some index entries based on head byte
 			int headByte = id.getByte(0) & 0xFF;
 			int objectOffset = 0;
 			if (headByte > 0) {
-				raf.seek(8 + (headByte - 1) * 4);
+				raf.seek(HEADER_LEN + (headByte - 1) * 4);
 				objectOffset = raf.readInt();
 			}
 			
 			// Find object ID in index (which is in ascending order)
-			raf.seek(8 + 256 * 4 + objectOffset * ObjectId.NUM_BYTES);
+			raf.seek(HEADER_LEN + FANOUT_LEN + objectOffset * ObjectId.NUM_BYTES);
 			b = new byte[ObjectId.NUM_BYTES];
 			while (true) {
 				if (objectOffset >= totalObjects)
@@ -128,7 +131,7 @@ final class PackfileReader {
 			}
 			
 			// Read the data packfile offset of the object
-			raf.seek(8 + 256 * 4 + totalObjects * ObjectId.NUM_BYTES + totalObjects * 4 + objectOffset * 4);
+			raf.seek(HEADER_LEN + FANOUT_LEN + totalObjects * (ObjectId.NUM_BYTES + 4) + objectOffset * 4);
 			return (long)raf.readInt();
 		}
 	}
