@@ -151,102 +151,107 @@ final class PackfileReader {
 	
 	
 	private Object[] readObjectHeaderless(long byteOffset) throws IOException, DataFormatException {
+		try (RandomAccessFile raf = new RandomAccessFile(packFile, "r")) {
+			return readObjectHeaderless(raf, byteOffset);
+		}
+	}
+	
+	
+	private Object[] readObjectHeaderless(RandomAccessFile raf, long byteOffset) throws IOException, DataFormatException {
 		if (byteOffset < 0)
 			throw new IllegalArgumentException();
-		try (RandomAccessFile raf = new RandomAccessFile(packFile, "r")) {
-			raf.seek(byteOffset);
-			
-			// Read decompressed size and type
-			int typeAndSize = decodeTypeAndSize(raf);
-			int type = typeAndSize & 7;  // 3-bit unsigned
-			if (type == 0 || type == 5 || type == 7)
-				throw new DataFormatException("Unknown object type: " + type);
-			int size = typeAndSize >>> 3;
-			
-			// Read delta offset
-			int deltaOffset;
-			if (type == 6)
-				deltaOffset = decodeOffsetDelta(raf);
-			else
-				deltaOffset = -1;
-			
-			// Decompress data
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			Inflater inf = new Inflater(false);
-			try {
-				byte[] inbuf  = new byte[1024];
-				byte[] outbuf = new byte[1024];
-				while (true) {
-					int outn = inf.inflate(outbuf);
-					if (outn > 0)
-						out.write(outbuf, 0, outn);
-					else if (inf.needsInput()) {
-						int inn = raf.read(inbuf);
-						if (inn == -1)
-							throw new EOFException();
-						inf.setInput(inbuf, 0, inn);
-					} else if (inf.finished())
-						break;
-					else
-						throw new DataFormatException();
-				}
-			} finally {
-				inf.end();
+		raf.seek(byteOffset);
+		
+		// Read decompressed size and type
+		int typeAndSize = decodeTypeAndSize(raf);
+		int type = typeAndSize & 7;  // 3-bit unsigned
+		if (type == 0 || type == 5 || type == 7)
+			throw new DataFormatException("Unknown object type: " + type);
+		int size = typeAndSize >>> 3;
+		
+		// Read delta offset
+		int deltaOffset;
+		if (type == 6)
+			deltaOffset = decodeOffsetDelta(raf);
+		else
+			deltaOffset = -1;
+		
+		// Decompress data
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		Inflater inf = new Inflater(false);
+		try {
+			byte[] inbuf  = new byte[1024];
+			byte[] outbuf = new byte[1024];
+			while (true) {
+				int outn = inf.inflate(outbuf);
+				if (outn > 0)
+					out.write(outbuf, 0, outn);
+				else if (inf.needsInput()) {
+					int inn = raf.read(inbuf);
+					if (inn == -1)
+						throw new EOFException();
+					inf.setInput(inbuf, 0, inn);
+				} else if (inf.finished())
+					break;
+				else
+					throw new DataFormatException();
 			}
-			byte[] data = out.toByteArray();
-			if (data.length != size)
-				throw new DataFormatException("Data length mismatch");
-			
-			// Handle delta encoding
-			if (type == 6) {
-				// Recurse
-				Object[] temp = readObjectHeaderless(byteOffset - deltaOffset);
-				type = (Integer)temp[0];
-				byte[] base = (byte[])temp[1];
-				
-				// Decode delta header
-				InputStream deltaIn = new ByteArrayInputStream(data);
-				int baseLen = decodeDeltaHeaderInt(deltaIn);
-				if (baseLen != base.length)
-					throw new DataFormatException("Base data length mismatch");
-				int dataLen = decodeDeltaHeaderInt(deltaIn);
-				
-				// Decode delta format
-				out = new ByteArrayOutputStream();
-				while (true) {
-					int op = deltaIn.read();
-					if (op == -1)
-						break;
-					if ((op & 0x80) == 0) {  // Insert
-						byte[] buf = new byte[op];
-						int n = deltaIn.read(buf);
-						if (n != buf.length)
-							throw new EOFException();
-						out.write(buf);
-					} else {  // Copy
-						int off = 0;
-						for (int i = 0; i < 4; i++) {
-							if (((op >>> i) & 1) != 0)
-								off |= readUnsignedNoEof(deltaIn) << (i * 8);
-						}
-						int len = 0;
-						for (int i = 0; i < 3; i++) {
-							if (((op >>> (i + 4)) & 1) != 0)
-								len |= readUnsignedNoEof(deltaIn) << (i * 8);
-						}
-						if (len == 0)
-							len = 0x10000;
-						out.write(base, off, len);
-					}
-				}
-				data = out.toByteArray();
-				if (data.length != dataLen)
-					throw new DataFormatException("Data length mismatch");
-			}
-			
-			// Done
-			return new Object[]{type, data};
+		} finally {
+			inf.end();
 		}
+		byte[] data = out.toByteArray();
+		if (data.length != size)
+			throw new DataFormatException("Data length mismatch");
+		
+		// Handle delta encoding
+		if (type == 6) {
+			// Recurse
+			Object[] temp = readObjectHeaderless(raf, byteOffset - deltaOffset);
+			type = (Integer)temp[0];
+			byte[] base = (byte[])temp[1];
+			
+			// Decode delta header
+			InputStream deltaIn = new ByteArrayInputStream(data);
+			int baseLen = decodeDeltaHeaderInt(deltaIn);
+			if (baseLen != base.length)
+				throw new DataFormatException("Base data length mismatch");
+			int dataLen = decodeDeltaHeaderInt(deltaIn);
+			
+			// Decode delta format
+			out = new ByteArrayOutputStream();
+			while (true) {
+				int op = deltaIn.read();
+				if (op == -1)
+					break;
+				if ((op & 0x80) == 0) {  // Insert
+					byte[] buf = new byte[op];
+					int n = deltaIn.read(buf);
+					if (n != buf.length)
+						throw new EOFException();
+					out.write(buf);
+				} else {  // Copy
+					int off = 0;
+					for (int i = 0; i < 4; i++) {
+						if (((op >>> i) & 1) != 0)
+							off |= readUnsignedNoEof(deltaIn) << (i * 8);
+					}
+					int len = 0;
+					for (int i = 0; i < 3; i++) {
+						if (((op >>> (i + 4)) & 1) != 0)
+							len |= readUnsignedNoEof(deltaIn) << (i * 8);
+					}
+					if (len == 0)
+						len = 0x10000;
+					out.write(base, off, len);
+				}
+			}
+			data = out.toByteArray();
+			if (data.length != dataLen)
+				throw new DataFormatException("Data length mismatch");
+		}
+		
+		// Done
+		return new Object[]{type, data};
 	}
 	
 	
