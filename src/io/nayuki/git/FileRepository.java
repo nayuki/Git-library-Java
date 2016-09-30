@@ -148,14 +148,12 @@ public final class FileRepository implements Repository {
 				throw new DataFormatException("Data length mismatch");
 			
 			// Select object type
-			if (type.equals("blob"))
-				return new BlobObject(bytes);
-			if (type.equals("tree"))
-				return new TreeObject(bytes);
-			if (type.equals("commit"))
-				return new CommitObject(bytes);
-			else
-				throw new DataFormatException("Unknown object type: " + type);
+			switch (type) {
+				case "blob"  :  return new BlobObject  (bytes);
+				case "tree"  :  return new TreeObject  (bytes);
+				case "commit":  return new CommitObject(bytes);
+				default:  throw new DataFormatException("Unknown object type: " + type);
+			}
 			
 		} else {
 			for (PackfileReader pfr : listPackfiles()) {

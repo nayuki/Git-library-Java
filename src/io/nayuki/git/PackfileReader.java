@@ -69,6 +69,9 @@ final class PackfileReader {
 		byte[] bytes = (byte[])pair[1];
 		
 		// Check hash
+		String typeName = TYPE_NAMES[typeIndex];
+		if (typeName == null)
+			throw new DataFormatException("Unknown object type: " + typeIndex);
 		Sha1 hasher = new Sha1();
 		hasher.update((TYPE_NAMES[typeIndex] + " " + bytes.length + "\0").getBytes(StandardCharsets.US_ASCII));
 		hasher.update(bytes);
@@ -76,14 +79,12 @@ final class PackfileReader {
 			throw new DataFormatException("Hash of data mismatches object ID");
 		
 		// Parse object
-		if (typeIndex == 1)
-			return new CommitObject(bytes);
-		else if (typeIndex == 2)
-			return new TreeObject(bytes);
-		else if (typeIndex == 3)
-			return new BlobObject(bytes);
-		else
-			throw new DataFormatException("Unknown object type: " + typeIndex);
+		switch (typeName) {
+			case "blob"  :  return new BlobObject  (bytes);
+			case "tree"  :  return new TreeObject  (bytes);
+			case "commit":  return new CommitObject(bytes);
+			default:  throw new DataFormatException("Unknown object type: " + typeIndex);
+		}
 	}
 	
 	
@@ -304,6 +305,8 @@ final class PackfileReader {
 	}
 	
 	
-	private static final String[] TYPE_NAMES = {null, "commit", "tree", "blob", null, null, null, null};
+	private static final String[] TYPE_NAMES = {
+		// 0,        1,      2,      3,    4,    5,    6,    7:  Type indices
+		null, "commit", "tree", "blob", null, null, null, null};
 	
 }
