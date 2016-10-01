@@ -188,6 +188,7 @@ public final class FileRepository implements Repository {
 				case "blob"  :  return new BlobObject  (bytes);
 				case "tree"  :  return new TreeObject  (bytes);
 				case "commit":  return new CommitObject(bytes);
+				case "tag"   :  return new TagObject   (bytes);
 				default:  throw new DataFormatException("Unknown object type: " + type);
 			}
 			

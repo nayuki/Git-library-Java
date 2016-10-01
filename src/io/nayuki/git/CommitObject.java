@@ -253,7 +253,7 @@ public final class CommitObject extends GitObject {
 	/*---- Static helper functions ----*/
 	
 	// For example: 0 -> "+0000"; 105 -> "+0145"; -240 -> "-0400".
-	private static String formatTimezone(int minutes) {
+	static String formatTimezone(int minutes) {
 		String sign = minutes >= 0 ? "+" : "-";
 		minutes = Math.abs(minutes);
 		return String.format("%s%02d%02d", sign, minutes / 60, minutes % 60);
@@ -261,13 +261,13 @@ public final class CommitObject extends GitObject {
 	
 	
 	// For example: John Smith <jsmith@example.com> 1234567890 +0000
-	private static final Pattern AUTHORSHIP_PATTERN = Pattern.compile("(.*?) <([^>]*)> (\\d+) ([+-])(\\d{2})(\\d{2})");
+	static final Pattern AUTHORSHIP_PATTERN = Pattern.compile("(.*?) <([^>]*)> (\\d+) ([+-])(\\d{2})(\\d{2})");
 	
 	
 	
 	/*---- Helper class for parser constructor ----*/
 	
-	private static final class LineParser {
+	static final class LineParser {
 		
 		private String text;
 		private int startIndex;

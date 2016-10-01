@@ -68,6 +68,7 @@ final class PackfileReader {
 			case "blob"  :  return new BlobObject  (bytes);
 			case "tree"  :  return new TreeObject  (bytes);
 			case "commit":  return new CommitObject(bytes);
+			case "tag"   :  return new TagObject   (bytes);
 			default:  throw new AssertionError();
 		}
 	}
@@ -312,7 +313,7 @@ final class PackfileReader {
 	/*---- Static constants ----*/
 	
 	private static final String[] TYPE_NAMES = {
-		// 0,        1,      2,      3,    4,    5,    6,    7:  Type indices
-		null, "commit", "tree", "blob", null, null, null, null};
+		// 0,        1,      2,      3,     4,    5,    6,    7:  Type indices
+		null, "commit", "tree", "blob", "tag", null, null, null};
 	
 }
