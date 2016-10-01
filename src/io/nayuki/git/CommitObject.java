@@ -113,7 +113,6 @@ public final class CommitObject extends GitObject {
 	
 	/**
 	 * Constructs a commit object with the data initially set to the parsed interpretation of the specified bytes.
-	 * Every object ID that the commit refers to will have its repository set to the specified repo argument.
 	 * @param data the serialized commit data to read (not {@code null})
 	 * @throws NullPointerException if the array is {@code null}
 	 * @throws DataFormatException if malformed data was encountered during reading

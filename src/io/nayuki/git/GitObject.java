@@ -16,6 +16,7 @@ import java.nio.charset.StandardCharsets;
  * @see BlobObject
  * @see TreeObject
  * @see CommitObject
+ * @see TagObject
  */
 public abstract class GitObject {
 	

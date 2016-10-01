@@ -20,6 +20,7 @@ import java.util.zip.DataFormatException;
  * @see BlobId
  * @see TreeId
  * @see CommitId
+ * @see TagId
  */
 public abstract class ObjectId implements Comparable<ObjectId> {
 	
