@@ -48,9 +48,7 @@ final class PackfileReader {
 	
 	
 	
-	/*---- Methods ----*/
-	
-	/* High-level query methods */
+	/*---- Public methods ----*/
 	
 	public boolean containsObject(ObjectId id) throws IOException, DataFormatException {
 		return readDataOffset(id) != null;
@@ -75,7 +73,8 @@ final class PackfileReader {
 	}
 	
 	
-	/* Low-level read methods */
+	
+	/*---- Private methods for mid-level reading ----*/
 	
 	// Reads the index file to find the pack file byte offset of the given hash,
 	// returning an integer value if found or null if not found.
@@ -259,7 +258,8 @@ final class PackfileReader {
 	}
 	
 	
-	/* Byte-level integer decoding functions */
+	
+	/*---- Private functions for low-level integer decoding ----*/
 	
 	// Reads one or more bytes from the input and returns (size << 3) | type, where size is uint61 and type is uint3.
 	static long decodeTypeAndSize(DataInput in) throws IOException, DataFormatException {
@@ -307,6 +307,9 @@ final class PackfileReader {
 		return result;
 	}
 	
+	
+	
+	/*---- Static constants ----*/
 	
 	private static final String[] TYPE_NAMES = {
 		// 0,        1,      2,      3,    4,    5,    6,    7:  Type indices
