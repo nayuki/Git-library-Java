@@ -7,13 +7,14 @@
 
 package io.nayuki.git;
 
+import java.io.EOFException;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.DataFormatException;
 
 
 /**
@@ -115,9 +116,9 @@ public final class CommitObject extends GitObject {
 	 * Constructs a commit object with the data initially set to the parsed interpretation of the specified bytes.
 	 * @param data the serialized commit data to read (not {@code null})
 	 * @throws NullPointerException if the array is {@code null}
-	 * @throws DataFormatException if malformed data was encountered during reading
+	 * @throws IOException if malformed data was encountered during reading
 	 */
-	public CommitObject(byte[] data) throws DataFormatException {
+	public CommitObject(byte[] data) throws IOException {
 		this();
 		if (data == null)
 			throw new NullPointerException();
@@ -128,7 +129,7 @@ public final class CommitObject extends GitObject {
 			// Parse tree line
 			String[] parts = parser.nextLineAsPair();
 			if (!parts[0].equals("tree"))
-				throw new DataFormatException("Tree field expected");
+				throw new GitFormatException("Tree field expected");
 			tree = new TreeId(parts[1]);
 			
 			// Parse parent lines (zero or more)
@@ -141,10 +142,10 @@ public final class CommitObject extends GitObject {
 			
 			// Parse author line
 			if (!parts[0].equals("author"))
-				throw new DataFormatException("Author field expected");
+				throw new GitFormatException("Author field expected");
 			Matcher m = AUTHORSHIP_PATTERN.matcher(parts[1]);
 			if (!m.matches())
-				throw new DataFormatException("Invalid author data");
+				throw new GitFormatException("Invalid author data");
 			authorName = m.group(1);
 			authorEmail = m.group(2);
 			authorTime = Integer.parseInt(m.group(3));
@@ -153,10 +154,10 @@ public final class CommitObject extends GitObject {
 			// Parse committer line
 			parts = parser.nextLineAsPair();
 			if (!parts[0].equals("committer"))
-				throw new DataFormatException("Committer field expected");
+				throw new GitFormatException("Committer field expected");
 			m = AUTHORSHIP_PATTERN.matcher(parts[1]);
 			if (!m.matches())
-				throw new DataFormatException("Invalid committer data");
+				throw new GitFormatException("Invalid committer data");
 			committerName = m.group(1);
 			committerEmail = m.group(2);
 			committerTime = Integer.parseInt(m.group(3));
@@ -164,11 +165,11 @@ public final class CommitObject extends GitObject {
 			
 			// Grab message
 			if (!parser.nextLine().equals(""))
-				throw new DataFormatException("Blank line expected");
+				throw new GitFormatException("Blank line expected");
 			message = parser.getRemainder();
 			
 		} catch (IllegalStateException e) {
-			throw new DataFormatException("Unexpected end of commit data");
+			throw new EOFException("Unexpected end of commit data");
 		}
 	}
 	

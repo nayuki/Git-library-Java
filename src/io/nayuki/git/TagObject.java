@@ -7,9 +7,9 @@
 
 package io.nayuki.git;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
-import java.util.zip.DataFormatException;
 
 
 /**
@@ -86,9 +86,9 @@ public final class TagObject extends GitObject {
 	 * Constructs a tag object with the data initially set to the parsed interpretation of the specified bytes.
 	 * @param data the serialized tag data to read (not {@code null})
 	 * @throws NullPointerException if the array is {@code null}
-	 * @throws DataFormatException if malformed data was encountered during reading
+	 * @throws IOException if malformed data was encountered during reading
 	 */
-	public TagObject(byte[] data) throws DataFormatException {
+	public TagObject(byte[] data) throws IOException {
 		this();
 		if (data == null)
 			throw new NullPointerException();
@@ -99,28 +99,28 @@ public final class TagObject extends GitObject {
 			// Parse object line
 			String[] parts = parser.nextLineAsPair();
 			if (!parts[0].equals("object"))
-				throw new DataFormatException("Object field expected");
+				throw new GitFormatException("Object field expected");
 			target = new RawId(parts[1]);
 			
 			// Parse type line
 			parts = parser.nextLineAsPair();
 			if (!parts[0].equals("type"))
-				throw new DataFormatException("Type field expected");
+				throw new GitFormatException("Type field expected");
 			targetType = parts[1];
 			
 			// Parse tag line
 			parts = parser.nextLineAsPair();
 			if (!parts[0].equals("tag"))
-				throw new DataFormatException("Tag field expected");
+				throw new GitFormatException("Tag field expected");
 			tagName = parts[1];
 			
 			// Parse tagger line
 			parts = parser.nextLineAsPair();
 			if (!parts[0].equals("tagger"))
-				throw new DataFormatException("Author field expected");
+				throw new GitFormatException("Author field expected");
 			Matcher m = CommitObject.AUTHORSHIP_PATTERN.matcher(parts[1]);
 			if (!m.matches())
-				throw new DataFormatException("Invalid author data");
+				throw new GitFormatException("Invalid author data");
 			taggerName = m.group(1);
 			taggerEmail = m.group(2);
 			taggerTime = Integer.parseInt(m.group(3));
@@ -128,11 +128,11 @@ public final class TagObject extends GitObject {
 			
 			// Grab message
 			if (!parser.nextLine().equals(""))
-				throw new DataFormatException("Blank line expected");
+				throw new GitFormatException("Blank line expected");
 			message = parser.getRemainder();
 			
 		} catch (IllegalStateException e) {
-			throw new DataFormatException("Unexpected end of tag data");
+			throw new GitFormatException("Unexpected end of tag data");
 		}
 	}
 	

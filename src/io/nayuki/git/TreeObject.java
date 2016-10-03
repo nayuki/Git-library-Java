@@ -8,6 +8,7 @@
 package io.nayuki.git;
 
 import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -15,7 +16,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.zip.DataFormatException;
 
 
 /**
@@ -50,9 +50,9 @@ public final class TreeObject extends GitObject {
 	 * Constructs a tree object with the data initially set to the parsed interpretation of the specified bytes.
 	 * @param data the serialized tree data to read (not {@code null})
 	 * @throws NullPointerException if the array is {@code null}
-	 * @throws DataFormatException if malformed data was encountered during reading
+	 * @throws IOException if malformed data was encountered during reading
 	 */
-	public TreeObject(byte[] data) throws DataFormatException {
+	public TreeObject(byte[] data) throws IOException {
 		this();
 		if (data == null)
 			throw new NullPointerException();
@@ -63,7 +63,7 @@ public final class TreeObject extends GitObject {
 			int start = index;
 			while (true) {
 				if (index >= data.length)
-					throw new DataFormatException("Unexpected end of tree data");
+					throw new EOFException("Unexpected end of tree data");
 				else if (data[index] == ' ')
 					break;
 				else
@@ -76,13 +76,13 @@ public final class TreeObject extends GitObject {
 			try {
 				modeInt = Integer.parseInt(modeStr, 8);  // Parse number as octal
 			} catch (NumberFormatException e) {
-				throw new DataFormatException("Invalid mode value");
+				throw new GitFormatException("Invalid mode value");
 			}
 			Entry.Type mode;
 			try {
 				mode = Entry.Type.fromMode(modeInt);
 			} catch (IllegalArgumentException e) {
-				throw new DataFormatException("Unrecognized mode value");
+				throw new GitFormatException("Unrecognized mode value");
 			}
 			index++;
 			
@@ -90,7 +90,7 @@ public final class TreeObject extends GitObject {
 			start = index;
 			while (true) {
 				if (index >= data.length)
-					throw new DataFormatException("Unexpected end of tree data");
+					throw new EOFException("Unexpected end of tree data");
 				else if (data[index] == '\0')
 					break;
 				else
@@ -101,7 +101,7 @@ public final class TreeObject extends GitObject {
 			
 			// Grab the hash bytes and create new entry
 			if (data.length - index < ObjectId.NUM_BYTES)
-				throw new DataFormatException("Unexpected end of tree data");
+				throw new EOFException("Unexpected end of tree data");
 			byte[] hash = Arrays.copyOfRange(data, index, index + ObjectId.NUM_BYTES);
 			index += ObjectId.NUM_BYTES;
 			entries.add(new Entry(mode, name, hash));

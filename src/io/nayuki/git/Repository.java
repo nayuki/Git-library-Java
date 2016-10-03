@@ -10,7 +10,6 @@ package io.nayuki.git;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Set;
-import java.util.zip.DataFormatException;
 
 
 /**
@@ -32,10 +31,9 @@ public interface Repository extends AutoCloseable {
 	 * @throws NullPointerException if the prefix is {@code null}
 	 * @throws IllegalArgumentException if the prefix has non-hexadecimal characters or is over 40 chars long, or
 	 * if there is no unique match - either zero or multiple objects have an ID with the specified hexadecimal prefix
-	 * @throws IOException if an I/O exception occurred while reading the repository
-	 * @throws DataFormatException if malformed data was encountered while reading the repository
+	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 */
-	public ObjectId getIdByPrefix(String prefix) throws IOException, DataFormatException;
+	public ObjectId getIdByPrefix(String prefix) throws IOException;
 	
 	
 	/**
@@ -46,10 +44,9 @@ public interface Repository extends AutoCloseable {
 	 * @return a new set of object IDs matching the prefix, of size at least 0 (not {@code null})
 	 * @throws NullPointerException if the prefix is {@code null}
 	 * @throws IllegalArgumentException if the prefix has non-hexadecimal characters or is over 40 chars long
-	 * @throws IOException if an I/O exception occurred while reading the repository
-	 * @throws DataFormatException if malformed data was encountered while reading the repository
+	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 */
-	public Set<ObjectId> getIdsByPrefix(String prefix) throws IOException, DataFormatException;
+	public Set<ObjectId> getIdsByPrefix(String prefix) throws IOException;
 	
 	
 	/*---- Methods for Git objects ----*/
@@ -60,10 +57,9 @@ public interface Repository extends AutoCloseable {
 	 * @return {@code true} if the repo has at least one copy of the object, {@code false} if it has none
 	 * @throws NullPointerException if the ID is {@code null}
 	 * @throws IllegalStateException if this repository is already closed
-	 * @throws IOException if an I/O exception occurred while testing for the object
-	 * @throws DataFormatException if malformed data was encountered while testing for the object
+	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 */
-	public boolean containsObject(ObjectId id) throws IOException, DataFormatException;
+	public boolean containsObject(ObjectId id) throws IOException;
 	
 	
 	/**
@@ -73,10 +69,9 @@ public interface Repository extends AutoCloseable {
 	 * @return the parsed object with the specified hash, or {@code null} if not found in the repo
 	 * @throws NullPointerException if the ID is {@code null}
 	 * @throws IllegalStateException if this repository is already closed
-	 * @throws IOException if an I/O exception occurred while reading the object
-	 * @throws DataFormatException if malformed data was encountered while reading the object
+	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 */
-	public GitObject readObject(ObjectId id) throws IOException, DataFormatException;
+	public GitObject readObject(ObjectId id) throws IOException;
 	
 	
 	/**
@@ -95,10 +90,9 @@ public interface Repository extends AutoCloseable {
 	 * Reads and returns a collection of all known references in this repository.
 	 * @return a new collection of references based on this repo's data (not {@code null})
 	 * @throws IllegalStateException if this repository is already closed
-	 * @throws IOException if an I/O exception occurred while reading references
-	 * @throws DataFormatException if malformed data was encountered while reading references
+	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 */
-	public Collection<Reference> listReferences() throws IOException, DataFormatException;
+	public Collection<Reference> listReferences() throws IOException;
 	
 	
 	/**
@@ -107,10 +101,9 @@ public interface Repository extends AutoCloseable {
 	 * @return a new reference of the specified name or {@code null}
 	 * @throws NullPointerException if the name is {@code null}
 	 * @throws IllegalStateException if this repository is already closed
-	 * @throws IOException if an I/O exception occurred while reading references
-	 * @throws DataFormatException if malformed data was encountered while reading references
+	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 */
-	public Reference readReference(String name) throws IOException, DataFormatException;
+	public Reference readReference(String name) throws IOException;
 	
 	
 	/**

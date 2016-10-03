@@ -8,7 +8,6 @@
 package io.nayuki.git;
 
 import java.io.IOException;
-import java.util.zip.DataFormatException;
 
 
 /**
@@ -62,11 +61,10 @@ public final class CommitId extends ObjectId {
 	 * Reads the object data for this object ID from the specified repository.
 	 * @param repo the repository to read from (not {@code null})
 	 * @return the object data, or {@code null} if not found in the repo
-	 * @throws IOException if an I/O exception occurred
-	 * @throws DataFormatException if malformed data was encountered during reading
+	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 * @throws ClassCastException if an object was successfully read but its type is not a commit object
 	 */
-	public CommitObject read(Repository repo) throws IOException, DataFormatException {
+	public CommitObject read(Repository repo) throws IOException {
 		return (CommitObject)super.read(repo);
 	}
 	

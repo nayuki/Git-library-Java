@@ -11,7 +11,6 @@ import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.zip.DataFormatException;
 import io.nayuki.git.CommitId;
 import io.nayuki.git.CommitObject;
 import io.nayuki.git.FileRepository;
@@ -23,7 +22,7 @@ import io.nayuki.git.TreeObject;
 
 public final class ListAllHistoricalFilePaths {
 	
-	public static void main(String[] args) throws IOException, DataFormatException {
+	public static void main(String[] args) throws IOException {
 		// Check command line arguments
 		if (args.length < 1 || args.length > 2) {
 			System.err.println("Usage: java ListAllHistoricalFilePaths GitDirectory [BranchName]");
@@ -57,7 +56,7 @@ public final class ListAllHistoricalFilePaths {
 	
 	
 	private static void scanFilePaths(Repository repo, TreeObject tree, String prefix, Set<String> result)
-			throws IOException, DataFormatException {
+			throws IOException {
 		
 		for (TreeObject.Entry entry : tree.entries) {
 			if (entry.type == TreeObject.Entry.Type.DIRECTORY)

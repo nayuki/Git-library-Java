@@ -13,7 +13,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.zip.DataFormatException;
 import io.nayuki.git.CommitGraph;
 import io.nayuki.git.CommitId;
 import io.nayuki.git.FileRepository;
@@ -23,7 +22,7 @@ import io.nayuki.git.Repository;
 
 public final class ShowCommitGraphInfo {
 	
-	public static void main(String[] args) throws IOException, DataFormatException {
+	public static void main(String[] args) throws IOException {
 		// Check command line arguments
 		if (args.length < 1) {
 			System.err.println("Usage: java ShowCommitGraphInfo GitDirectory [BranchNames...]");

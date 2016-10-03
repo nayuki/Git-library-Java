@@ -10,7 +10,6 @@ package io.nayuki.git;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.regex.Pattern;
-import java.util.zip.DataFormatException;
 
 
 /**
@@ -152,10 +151,9 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	 * and specify a subclass of {@code GitObject} as the return type, for convenience.
 	 * @param repo the repository to read from (not {@code null})
 	 * @return the object data, or {@code null} if not found in the repo
-	 * @throws IOException if an I/O exception occurred
-	 * @throws DataFormatException if malformed data was encountered during reading
+	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 */
-	public GitObject read(Repository repo) throws IOException, DataFormatException {
+	public GitObject read(Repository repo) throws IOException {
 		if (repo == null)
 			throw new NullPointerException();
 		return repo.readObject(this);

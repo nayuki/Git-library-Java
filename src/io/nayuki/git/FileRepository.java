@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.zip.DataFormatException;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterOutputStream;
 
@@ -101,10 +100,9 @@ public final class FileRepository implements Repository {
 	 * @throws NullPointerException if the prefix is {@code null}
 	 * @throws IllegalArgumentException if the prefix has non-hexadecimal characters or is over 40 chars long, or
 	 * if there is no unique match - either zero or multiple objects have an ID with the specified hexadecimal prefix
-	 * @throws IOException if an I/O exception occurred while reading the repository
-	 * @throws DataFormatException if malformed data was encountered while reading the repository
+	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 */
-	public ObjectId getIdByPrefix(String prefix) throws IOException, DataFormatException {
+	public ObjectId getIdByPrefix(String prefix) throws IOException {
 		Set<ObjectId> temp = getIdsByPrefix(prefix);
 		switch (temp.size()) {
 			case 0 :  throw new IllegalArgumentException("No matching object ID found");
@@ -122,10 +120,9 @@ public final class FileRepository implements Repository {
 	 * @return a new set of object IDs matching the prefix, of size at least 0 (not {@code null})
 	 * @throws NullPointerException if the prefix is {@code null}
 	 * @throws IllegalArgumentException if the prefix has non-hexadecimal characters or is over 40 chars long
-	 * @throws IOException if an I/O exception occurred while reading the repository
-	 * @throws DataFormatException if malformed data was encountered while reading the repository
+	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 */
-	public Set<ObjectId> getIdsByPrefix(String prefix) throws IOException, DataFormatException {
+	public Set<ObjectId> getIdsByPrefix(String prefix) throws IOException {
 		if (prefix == null)
 			throw new NullPointerException();
 		if (prefix.length() > ObjectId.NUM_BYTES * 2)
@@ -175,10 +172,9 @@ public final class FileRepository implements Repository {
 	 * @return {@code true} if the repo has at least one copy of the object, {@code false} if it has none
 	 * @throws NullPointerException if the ID is {@code null}
 	 * @throws IllegalStateException if this repository is already closed
-	 * @throws IOException if an I/O exception occurred while testing for the object
-	 * @throws DataFormatException if malformed data was encountered while testing for the object
+	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 */
-	public boolean containsObject(ObjectId id) throws IOException, DataFormatException {
+	public boolean containsObject(ObjectId id) throws IOException {
 		if (directory == null)
 			throw new IllegalStateException("Repository already closed");
 		if (getLooseObjectFile(id).isFile())
@@ -193,7 +189,7 @@ public final class FileRepository implements Repository {
 	
 	// Reads the object in the repository with the given hash, checks the hash, and returns the byte array.
 	// This does not check whether the object has a valid header or data format.
-	private byte[] readRawObject(ObjectId id) throws IOException, DataFormatException {
+	private byte[] readRawObject(ObjectId id) throws IOException {
 		// Try to read the object data bytes from loose file or pack files
 		byte[] result = null;
 		File looseFile = getLooseObjectFile(id);
@@ -214,7 +210,7 @@ public final class FileRepository implements Repository {
 		
 		// Check the bytes and return result
 		if (result != null && !Arrays.equals(Sha1.getHash(result), id.getBytes()))
-			throw new DataFormatException("Hash of data mismatches object ID");
+			throw new GitFormatException("Hash of data mismatches object ID");
 		return result;
 	}
 	
@@ -226,10 +222,9 @@ public final class FileRepository implements Repository {
 	 * @return the parsed object with the specified hash, or {@code null} if not found in the repo
 	 * @throws NullPointerException if the ID is {@code null}
 	 * @throws IllegalStateException if this repository is already closed
-	 * @throws IOException if an I/O exception occurred while reading the object
-	 * @throws DataFormatException if malformed data was encountered while reading the object
+	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 */
-	public GitObject readObject(ObjectId id) throws IOException, DataFormatException {
+	public GitObject readObject(ObjectId id) throws IOException {
 		if (id == null)
 			throw new NullPointerException();
 		if (directory == null)
@@ -242,22 +237,22 @@ public final class FileRepository implements Repository {
 			while (index < bytes.length && bytes[index] != 0)
 				index++;
 			if (index >= bytes.length)
-				throw new DataFormatException("Invalid object header");
+				throw new GitFormatException("Invalid object header");
 			String header = new String(bytes, 0, index, StandardCharsets.US_ASCII);
 			bytes = Arrays.copyOfRange(bytes, index + 1, bytes.length);
 			
 			// Parse header
 			String[] parts = header.split(" ", -1);
 			if (parts.length != 2)
-				throw new DataFormatException("Invalid object header");
+				throw new GitFormatException("Invalid object header");
 			String type = parts[0];
 			int length = Integer.parseInt(parts[1]);
 			if (length < 0)
-				throw new DataFormatException("Negative data length");
+				throw new GitFormatException("Negative data length");
 			if (!Integer.toString(length).equals(parts[1]))  // Check for non-canonical number representations like -0, 007, etc.
-				throw new DataFormatException("Invalid data length string");
+				throw new GitFormatException("Invalid data length string");
 			if (length != bytes.length)
-				throw new DataFormatException("Data length mismatch");
+				throw new GitFormatException("Data length mismatch");
 			
 			// Parse bytes into object
 			switch (type) {
@@ -265,7 +260,7 @@ public final class FileRepository implements Repository {
 				case "tree"  :  return new TreeObject  (bytes);
 				case "commit":  return new CommitObject(bytes);
 				case "tag"   :  return new TagObject   (bytes);
-				default:  throw new DataFormatException("Unknown object type: " + type);
+				default:  throw new GitFormatException("Unknown object type: " + type);
 			}
 			
 		} else {
@@ -339,10 +334,9 @@ public final class FileRepository implements Repository {
 	 * Reads and returns a collection of all known references in this repository.
 	 * @return a new collection of references based on this repo's data (not {@code null})
 	 * @throws IllegalStateException if this repository is already closed
-	 * @throws IOException if an I/O exception occurred while reading references
-	 * @throws DataFormatException if malformed data was encountered while reading references
+	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 */
-	public Collection<Reference> listReferences() throws IOException, DataFormatException {
+	public Collection<Reference> listReferences() throws IOException {
 		if (directory == null)
 			throw new IllegalStateException("Repository already closed");
 		
@@ -378,10 +372,9 @@ public final class FileRepository implements Repository {
 	 * @return a new reference of the specified name or {@code null}
 	 * @throws NullPointerException if the name is {@code null}
 	 * @throws IllegalStateException if this repository is already closed
-	 * @throws IOException if an I/O exception occurred while reading references
-	 * @throws DataFormatException if malformed data was encountered while reading references
+	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 */
-	public Reference readReference(String name) throws IOException, DataFormatException {
+	public Reference readReference(String name) throws IOException {
 		Reference.checkName(name);
 		if (directory == null)
 			throw new IllegalStateException("Repository already closed");
@@ -427,7 +420,7 @@ public final class FileRepository implements Repository {
 	/*---- Private helper methods ----*/
 	
 	// Scans all loose reference files in the given subdirectory name and adds them to the given collection of results.
-	private void listLooseReferences(String subDirName, Collection<Reference> result) throws IOException, DataFormatException {
+	private void listLooseReferences(String subDirName, Collection<Reference> result) throws IOException {
 		for (File item : new File(new File(directory, "refs"), subDirName.replace('/', File.separatorChar)).listFiles()) {
 			if (item.isFile() && !item.getName().equals("HEAD"))
 				result.add(parseReferenceFile(subDirName, item));
@@ -437,7 +430,7 @@ public final class FileRepository implements Repository {
 	
 	// Returns an unordered collection of references (pairs of name, commit ID) from parsing the "packed-refs" file in the repository.
 	// Note that the returned reference names are like "heads/master", and do not contain a "refs/" prefix.
-	private Collection<Reference> parsePackedRefsFile() throws IOException, DataFormatException {
+	private Collection<Reference> parsePackedRefsFile() throws IOException {
 		Collection<Reference> result = new ArrayList<>();
 		File packedRefFile = new File(directory, "packed-refs");
 		if (!packedRefFile.isFile())
@@ -445,7 +438,7 @@ public final class FileRepository implements Repository {
 		
 		try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(packedRefFile), StandardCharsets.UTF_8))) {
 			if (!checkPackedRefsFileHeaderLine(in.readLine()))
-				throw new DataFormatException("Invalid packed-refs file");
+				throw new GitFormatException("Invalid packed-refs file");
 			while (true) {
 				String line = in.readLine();
 				if (line == null)
@@ -455,10 +448,10 @@ public final class FileRepository implements Repository {
 					if (parts[0].startsWith("^"))
 						continue;
 					else
-						throw new DataFormatException("Invalid packed-refs file");
+						throw new GitFormatException("Invalid packed-refs file");
 				} else if (parts.length == 2) {
 					if (!parts[1].startsWith("refs/"))
-						throw new DataFormatException("Invalid packed-refs file");
+						throw new GitFormatException("Invalid packed-refs file");
 					Reference ref = new Reference(parts[1].substring("refs/".length()), new CommitId(parts[0]));
 					if (!ref.name.startsWith("tags/"))
 						result.add(ref);
@@ -479,12 +472,12 @@ public final class FileRepository implements Repository {
 	// Reads the file at the given location and returns the SHA-1 hash string that was in the file.
 	// subDirName is usually something like "heads" or "remotes/origin" or "tags".
 	// The file must contain exactly 40 hexadecimal digits followed by a newline (total 41 bytes).
-	private Reference parseReferenceFile(String subDirName, File file) throws IOException, DataFormatException {
+	private Reference parseReferenceFile(String subDirName, File file) throws IOException {
 		byte[] buf = new byte[41];
 		try (DataInputStream in = new DataInputStream(new FileInputStream(file))) {
 			in.readFully(buf);
 			if (buf[40] != '\n' || in.read() != -1)
-				throw new DataFormatException("Invalid reference file");
+				throw new GitFormatException("Invalid reference file");
 		}
 		return new Reference(subDirName + "/" + file.getName(), new CommitId(new String(buf, 0, 40, StandardCharsets.US_ASCII)));
 	}

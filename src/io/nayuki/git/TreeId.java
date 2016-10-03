@@ -8,7 +8,6 @@
 package io.nayuki.git;
 
 import java.io.IOException;
-import java.util.zip.DataFormatException;
 
 
 /**
@@ -61,11 +60,10 @@ public class TreeId extends ObjectId {
 	 * Reads the object data for this object ID from the associated repository.
 	 * @param repo the repository to read from (not {@code null})
 	 * @return the object data, or {@code null} if not found in the repo
-	 * @throws IOException if an I/O exception occurred
-	 * @throws DataFormatException if malformed data was encountered during reading
+	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 * @throws ClassCastException if an object was successfully read but its type is not a tree object
 	 */
-	public TreeObject read(Repository repo) throws IOException, DataFormatException {
+	public TreeObject read(Repository repo) throws IOException {
 		return (TreeObject)super.read(repo);
 	}
 	

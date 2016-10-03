@@ -51,18 +51,18 @@ final class PackfileReader {
 	
 	/*---- Public methods ----*/
 	
-	public boolean containsObject(ObjectId id) throws IOException, DataFormatException {
+	public boolean containsObject(ObjectId id) throws IOException {
 		return readDataOffset(id) != null;
 	}
 	
 	
-	public byte[] readRawObject(ObjectId id) throws IOException, DataFormatException {
+	public byte[] readRawObject(ObjectId id) throws IOException {
 		Object[] pair = readObjectHeaderless(id);
 		return GitObject.addHeader((String)pair[0], (byte[])pair[1]);
 	}
 	
 	
-	public GitObject readObject(ObjectId id) throws IOException, DataFormatException {
+	public GitObject readObject(ObjectId id) throws IOException {
 		Object[] pair = readObjectHeaderless(id);
 		byte[] bytes = (byte[])pair[1];
 		switch ((String)pair[0]) {
@@ -77,7 +77,7 @@ final class PackfileReader {
 	
 	// Reads the index file to find all IDs that match the given
 	// hexadecimal prefix, and adds them to the given result set.
-	public void getIdsByPrefix(String prefix, Set<ObjectId> result) throws IOException, DataFormatException {
+	public void getIdsByPrefix(String prefix, Set<ObjectId> result) throws IOException {
 		ObjectId lowId  = new RawId(prefix + "0000000000000000000000000000000000000000".substring(prefix.length()));  // Inclusive
 		ObjectId highId = new RawId(prefix + "ffffffffffffffffffffffffffffffffffffffff".substring(prefix.length()));  // Inclusive
 		
@@ -89,9 +89,9 @@ final class PackfileReader {
 			byte[] b = new byte[4];
 			raf.readFully(b);
 			if (b[0] != (byte)0xFF || b[1] != 't' || b[2] != 'O' || b[3] != 'c')
-				throw new DataFormatException("Pack index header expected");
+				throw new GitFormatException("Pack index header expected");
 			if (raf.readInt() != 2)
-				throw new DataFormatException("Index version 2 expected");
+				throw new GitFormatException("Index version 2 expected");
 			
 			// Read pack size
 			raf.seek(HEADER_LEN + FANOUT_LEN - 4);
@@ -125,7 +125,7 @@ final class PackfileReader {
 	
 	// Reads the index file to find the pack file byte offset of the given hash,
 	// returning an integer value if found or null if not found.
-	private Long readDataOffset(ObjectId id) throws IOException, DataFormatException {
+	private Long readDataOffset(ObjectId id) throws IOException {
 		final int HEADER_LEN = 8;
 		final int FANOUT_LEN = 256 * 4;
 		
@@ -134,9 +134,9 @@ final class PackfileReader {
 			byte[] b = new byte[4];
 			raf.readFully(b);
 			if (b[0] != (byte)0xFF || b[1] != 't' || b[2] != 'O' || b[3] != 'c')
-				throw new DataFormatException("Pack index header expected");
+				throw new GitFormatException("Pack index header expected");
 			if (raf.readInt() != 2)
-				throw new DataFormatException("Index version 2 expected");
+				throw new GitFormatException("Index version 2 expected");
 			
 			// Read pack size
 			raf.seek(HEADER_LEN + FANOUT_LEN - 4);
@@ -181,7 +181,7 @@ final class PackfileReader {
 	
 	// Reads the object data, checks the data hash against the argument,
 	// and returns (String typeName, byte[] bytes). The type name is not null.
-	private Object[] readObjectHeaderless(ObjectId id) throws IOException, DataFormatException {
+	private Object[] readObjectHeaderless(ObjectId id) throws IOException {
 		// Read byte data
 		int typeIndex;
 		byte[] bytes;
@@ -196,18 +196,18 @@ final class PackfileReader {
 		// Check hash
 		String typeName = TYPE_NAMES[typeIndex];
 		if (typeName == null)
-			throw new DataFormatException("Unknown object type: " + typeIndex);
+			throw new GitFormatException("Unknown object type: " + typeIndex);
 		Sha1 hasher = new Sha1();
 		hasher.update((typeName + " " + bytes.length + "\0").getBytes(StandardCharsets.US_ASCII));
 		hasher.update(bytes);
 		if (!Arrays.equals(hasher.getHash(), id.getBytes()))
-			throw new DataFormatException("Hash of data mismatches object ID");
+			throw new GitFormatException("Hash of data mismatches object ID");
 		return new Object[]{typeName, bytes};
 	}
 	
 	
 	// Reads the raw object data, and returns a pair (uint3 typeIndex, byte[] bytes).
-	private Object[] readObjectHeaderless(RandomAccessFile raf, long byteOffset) throws IOException, DataFormatException {
+	private Object[] readObjectHeaderless(RandomAccessFile raf, long byteOffset) throws IOException {
 		if (byteOffset < 0)
 			throw new IllegalArgumentException();
 		raf.seek(byteOffset);
@@ -216,7 +216,7 @@ final class PackfileReader {
 		long typeAndSize = decodeTypeAndSize(raf);
 		int type = (int)typeAndSize & 7;  // 3-bit unsigned
 		if (type == 0 || type == 5 || type == 7)
-			throw new DataFormatException("Unknown object type: " + type);
+			throw new GitFormatException("Unknown object type: " + type);
 		long size = typeAndSize >>> 3;
 		
 		// Read delta offset
@@ -246,14 +246,16 @@ final class PackfileReader {
 					} else if (inf.finished())
 						break;
 					else
-						throw new DataFormatException();
+						throw new GitFormatException();
 				}
+			} catch (DataFormatException e) {
+				throw new GitFormatException("Invalid DEFLATE data", e);
 			} finally {
 				inf.end();
 			}
 			data = out.toByteArray();
 			if (data.length != size)
-				throw new DataFormatException("Data length mismatch");
+				throw new GitFormatException("Data length mismatch");
 		}
 		
 		// Handle delta encoding
@@ -267,7 +269,7 @@ final class PackfileReader {
 			DataInputStream deltaIn = new DataInputStream(new ByteArrayInputStream(data));
 			long baseLen = decodeDeltaHeaderInt(deltaIn);
 			if (baseLen != base.length)
-				throw new DataFormatException("Base data length mismatch");
+				throw new GitFormatException("Base data length mismatch");
 			long dataLen = decodeDeltaHeaderInt(deltaIn);
 			
 			// Decode the delta format's operations
@@ -298,7 +300,7 @@ final class PackfileReader {
 			}
 			data = out.toByteArray();
 			if (data.length != dataLen)
-				throw new DataFormatException("Data length mismatch");
+				throw new GitFormatException("Data length mismatch");
 		}
 		
 		return new Object[]{type, data};
@@ -309,14 +311,14 @@ final class PackfileReader {
 	/*---- Private functions for low-level integer decoding ----*/
 	
 	// Reads one or more bytes from the input and returns (size << 3) | type, where size is uint61 and type is uint3.
-	static long decodeTypeAndSize(DataInput in) throws IOException, DataFormatException {
+	static long decodeTypeAndSize(DataInput in) throws IOException {
 		int b = in.readUnsignedByte();
 		int type = (b >>> 4) & 7;
 		long size = b & 0xF;
 		for (int shift = 4; (b & 0x80) != 0; shift += 7) {  // Little endian
 			b = in.readUnsignedByte();
 			if ((b & 0x7F) >>> Math.max(Math.min(61 - shift, 7), 0) != 0)  // Overflow
-				throw new DataFormatException("Variable-length integer too large");
+				throw new GitFormatException("Variable-length integer too large");
 			size |= (b & 0x7FL) << shift;
 		}
 		return size << 3 | type;
@@ -324,7 +326,7 @@ final class PackfileReader {
 	
 	
 	// Returns a uint64 value.
-	static long decodeOffsetDelta(DataInput in) throws IOException, DataFormatException {
+	static long decodeOffsetDelta(DataInput in) throws IOException {
 		long result = 0;
 		while (true) {  // Big endian
 			int b = in.readUnsignedByte();
@@ -332,7 +334,7 @@ final class PackfileReader {
 			if ((b & 0x80) == 0)
 				break;
 			if ((result + 1) >>> 57 != 0)  // Overflow
-				throw new DataFormatException("Variable-length integer too large");
+				throw new GitFormatException("Variable-length integer too large");
 			result++;
 			result <<= 7;
 		}
@@ -341,12 +343,12 @@ final class PackfileReader {
 	
 	
 	// Returns a uint64 value.
-	static long decodeDeltaHeaderInt(DataInput in) throws IOException, DataFormatException {
+	static long decodeDeltaHeaderInt(DataInput in) throws IOException {
 		long result = 0;
 		for (int shift = 0; ; shift += 7) {  // Little endian
 			int b = in.readUnsignedByte();
 			if ((b & 0x7F) >>> Math.max(Math.min(64 - shift, 7), 0) != 0)  // Overflow
-				throw new DataFormatException("Variable-length integer too large");
+				throw new GitFormatException("Variable-length integer too large");
 			result |= (b & 0x7FL) << shift;
 			if ((b & 0x80) == 0)
 				break;

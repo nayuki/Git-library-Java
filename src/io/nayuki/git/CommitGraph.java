@@ -17,7 +17,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.zip.DataFormatException;
 
 
 /**
@@ -74,10 +73,9 @@ public final class CommitGraph {
 	 * @return a new commit object that was read from the repository
 	 * @throws NullPointerException if the repository or commit ID is {@code null}
 	 * @throws IllegalArgumentException if the commit ID was not found in the repository
-	 * @throws IOException if an I/O exception occurred
-	 * @throws DataFormatException if malformed data was encountered during reading
+	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 */
-	public CommitObject addCommit(Repository repo, CommitId id) throws IOException, DataFormatException {
+	public CommitObject addCommit(Repository repo, CommitId id) throws IOException {
 		if (repo == null || id == null)
 			throw new NullPointerException();
 		CommitObject obj = id.read(repo);
@@ -112,10 +110,9 @@ public final class CommitGraph {
 	 * @throws NullPointerException if the repository or any commit ID is {@code null}
 	 * @throws IllegalArgumentException if a commit ID in the
 	 * specified list or in the history was not found in the repository
-	 * @throws IOException if an I/O exception occurred
-	 * @throws DataFormatException if malformed data was encountered during reading
+	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 */
-	public void addHistory(Repository repo, CommitId... startIds) throws IOException, DataFormatException {
+	public void addHistory(Repository repo, CommitId... startIds) throws IOException {
 		if (repo == null || startIds == null)
 			throw new NullPointerException();
 		addHistory(repo, Arrays.asList(startIds));
@@ -131,10 +128,9 @@ public final class CommitGraph {
 	 * @throws NullPointerException if the repository or any commit ID is {@code null}
 	 * @throws IllegalArgumentException if a commit ID in the
 	 * specified list or in the history was not found in the repository
-	 * @throws IOException if an I/O exception occurred
-	 * @throws DataFormatException if malformed data was encountered during reading
+	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 */
-	public void addHistory(Repository repo, Collection<CommitId> startIds) throws IOException, DataFormatException {
+	public void addHistory(Repository repo, Collection<CommitId> startIds) throws IOException {
 		if (repo == null || startIds == null)
 			throw new NullPointerException();
 		Queue<CommitId> queue = new ArrayDeque<>();

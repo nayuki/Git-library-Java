@@ -11,7 +11,6 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.zip.DataFormatException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -21,7 +20,7 @@ import org.junit.Test;
  */
 public final class PackfileReaderTest {
 	
-	@Test public void testDecodeTypeAndSize() throws IOException, DataFormatException {
+	@Test public void testDecodeTypeAndSize() throws IOException {
 		Object[][] cases = {
 				{              0x00L, bytes(0x00)},
 				{              0x28L, bytes(0x05)},
@@ -73,13 +72,13 @@ public final class PackfileReaderTest {
 				DataInput in = new DataInputStream(new ByteArrayInputStream(cs));
 				PackfileReader.decodeTypeAndSize(in);
 				Assert.fail();
-			} catch (DataFormatException e) {}  // Pass
+			} catch (GitFormatException e) {}  // Pass
 		}
 	}
 	
 	
 	
-	@Test public void testDecodeOffsetDelta() throws IOException, DataFormatException {
+	@Test public void testDecodeOffsetDelta() throws IOException {
 		Object[][] cases = {
 			{              0x00L, bytes(0x00)},
 			{              0x12L, bytes(0x12)},
@@ -130,13 +129,13 @@ public final class PackfileReaderTest {
 				DataInput in = new DataInputStream(new ByteArrayInputStream(cs));
 				PackfileReader.decodeOffsetDelta(in);
 				Assert.fail();
-			} catch (DataFormatException e) {}  // Pass
+			} catch (GitFormatException e) {}  // Pass
 		}
 	}
 	
 	
 	
-	@Test public void testDecodeDeltaHeaderInt() throws IOException, DataFormatException {
+	@Test public void testDecodeDeltaHeaderInt() throws IOException {
 		Object[][] cases = {
 			{               0x0L, bytes(0x00)},
 			{              0x7FL, bytes(0x7F)},
@@ -181,7 +180,7 @@ public final class PackfileReaderTest {
 				DataInput in = new DataInputStream(new ByteArrayInputStream(cs));
 				PackfileReader.decodeDeltaHeaderInt(in);
 				Assert.fail();
-			} catch (DataFormatException e) {}  // Pass
+			} catch (GitFormatException e) {}  // Pass
 		}
 	}
 	
