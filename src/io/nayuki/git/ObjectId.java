@@ -150,7 +150,8 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	 * Note that subclasses of {@code ObjectId} will override this method
 	 * and specify a subclass of {@code GitObject} as the return type, for convenience.
 	 * @param repo the repository to read from (not {@code null})
-	 * @return the object data, or {@code null} if not found in the repo
+	 * @return the object data (not {@code null})
+	 * @throws IllegalArgumentException if no object with the ID was found in the repository
 	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 */
 	public GitObject read(Repository repo) throws IOException {

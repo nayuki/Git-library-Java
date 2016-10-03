@@ -59,7 +59,8 @@ public class TreeId extends ObjectId {
 	/**
 	 * Reads the object data for this object ID from the specified repository.
 	 * @param repo the repository to read from (not {@code null})
-	 * @return the object data, or {@code null} if not found in the repo
+	 * @return the object data (not {@code null})
+	 * @throws IllegalArgumentException if no object with the ID was found in the repository
 	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 * @throws ClassCastException if an object was successfully read but its type is not a tree object
 	 */

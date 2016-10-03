@@ -65,11 +65,11 @@ public interface Repository extends AutoCloseable {
 	
 	
 	/**
-	 * Reads the Git object with the specified hash from this repository,
-	 * parses it, and returns it - or {@code null} if the object was not found.
+	 * Reads the Git object with the specified hash from this repository, parses it, and returns it.
 	 * @param id the hash of the object (not {@code null})
-	 * @return the parsed object with the specified hash, or {@code null} if not found in the repo
+	 * @return the parsed object with the specified hash (not {@code null})
 	 * @throws NullPointerException if the ID is {@code null}
+	 * @throws IllegalArgumentException if no object with the ID was found
 	 * @throws IllegalStateException if this repository is already closed
 	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 */
