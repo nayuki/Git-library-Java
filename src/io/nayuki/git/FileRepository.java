@@ -41,6 +41,7 @@ public final class FileRepository implements Repository {
 	
 	// Initially not null, but becomes null after close() is called.
 	private File directory;
+	private File objectsDir;
 	
 	
 	
@@ -61,7 +62,8 @@ public final class FileRepository implements Repository {
 			throw new NullPointerException();
 		if (!dir.isDirectory())
 			throw new IllegalArgumentException("Repository directory does not exist");
-		if (!new File(dir, "config").isFile() || !new File(dir, "objects").isDirectory())
+		objectsDir = new File(dir, "objects");
+		if (!new File(dir, "config").isFile() || !objectsDir.isDirectory())
 			throw new IllegalArgumentException("Invalid repository format");
 		directory = dir;
 	}
@@ -89,6 +91,7 @@ public final class FileRepository implements Repository {
 	 */
 	public void close() throws IOException {
 		directory = null;
+		objectsDir = null;
 	}
 	
 	
@@ -138,7 +141,6 @@ public final class FileRepository implements Repository {
 		Set<ObjectId> result = new HashSet<>();
 		
 		// Check loose objects
-		File objectsDir = new File(directory, "objects");
 		if (prefix.length() < 2) {
 			for (File item : objectsDir.listFiles()) {
 				String itemName = item.getName();
@@ -320,7 +322,7 @@ public final class FileRepository implements Repository {
 	// Scans the "objects/pack" directory and returns a collection of pack file reader objects.
 	private Collection<PackfileReader> listPackfiles() {
 		Collection<PackfileReader> result = new ArrayList<>();
-		File dir = new File(new File(directory, "objects"), "pack");
+		File dir = new File(objectsDir, "pack");
 		final String IDX_EXT = ".idx";
 		for (File item : dir.listFiles()) {  // Look for index files
 			String name = item.getName();
@@ -490,8 +492,7 @@ public final class FileRepository implements Repository {
 	// Returns the expected location of a loose object file with the given hash. This performs no I/O and always succeeds.
 	// For example, a repo at "user/project.git" has a loose object of hash 12345xyz at "user/project.git/objects/12/345xyz".
 	private File getLooseObjectFile(ObjectId id) {
-		File temp = new File(directory, "objects");
-		temp = new File(temp, id.hexString.substring(0, 2));
+		File temp = new File(objectsDir, id.hexString.substring(0, 2));
 		return new File(temp, id.hexString.substring(2));
 	}
 	
