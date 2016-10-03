@@ -31,6 +31,7 @@ public interface Repository extends AutoCloseable {
 	 * @throws NullPointerException if the prefix is {@code null}
 	 * @throws IllegalArgumentException if the prefix has non-hexadecimal characters or is over 40 chars long, or
 	 * if there is no unique match - either zero or multiple objects have an ID with the specified hexadecimal prefix
+	 * @throws IllegalStateException if this repository is already closed
 	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 */
 	public ObjectId getIdByPrefix(String prefix) throws IOException;
@@ -44,6 +45,7 @@ public interface Repository extends AutoCloseable {
 	 * @return a new set of object IDs matching the prefix, of size at least 0 (not {@code null})
 	 * @throws NullPointerException if the prefix is {@code null}
 	 * @throws IllegalArgumentException if the prefix has non-hexadecimal characters or is over 40 chars long
+	 * @throws IllegalStateException if this repository is already closed
 	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 */
 	public Set<ObjectId> getIdsByPrefix(String prefix) throws IOException;
