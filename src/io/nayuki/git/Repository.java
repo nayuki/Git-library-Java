@@ -9,6 +9,7 @@ package io.nayuki.git;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Set;
 import java.util.zip.DataFormatException;
 
 
@@ -20,6 +21,36 @@ import java.util.zip.DataFormatException;
  * @see Reference
  */
 public interface Repository extends AutoCloseable {
+	
+	/*---- Methods for object IDs ----*/
+	
+	/**
+	 * Returns the unique object ID in this repository that matches the specified hexadecimal prefix.
+	 * @param prefix the hexadecimal prefix, case insensitive, between 0 to 40 characters long (not {@code null})
+	 * @return the ID of an object that exists in this repository and where the
+	 * specified string is a prefix of that object's hexadecimal ID (not {@code null})
+	 * @throws NullPointerException if the prefix is {@code null}
+	 * @throws IllegalArgumentException if the prefix has non-hexadecimal characters or is over 40 chars long, or
+	 * if there is no unique match - either zero or multiple objects have an ID with the specified hexadecimal prefix
+	 * @throws IOException if an I/O exception occurred while reading the repository
+	 * @throws DataFormatException if malformed data was encountered while reading the repository
+	 */
+	public ObjectId getIdByPrefix(String prefix) throws IOException, DataFormatException;
+	
+	
+	/**
+	 * Returns the set of all object IDs in this repository that match the specified hexadecimal prefix.
+	 * Note that {@code getIdsByPrefix("")} will list all object IDs in this repository,
+	 * since the empty string is a prefix of every string.
+	 * @param prefix the hexadecimal prefix, case insensitive, between 0 to 40 characters long (not {@code null})
+	 * @return a new set of object IDs matching the prefix, of size at least 0 (not {@code null})
+	 * @throws NullPointerException if the prefix is {@code null}
+	 * @throws IllegalArgumentException if the prefix has non-hexadecimal characters or is over 40 chars long
+	 * @throws IOException if an I/O exception occurred while reading the repository
+	 * @throws DataFormatException if malformed data was encountered while reading the repository
+	 */
+	public Set<ObjectId> getIdsByPrefix(String prefix) throws IOException, DataFormatException;
+	
 	
 	/*---- Methods for Git objects ----*/
 	

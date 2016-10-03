@@ -94,6 +94,82 @@ public final class FileRepository implements Repository {
 	
 	
 	/**
+	 * Returns the unique object ID in this repository that matches the specified hexadecimal prefix.
+	 * @param prefix the hexadecimal prefix, case insensitive, between 0 to 40 characters long (not {@code null})
+	 * @return the ID of an object that exists in this repository and where the
+	 * specified string is a prefix of that object's hexadecimal ID (not {@code null})
+	 * @throws NullPointerException if the prefix is {@code null}
+	 * @throws IllegalArgumentException if the prefix has non-hexadecimal characters or is over 40 chars long, or
+	 * if there is no unique match - either zero or multiple objects have an ID with the specified hexadecimal prefix
+	 * @throws IOException if an I/O exception occurred while reading the repository
+	 * @throws DataFormatException if malformed data was encountered while reading the repository
+	 */
+	public ObjectId getIdByPrefix(String prefix) throws IOException, DataFormatException {
+		Set<ObjectId> temp = getIdsByPrefix(prefix);
+		switch (temp.size()) {
+			case 0 :  throw new IllegalArgumentException("No matching object ID found");
+			case 1 :  return temp.iterator().next();
+			default:  throw new IllegalArgumentException("Multiple object IDs found");
+		}
+	}
+	
+	
+	/**
+	 * Returns the set of all object IDs in this repository that match the specified hexadecimal prefix.
+	 * Note that {@code getIdsByPrefix("")} will list all object IDs in this repository,
+	 * since the empty string is a prefix of every string.
+	 * @param prefix the hexadecimal prefix, case insensitive, between 0 to 40 characters long (not {@code null})
+	 * @return a new set of object IDs matching the prefix, of size at least 0 (not {@code null})
+	 * @throws NullPointerException if the prefix is {@code null}
+	 * @throws IllegalArgumentException if the prefix has non-hexadecimal characters or is over 40 chars long
+	 * @throws IOException if an I/O exception occurred while reading the repository
+	 * @throws DataFormatException if malformed data was encountered while reading the repository
+	 */
+	public Set<ObjectId> getIdsByPrefix(String prefix) throws IOException, DataFormatException {
+		if (prefix == null)
+			throw new NullPointerException();
+		if (prefix.length() > ObjectId.NUM_BYTES * 2)
+			throw new IllegalArgumentException("Prefix too long");
+		if (!prefix.matches("[0-9a-fA-F]*"))
+			throw new IllegalArgumentException("Prefix contains non-hexadecimal characters");
+		
+		prefix = prefix.toLowerCase();
+		Set<ObjectId> result = new HashSet<>();
+		
+		// Check loose objects
+		File objectsDir = new File(directory, "objects");
+		if (prefix.length() < 2) {
+			for (File item : objectsDir.listFiles()) {
+				String itemName = item.getName();
+				if (item.isDirectory() && itemName.length() == 2 && itemName.toLowerCase().startsWith(prefix)) {
+					for (File subitem : item.listFiles()) {
+						String subitemName = subitem.getName();
+						if (subitem.isFile() && subitemName.matches("[0-9a-fA-F]{38}"))
+							result.add(new RawId(itemName + subitemName));
+					}
+				}
+			}
+		} else {
+			String itemName = prefix.substring(0, 2);
+			File item = new File(objectsDir, itemName);
+			if (item.isDirectory()) {
+				String subprefix = prefix.substring(2);
+				for (File subitem : item.listFiles()) {
+					String subitemName = subitem.getName();
+					if (subitem.isFile() && subitemName.matches("[0-9a-fA-F]{38}") && subitemName.toLowerCase().startsWith(subprefix))
+						result.add(new RawId(itemName + subitemName));
+				}
+			}
+		}
+		
+		// Check pack files
+		for (PackfileReader pfr : listPackfiles())
+			pfr.getIdsByPrefix(prefix, result);
+		return result;
+	}
+	
+	
+	/**
 	 * Tests whether this repository contains an object with the specified hash.
 	 * @param id the hash of the object (not {@code null})
 	 * @return {@code true} if the repo has at least one copy of the object, {@code false} if it has none

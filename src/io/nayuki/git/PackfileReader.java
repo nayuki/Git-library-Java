@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Set;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
@@ -74,6 +75,51 @@ final class PackfileReader {
 	}
 	
 	
+	// Reads the index file to find all IDs that match the given
+	// hexadecimal prefix, and adds them to the given result set.
+	public void getIdsByPrefix(String prefix, Set<ObjectId> result) throws IOException, DataFormatException {
+		ObjectId lowId  = new RawId(prefix + "0000000000000000000000000000000000000000".substring(prefix.length()));  // Inclusive
+		ObjectId highId = new RawId(prefix + "ffffffffffffffffffffffffffffffffffffffff".substring(prefix.length()));  // Inclusive
+		
+		final int HEADER_LEN = 8;
+		final int FANOUT_LEN = 256 * 4;
+		
+		try (RandomAccessFile raf = new RandomAccessFile(indexFile, "r")) {
+			// Check file header; this logic only supports version 2 indexes
+			byte[] b = new byte[4];
+			raf.readFully(b);
+			if (b[0] != (byte)0xFF || b[1] != 't' || b[2] != 'O' || b[3] != 'c')
+				throw new DataFormatException("Pack index header expected");
+			if (raf.readInt() != 2)
+				throw new DataFormatException("Index version 2 expected");
+			
+			// Read pack size
+			raf.seek(HEADER_LEN + FANOUT_LEN - 4);
+			long totalObjects = raf.readInt() & 0xFFFFFFFFL;
+			
+			// Skip over some index entries based on head byte
+			int headByte = lowId.getByte(0) & 0xFF;
+			long objectOffset = 0;
+			if (headByte > 0) {
+				raf.seek(HEADER_LEN + (headByte - 1) * 4);
+				objectOffset = raf.readInt() & 0xFFFFFFFFL;
+			}
+			
+			// Find object ID in index (which is in ascending order)
+			raf.seek(HEADER_LEN + FANOUT_LEN + objectOffset * ObjectId.NUM_BYTES);
+			b = new byte[ObjectId.NUM_BYTES];
+			for (; objectOffset < totalObjects; objectOffset++) {
+				raf.readFully(b);
+				ObjectId id = new RawId(b);
+				if (id.compareTo(highId) > 0)
+					break;
+				if (id.compareTo(lowId) >= 0)
+					result.add(id);
+			}
+		}
+	}
+	
+	
 	
 	/*---- Private methods for mid-level reading ----*/
 	
@@ -111,7 +157,7 @@ final class PackfileReader {
 				if (objectOffset >= totalObjects)
 					return null;  // Not found
 				raf.readFully(b);
-				int cmp = new CommitId(b).compareTo(id);
+				int cmp = new RawId(b).compareTo(id);
 				if (cmp == 0)
 					break;
 				else if (cmp > 0)
