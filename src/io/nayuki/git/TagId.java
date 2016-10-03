@@ -57,7 +57,7 @@ public final class TagId extends ObjectId {
 	/*---- Methods ----*/
 	
 	/**
-	 * Reads the object data for this object ID from the associated repository.
+	 * Reads the object data for this object ID from the specified repository.
 	 * @param repo the repository to read from (not {@code null})
 	 * @return the object data, or {@code null} if not found in the repo
 	 * @throws IOException if an I/O exception occurred or malformed data was encountered
