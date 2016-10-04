@@ -13,9 +13,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -130,10 +130,25 @@ public final class TreeObject extends GitObject {
 	
 	
 	/**
+	 * Sorts the tree entries so that they are in the correct order
+	 * before calling {@link#toBytes()} or {@link#getId()}.
+	 * <p>Note that Git's sort order is the standard lexicographical byte sort, except that the name
+	 * of a directory entry has a "/" implicitly append at the end (which affects the sort order).</p>
+	 * @throws NullPointerException if the list or any entry is {@code null}
+	 */
+	public void sortEntries() {
+		if (entries == null)
+			throw new NullPointerException();
+		Collections.sort(entries, COMPARATOR);
+	}
+	
+	
+	/**
 	 * Returns the raw byte serialization of the current state of this tree object, including a lightweight header.
 	 * @return the raw byte serialization of this object (not {@code null})
 	 * @throws IllegalStateException if the list of entries or any entry is {@code null},
-	 * or the same name occurs in more than one tree entry
+	 * two or more entries have the same name, or the list is not in sorted order
+	 * @see #sortEntries()
 	 */
 	public byte[] toBytes() {
 		checkState();
@@ -173,14 +188,28 @@ public final class TreeObject extends GitObject {
 	private void checkState() {
 		if (entries == null)
 			throw new IllegalStateException("List is null");
-		Set<String> names = new HashSet<>();
+		String prev = null;
 		for (Entry entry : entries) {
 			if (entry == null)
 				throw new IllegalStateException("List element is null");
-			if (!names.add(entry.name))
-				throw new IllegalStateException("List contains duplicate name");
+			String name = entry.getSortName();
+			if (prev != null) {
+				int cmp = name.compareTo(prev);
+				if (cmp == 0)
+					throw new IllegalStateException("List contains duplicate entry name");
+				if (cmp < 0)
+					throw new IllegalStateException("List entry names not sorted");
+			}
+			prev = name;
 		}
 	}
+	
+	
+	private static final Comparator<Entry> COMPARATOR = new Comparator<Entry>() {
+		public int compare(Entry x, Entry y) {
+			return x.getSortName().compareTo(y.getSortName());
+		}
+	};
 	
 	
 	
@@ -226,6 +255,17 @@ public final class TreeObject extends GitObject {
 				id = new RawId(hash);
 		}
 		
+		
+		
+		// See this discussion and article for why this logic exists:
+		// - http://www.spinics.net/lists/git/msg25856.html
+		// - https://www.bitleaks.net/blog/large-scale-git-history-rewrites/
+		String getSortName() {
+			if (type == Type.DIRECTORY)
+				return name + "/";
+			else
+				return name;
+		}
 		
 		
 		/**
