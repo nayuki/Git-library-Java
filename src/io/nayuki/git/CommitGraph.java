@@ -247,7 +247,7 @@ public final class CommitGraph {
 	 * added to this graph's database, and does not query over some implicit "global" set of objects.
 	 * <p>The result set can grow or shrink in size as more commits are added to the database.
 	 * The minimum result set has size 0. Note that whenever the size of the unexplored set
-	 * decreases by 1, the size of the root set increases by 1.</p> 
+	 * decreases by 1, the size of the root set increases by 1.</p>
 	 * @return a new set of commit IDs with currently unexplored parents (not {@code null})
 	 */
 	public Set<CommitId> getUnexplored() {
