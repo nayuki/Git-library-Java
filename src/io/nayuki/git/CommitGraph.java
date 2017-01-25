@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 
@@ -58,8 +59,7 @@ public final class CommitGraph {
 	 * field values that prevent it from being serialized
 	 */
 	public void addCommit(CommitObject obj) {
-		if (obj == null)
-			throw new NullPointerException();
+		Objects.requireNonNull(obj);
 		addCommit(obj.getId(), obj);
 	}
 	
@@ -76,8 +76,8 @@ public final class CommitGraph {
 	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 */
 	public CommitObject addCommit(Repository repo, CommitId id) throws IOException {
-		if (repo == null || id == null)
-			throw new NullPointerException();
+		Objects.requireNonNull(repo);
+		Objects.requireNonNull(id);
 		CommitObject obj = id.read(repo);
 		if (obj == null)
 			throw new IllegalArgumentException("Commit object with the given ID not found in repository");
@@ -113,8 +113,8 @@ public final class CommitGraph {
 	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 */
 	public void addHistory(Repository repo, CommitId... startIds) throws IOException {
-		if (repo == null || startIds == null)
-			throw new NullPointerException();
+		Objects.requireNonNull(repo);
+		Objects.requireNonNull(startIds);
 		addHistory(repo, Arrays.asList(startIds));
 	}
 	
@@ -131,8 +131,8 @@ public final class CommitGraph {
 	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 */
 	public void addHistory(Repository repo, Collection<CommitId> startIds) throws IOException {
-		if (repo == null || startIds == null)
-			throw new NullPointerException();
+		Objects.requireNonNull(repo);
+		Objects.requireNonNull(startIds);
 		Queue<CommitId> queue = new ArrayDeque<>();
 		Set<CommitId> visited = new HashSet<>();
 		queue.addAll(startIds);
@@ -178,8 +178,7 @@ public final class CommitGraph {
 	 * @return the set of parents or {@code null}
 	 */
 	public Set<CommitId> getParents(CommitId id) {
-		if (id == null)
-			throw new NullPointerException();
+		Objects.requireNonNull(id);
 		Set<CommitId> temp = idToParents.get(id);
 		if (temp != null)
 			temp = Collections.unmodifiableSet(temp);
@@ -194,8 +193,7 @@ public final class CommitGraph {
 	 * @return the set of children (not {@code null})
 	 */
 	public Set<CommitId> getChildren(CommitId id) {
-		if (id == null)
-			throw new NullPointerException();
+		Objects.requireNonNull(id);
 		Set<CommitId> temp = idToChildren.get(id);
 		if (temp != null)
 			return Collections.unmodifiableSet(temp);

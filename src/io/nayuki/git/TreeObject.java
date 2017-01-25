@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 
 /**
@@ -54,8 +55,7 @@ public final class TreeObject extends GitObject {
 	 */
 	public TreeObject(byte[] data) throws IOException {
 		this();
-		if (data == null)
-			throw new NullPointerException();
+		Objects.requireNonNull(data);
 		
 		int index = 0;
 		while (index < data.length) {
@@ -119,8 +119,7 @@ public final class TreeObject extends GitObject {
 	 * @return an entry with a matching name, or {@code null}
 	 */
 	public Entry getEntry(String name) {
-		if (name == null)
-			throw new NullPointerException();
+		Objects.requireNonNull(name);
 		for (Entry entry : entries) {
 			if (entry.name.equals(name))
 				return entry;
@@ -137,8 +136,7 @@ public final class TreeObject extends GitObject {
 	 * @throws NullPointerException if the list or any entry is {@code null}
 	 */
 	public void sortEntries() {
-		if (entries == null)
-			throw new NullPointerException();
+		Objects.requireNonNull(entries);
 		Collections.sort(entries, COMPARATOR);
 	}
 	
@@ -240,8 +238,9 @@ public final class TreeObject extends GitObject {
 		 * @throws IllegalArgumentException if the name contains a NUL character
 		 */
 		public Entry(Type type, String name, byte[] hash) {
-			if (type == null || name == null || hash == null)
-				throw new NullPointerException();
+			Objects.requireNonNull(type);
+			Objects.requireNonNull(name);
+			Objects.requireNonNull(hash);
 			if (name.indexOf('\0') != -1)
 				throw new IllegalArgumentException("Name cannot contain NUL character");
 			

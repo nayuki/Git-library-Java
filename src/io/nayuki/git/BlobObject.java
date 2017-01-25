@@ -7,6 +7,8 @@
 
 package io.nayuki.git;
 
+import java.util.Objects;
+
 
 /**
  * A simple wrapper around a mutable byte array. Mutable structure.
@@ -41,8 +43,7 @@ public final class BlobObject extends GitObject {
 	 * @throws NullPointerException if the array is {@code null}
 	 */
 	public BlobObject(byte[] b) {
-		if (b == null)
-			throw new NullPointerException();
+		Objects.requireNonNull(b);
 		data = b.clone();
 	}
 	

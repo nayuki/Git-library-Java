@@ -9,6 +9,7 @@ package io.nayuki.git;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 
@@ -80,8 +81,7 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	 * or there are fewer than 20 bytes remaining starting at that offset
 	 */
 	ObjectId(byte[] bytes, int off) {
-		if (bytes == null)
-			throw new NullPointerException();
+		Objects.requireNonNull(bytes);
 		if (off < 0 || bytes.length - off < NUM_BYTES)
 			throw new IndexOutOfBoundsException();
 		
@@ -96,8 +96,7 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	/* Private helper methods and constants for constructors */
 	
 	private static byte[] hexHashToBytes(String str) {
-		if (str == null)
-			throw new NullPointerException();
+		Objects.requireNonNull(str);
 		if (!HEX_STRING_PATTERN.matcher(str).matches())
 			throw new IllegalArgumentException("Invalid hexadecimal hash");
 		
@@ -155,8 +154,7 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 */
 	public GitObject read(Repository repo) throws IOException {
-		if (repo == null)
-			throw new NullPointerException();
+		Objects.requireNonNull(repo);
 		return repo.readObject(this);
 	}
 	

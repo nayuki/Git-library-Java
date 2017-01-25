@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterOutputStream;
@@ -58,8 +59,7 @@ public final class FileRepository implements Repository {
 	 * @throws IOException if an I/O exception occurred while reading the repository
 	 */
 	public FileRepository(File dir) throws IOException {
-		if (dir == null)
-			throw new NullPointerException();
+		Objects.requireNonNull(dir);
 		if (!dir.isDirectory())
 			throw new IllegalArgumentException("Repository directory does not exist");
 		objectsDir = new File(dir, "objects");
@@ -128,8 +128,7 @@ public final class FileRepository implements Repository {
 	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 */
 	public Set<ObjectId> getIdsByPrefix(String prefix) throws IOException {
-		if (prefix == null)
-			throw new NullPointerException();
+		Objects.requireNonNull(prefix);
 		if (prefix.length() > ObjectId.NUM_BYTES * 2)
 			throw new IllegalArgumentException("Prefix too long");
 		if (!prefix.matches("[0-9a-fA-F]*"))
@@ -231,8 +230,7 @@ public final class FileRepository implements Repository {
 	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 */
 	public GitObject readObject(ObjectId id) throws IOException {
-		if (id == null)
-			throw new NullPointerException();
+		Objects.requireNonNull(id);
 		if (directory == null)
 			throw new IllegalStateException("Repository already closed");
 		
@@ -288,8 +286,7 @@ public final class FileRepository implements Repository {
 	 * @throws IOException if an I/O exception occurred while writing the object
 	 */
 	public void writeObject(GitObject obj) throws IOException {
-		if (obj == null)
-			throw new NullPointerException();
+		Objects.requireNonNull(obj);
 		if (directory == null)
 			throw new IllegalStateException("Repository already closed");
 		writeRawObject(obj.toBytes());
@@ -406,8 +403,8 @@ public final class FileRepository implements Repository {
 	 * @throws IOException if an I/O exception occurred while writing references
 	 */
 	public void writeReference(Reference ref) throws IOException {
-		if (ref == null || ref.target == null)
-			throw new NullPointerException();
+		Objects.requireNonNull(ref);
+		Objects.requireNonNull(ref.target);
 		if (directory == null)
 			throw new IllegalStateException("Repository already closed");
 		

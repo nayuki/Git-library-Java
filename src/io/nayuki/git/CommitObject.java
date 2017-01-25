@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -120,8 +121,7 @@ public final class CommitObject extends GitObject {
 	 */
 	public CommitObject(byte[] data) throws IOException {
 		this();
-		if (data == null)
-			throw new NullPointerException();
+		Objects.requireNonNull(data);
 		
 		try {
 			LineParser parser = new LineParser(data);

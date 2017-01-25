@@ -8,6 +8,7 @@
 package io.nayuki.git;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 
 /**
@@ -24,8 +25,7 @@ final class Sha1 {
 	 * @throws NullPointerException if the array is {@code null}
 	 */
 	public static byte[] getHash(byte[] b) {
-		if (b == null)
-			throw new NullPointerException();
+		Objects.requireNonNull(b);
 		return getHash(b, 0, b.length);
 	}
 	
@@ -40,8 +40,7 @@ final class Sha1 {
 	 * @throws ArrayIndexOutOfBoundsException if the offset or length is out of range
 	 */
 	public static byte[] getHash(byte[] b, int off, int len) {
-		if (b == null)
-			throw new NullPointerException();
+		Objects.requireNonNull(b);
 		if (off < 0 || off > len || len < 0 || b.length - off < len)
 			throw new ArrayIndexOutOfBoundsException();
 		Sha1 hasher = new Sha1();
@@ -85,8 +84,7 @@ final class Sha1 {
 	 * @throws NullPointerException if the array is {@code null}
 	 */
 	public void update(byte[] b) {
-		if (b == null)
-			throw new NullPointerException();
+		Objects.requireNonNull(b);
 		update(b, 0, b.length);
 	}
 	
@@ -100,8 +98,7 @@ final class Sha1 {
 	 * @throws ArrayIndexOutOfBoundsException if the offset or length is out of range
 	 */
 	public void update(byte[] b, int off, int len) {
-		if (b == null)
-			throw new NullPointerException();
+		Objects.requireNonNull(b);
 		if (off < 0 || off > len || len < 0 || b.length - off < len)
 			throw new ArrayIndexOutOfBoundsException();
 		

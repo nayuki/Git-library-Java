@@ -9,6 +9,7 @@ package io.nayuki.git;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.regex.Matcher;
 
 
@@ -90,8 +91,7 @@ public final class TagObject extends GitObject {
 	 */
 	public TagObject(byte[] data) throws IOException {
 		this();
-		if (data == null)
-			throw new NullPointerException();
+		Objects.requireNonNull(data);
 		
 		try {
 			CommitObject.LineParser parser = new CommitObject.LineParser(data);

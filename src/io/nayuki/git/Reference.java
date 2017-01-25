@@ -7,6 +7,7 @@
 
 package io.nayuki.git;
 
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -97,8 +98,7 @@ public final class Reference {
 	
 	// Returns silently or throws an exception.
 	static void checkName(String name) {
-		if (name == null)
-			throw new NullPointerException();
+		Objects.requireNonNull(name);
 		Matcher m = NAME_PATTERN.matcher(name);
 		if (!m.matches())
 			throw new IllegalArgumentException("Invalid reference name: " + name);

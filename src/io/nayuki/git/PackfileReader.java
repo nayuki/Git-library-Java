@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Set;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
@@ -39,8 +40,8 @@ final class PackfileReader {
 	/*---- Constructors ----*/
 	
 	public PackfileReader(File index, File pack) {
-		if (index == null || pack == null)
-			throw new NullPointerException();
+		Objects.requireNonNull(index);
+		Objects.requireNonNull(pack);
 		if (!index.isFile() || !pack.isFile())
 			throw new IllegalArgumentException("File does not exist");
 		indexFile = index;
