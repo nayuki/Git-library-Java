@@ -69,7 +69,7 @@ public final class BlobObject extends GitObject {
 	 * that prevent it from being serialized (see {@link #toBytes()})
 	 */
 	public BlobId getId() {
-		return new BlobId(Sha1.getHash(toBytes()));
+		return new BlobId(getSha1Hash(toBytes()));
 	}
 	
 	

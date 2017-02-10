@@ -16,6 +16,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
@@ -198,10 +200,15 @@ final class PackfileReader {
 		String typeName = TYPE_NAMES[typeIndex];
 		if (typeName == null)
 			throw new GitFormatException("Unknown object type: " + typeIndex);
-		Sha1 hasher = new Sha1();
+		MessageDigest hasher;
+		try {
+			hasher = MessageDigest.getInstance("SHA-1");
+		} catch (NoSuchAlgorithmException e) {
+			throw new AssertionError(e);
+		}
 		hasher.update((typeName + " " + bytes.length + "\0").getBytes(StandardCharsets.US_ASCII));
 		hasher.update(bytes);
-		if (!Arrays.equals(hasher.getHash(), id.getBytes()))
+		if (!Arrays.equals(hasher.digest(), id.getBytes()))
 			throw new GitFormatException("Hash of data mismatches object ID");
 		return new Object[]{typeName, bytes};
 	}

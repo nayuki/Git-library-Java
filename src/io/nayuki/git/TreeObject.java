@@ -170,7 +170,7 @@ public final class TreeObject extends GitObject {
 	 * that prevent it from being serialized (see {@link #toBytes()})
 	 */
 	public TreeId getId() {
-		return new TreeId(Sha1.getHash(toBytes()));
+		return new TreeId(getSha1Hash(toBytes()));
 	}
 	
 	

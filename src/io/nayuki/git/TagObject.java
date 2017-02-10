@@ -165,7 +165,7 @@ public final class TagObject extends GitObject {
 	 * that prevent it from being serialized (see {@link #toBytes()})
 	 */
 	public TagId getId() {
-		return new TagId(Sha1.getHash(toBytes()));
+		return new TagId(getSha1Hash(toBytes()));
 	}
 	
 	

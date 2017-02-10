@@ -203,7 +203,7 @@ public final class CommitObject extends GitObject {
 	 * that prevent it from being serialized (see {@link #toBytes()})
 	 */
 	public CommitId getId() {
-		return new CommitId(Sha1.getHash(toBytes()));
+		return new CommitId(getSha1Hash(toBytes()));
 	}
 	
 	

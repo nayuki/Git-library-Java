@@ -214,7 +214,7 @@ public final class FileRepository implements Repository {
 		}
 		
 		// Check the bytes and return result
-		if (result != null && !Arrays.equals(Sha1.getHash(result), id.getBytes()))
+		if (result != null && !Arrays.equals(GitObject.getSha1Hash(result), id.getBytes()))
 			throw new GitFormatException("Hash of data mismatches object ID");
 		return result;
 	}
@@ -298,7 +298,7 @@ public final class FileRepository implements Repository {
 	// This does not check whether the object has a valid header or data format.
 	private void writeRawObject(byte[] b) throws IOException {
 		// Handle the file path and the 2-digit directory
-		File file = getLooseObjectFile(new RawId(Sha1.getHash(b)));
+		File file = getLooseObjectFile(new RawId(GitObject.getSha1Hash(b)));
 		if (file.isFile())
 			return;  // Object already stored; do nothing
 		File dir = file.getParentFile();

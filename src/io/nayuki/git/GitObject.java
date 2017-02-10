@@ -8,6 +8,9 @@
 package io.nayuki.git;
 
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 
 
 /**
@@ -41,7 +44,7 @@ public abstract class GitObject {
 	 * @return the hash ID of this object (not {@code null})
 	 */
 	public ObjectId getId() {
-		return new RawId(Sha1.getHash(toBytes()));
+		return new RawId(getSha1Hash(toBytes()));
 	}
 	
 	
@@ -55,6 +58,17 @@ public abstract class GitObject {
 		System.arraycopy(header, 0, result, 0, header.length);
 		System.arraycopy(data, 0, result, header.length, data.length);
 		return result;
+	}
+	
+	
+	// Returns a new byte array representing the SHA-1 hash of the given array of bytes.
+	static byte[] getSha1Hash(byte[] b) {
+		try {
+			Objects.requireNonNull(b);
+			return MessageDigest.getInstance("SHA-1").digest(b);
+		} catch (NoSuchAlgorithmException e) {
+			throw new AssertionError(e);
+		}
 	}
 	
 }
