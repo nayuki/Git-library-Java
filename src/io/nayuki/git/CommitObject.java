@@ -66,7 +66,7 @@ public final class CommitObject extends GitObject {
 	 * The time this commit was authored, in Unix epoch seconds.
 	 * Note that this value is always given in UTC and does not depend on the time zone field.
 	 */
-	public int authorTime;
+	public long authorTime;
 	
 	/**
 	 * The time zone of the author when this commit was created, in minutes ahead of UTC. For example 180 represents UTC+3 hours.
@@ -94,7 +94,7 @@ public final class CommitObject extends GitObject {
 	 * then this timestamp reflects the time that this particular application of the patch was created.
 	 * Note that this value is always given in UTC and does not depend on the time zone field.
 	 */
-	public int committerTime;
+	public long committerTime;
 	
 	/**
 	 * The time zone of the committer when this commit was created, in minutes ahead of UTC. For example -105 represents UTC-1:45.
@@ -148,7 +148,7 @@ public final class CommitObject extends GitObject {
 				throw new GitFormatException("Invalid author data");
 			authorName = m.group(1);
 			authorEmail = m.group(2);
-			authorTime = Integer.parseInt(m.group(3));
+			authorTime = Long.parseLong(m.group(3));
 			authorTimezone = Integer.parseInt(m.group(4) + "1") * (Integer.parseInt(m.group(5)) * 60 + Integer.parseInt(m.group(6)));
 			
 			// Parse committer line
@@ -160,7 +160,7 @@ public final class CommitObject extends GitObject {
 				throw new GitFormatException("Invalid committer data");
 			committerName = m.group(1);
 			committerEmail = m.group(2);
-			committerTime = Integer.parseInt(m.group(3));
+			committerTime = Long.parseLong(m.group(3));
 			committerTimezone = Integer.parseInt(m.group(4) + "1") * (Integer.parseInt(m.group(5)) * 60 + Integer.parseInt(m.group(6)));
 			
 			// Grab message
