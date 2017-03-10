@@ -31,6 +31,11 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	 */
 	public static final int NUM_BYTES = 20;
 	
+	/**
+	 * The number of hexadecimal digits in a SHA-1 hash, which is defined to be 40.
+	 */
+	public static final int NUM_HEX_DIGITS = NUM_BYTES * 2;
+	
 	
 	
 	/*---- Fields ----*/
@@ -114,7 +119,7 @@ public abstract class ObjectId implements Comparable<ObjectId> {
 	}
 	
 	
-	private static final Pattern HEX_STRING_PATTERN = Pattern.compile("[0-9a-fA-F]{" + (NUM_BYTES * 2) + "}");
+	private static final Pattern HEX_STRING_PATTERN = Pattern.compile("[0-9a-fA-F]{" + NUM_HEX_DIGITS + "}");
 	
 	private static final char[] HEX_DIGITS = "0123456789abcdef".toCharArray();
 	

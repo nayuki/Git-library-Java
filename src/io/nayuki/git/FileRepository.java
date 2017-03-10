@@ -129,7 +129,7 @@ public final class FileRepository implements Repository {
 	 */
 	public Set<ObjectId> getIdsByPrefix(String prefix) throws IOException {
 		Objects.requireNonNull(prefix);
-		if (prefix.length() > ObjectId.NUM_BYTES * 2)
+		if (prefix.length() > ObjectId.NUM_HEX_DIGITS)
 			throw new IllegalArgumentException("Prefix too long");
 		if (!prefix.matches("[0-9a-fA-F]*"))
 			throw new IllegalArgumentException("Prefix contains non-hexadecimal characters");
@@ -493,13 +493,13 @@ public final class FileRepository implements Repository {
 	// subDirName is usually something like "heads" or "remotes/origin" or "tags".
 	// The file must contain exactly 40 hexadecimal digits followed by a newline (total 41 bytes).
 	private Reference parseReferenceFile(String subDirName, File file) throws IOException {
-		byte[] buf = new byte[41];
+		byte[] buf = new byte[ObjectId.NUM_HEX_DIGITS + 1];
 		try (DataInputStream in = new DataInputStream(new FileInputStream(file))) {
 			in.readFully(buf);
-			if (buf[40] != '\n' || in.read() != -1)
+			if (buf[buf.length - 1] != '\n' || in.read() != -1)
 				throw new GitFormatException("Invalid reference file");
 		}
-		return new Reference(subDirName + "/" + file.getName(), new CommitId(new String(buf, 0, 40, StandardCharsets.US_ASCII)));
+		return new Reference(subDirName + "/" + file.getName(), new CommitId(new String(buf, 0, buf.length - 1, StandardCharsets.US_ASCII)));
 	}
 	
 	

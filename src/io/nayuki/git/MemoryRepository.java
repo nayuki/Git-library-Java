@@ -65,14 +65,14 @@ public class MemoryRepository implements Repository {
 	 */
 	public ObjectId getIdByPrefix(String prefix) throws IOException {
 		Objects.requireNonNull(prefix);
-		if (prefix.length() > ObjectId.NUM_BYTES * 2)
+		if (prefix.length() > ObjectId.NUM_HEX_DIGITS)
 			throw new IllegalArgumentException("Prefix too long");
 		if (!prefix.matches("[0-9a-fA-F]*"))
 			throw new IllegalArgumentException("Prefix contains non-hexadecimal characters");
 		checkNotClosed();
 		
 		StringBuilder prefixLow = new StringBuilder(prefix);
-		while (prefixLow.length() < ObjectId.NUM_BYTES * 2)
+		while (prefixLow.length() < ObjectId.NUM_HEX_DIGITS)
 			prefixLow.append('0');
 		CommitId prefixId = new CommitId(prefixLow.toString());
 		
@@ -104,14 +104,14 @@ public class MemoryRepository implements Repository {
 	 */
 	public Set<ObjectId> getIdsByPrefix(String prefix) throws IOException {
 		Objects.requireNonNull(prefix);
-		if (prefix.length() > ObjectId.NUM_BYTES * 2)
+		if (prefix.length() > ObjectId.NUM_HEX_DIGITS)
 			throw new IllegalArgumentException("Prefix too long");
 		if (!prefix.matches("[0-9a-fA-F]*"))
 			throw new IllegalArgumentException("Prefix contains non-hexadecimal characters");
 		checkNotClosed();
 		
 		StringBuilder prefixLow = new StringBuilder(prefix);
-		while (prefixLow.length() < ObjectId.NUM_BYTES * 2)
+		while (prefixLow.length() < ObjectId.NUM_HEX_DIGITS)
 			prefixLow.append('0');
 		CommitId prefixId = new CommitId(prefixLow.toString());
 		
