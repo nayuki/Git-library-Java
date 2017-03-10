@@ -13,7 +13,9 @@ import java.util.Set;
 
 
 /**
- * Represents a Git repository - which could be on disk or in memory or over the network, and mutable or immutable.
+ * Represents a Git repository - which could be on disk or in memory or over the network,
+ * mutable or immutable, thread-safe or unsafe. A repository doesn't need to support all
+ * the defined methods (e.g. throwing {@link UnsupportedOperationException} upon writing).
  * @see FileRepository
  * @see ObjectId
  * @see GitObject

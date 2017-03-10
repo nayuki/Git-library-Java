@@ -31,16 +31,14 @@ import java.util.zip.InflaterOutputStream;
 
 
 /**
- * A repository based on files and directories in the file system.
- * @see ObjectId
- * @see GitObject
- * @see Reference
+ * A Git repository based on files and directories in the file system.
  */
 public final class FileRepository implements Repository {
 	
 	/*---- Fields ----*/
 	
-	// Initially not null, but becomes null after close() is called.
+	// These fields are not null after construction but before
+	// close() is called. They are null after close() is called.
 	private File directory;
 	private File objectsDir;
 	
@@ -85,8 +83,8 @@ public final class FileRepository implements Repository {
 	/**
 	 * Disposes any resources associated with this repository object and invalidates this object.
 	 * This method must be called when finished using a repository. This has no effect if called more than once.
-	 * <p>The method may close file streams and removed cached data. It is illegal
-	 * to use fields or call methods on this repository object after closing.</p>
+	 * <p>The method may close file streams and removed cached data. It is illegal to call methods on
+	 * this repository object after closing.</p>
 	 * @throws IOException if an I/O exception occurred
 	 */
 	public void close() throws IOException {
