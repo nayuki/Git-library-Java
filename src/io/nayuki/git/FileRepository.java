@@ -131,8 +131,7 @@ public final class FileRepository implements Repository {
 			throw new IllegalArgumentException("Prefix too long");
 		if (!prefix.matches("[0-9a-fA-F]*"))
 			throw new IllegalArgumentException("Prefix contains non-hexadecimal characters");
-		if (directory == null)
-			throw new IllegalStateException("Repository already closed");
+		checkNotClosed();
 		
 		prefix = prefix.toLowerCase();
 		Set<ObjectId> result = new HashSet<>();
@@ -178,8 +177,7 @@ public final class FileRepository implements Repository {
 	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 */
 	public boolean containsObject(ObjectId id) throws IOException {
-		if (directory == null)
-			throw new IllegalStateException("Repository already closed");
+		checkNotClosed();
 		if (getLooseObjectFile(id).isFile())
 			return true;
 		for (PackfileReader pfr : listPackfiles()) {
@@ -229,8 +227,7 @@ public final class FileRepository implements Repository {
 	 */
 	public GitObject readObject(ObjectId id) throws IOException {
 		Objects.requireNonNull(id);
-		if (directory == null)
-			throw new IllegalStateException("Repository already closed");
+		checkNotClosed();
 		
 		if (getLooseObjectFile(id).isFile()) {
 			// Read object bytes and extract header
@@ -285,8 +282,7 @@ public final class FileRepository implements Repository {
 	 */
 	public void writeObject(GitObject obj) throws IOException {
 		Objects.requireNonNull(obj);
-		if (directory == null)
-			throw new IllegalStateException("Repository already closed");
+		checkNotClosed();
 		writeRawObject(obj.toBytes());
 	}
 	
@@ -338,8 +334,7 @@ public final class FileRepository implements Repository {
 	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 */
 	public Collection<Reference> listReferences() throws IOException {
-		if (directory == null)
-			throw new IllegalStateException("Repository already closed");
+		checkNotClosed();
 		
 		// Scan loose ref files
 		Collection<Reference> result = new ArrayList<>();
@@ -377,8 +372,7 @@ public final class FileRepository implements Repository {
 	 */
 	public Reference readReference(String name) throws IOException {
 		Reference.checkName(name);
-		if (directory == null)
-			throw new IllegalStateException("Repository already closed");
+		checkNotClosed();
 		
 		File looseRefFile = new File(new File(directory, "refs"), name);
 		if (looseRefFile.isFile())
@@ -403,8 +397,7 @@ public final class FileRepository implements Repository {
 	public void writeReference(Reference ref) throws IOException {
 		Objects.requireNonNull(ref);
 		Objects.requireNonNull(ref.target);
-		if (directory == null)
-			throw new IllegalStateException("Repository already closed");
+		checkNotClosed();
 		
 		File looseRefFile = new File(new File(directory, "refs"), ref.name);
 		looseRefFile.getParentFile().mkdirs();
@@ -428,8 +421,7 @@ public final class FileRepository implements Repository {
 	 */
 	public void deleteReference(String name) throws IOException {
 		Objects.requireNonNull(name);
-		if (directory == null)
-			throw new IllegalStateException("Repository already closed");
+		checkNotClosed();
 		throw new UnsupportedOperationException("Not implemented");
 	}
 	
@@ -506,6 +498,13 @@ public final class FileRepository implements Repository {
 	private File getLooseObjectFile(ObjectId id) {
 		File temp = new File(objectsDir, id.hexString.substring(0, 2));
 		return new File(temp, id.hexString.substring(2));
+	}
+	
+	
+	// Returns silently if this repo is still valid, otherwise throws an exception.
+	private void checkNotClosed() {
+		if (directory == null)
+			throw new IllegalStateException("Repository already closed");
 	}
 	
 }
