@@ -259,6 +259,21 @@ public class MemoryRepository implements Repository {
 	
 	
 	/**
+	 * Deletes the reference with the specified name from this repository.
+	 * If no reference with the name exists, then nothing happens.
+	 * @param name the name to delete (not {@code null})
+	 * @throws NullPointerException if the name is {@code null}
+	 * @throws IllegalStateException if this repository is already closed
+	 * @throws IOException if an I/O exception occurred (not thrown by this class, but subclasses may)
+	 */
+	public void deleteReference(String name) throws IOException {
+		Objects.requireNonNull(name);
+		checkNotClosed();
+		references.remove(name);
+	}
+	
+	
+	/**
 	 * Discards all stored data in this repository (objects and references) and invalidates this object.
 	 * After closing, no other method can be called on this object. This has no effect if called more than once.
 	 * This class only uses memory and no native resources, so it is not strictly necessary to close this object

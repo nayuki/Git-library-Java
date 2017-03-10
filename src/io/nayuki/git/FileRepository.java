@@ -420,6 +420,23 @@ public final class FileRepository implements Repository {
 	}
 	
 	
+	/**
+	 * Deletes the reference with the specified name from this repository.
+	 * If no reference with the name exists, then nothing happens.
+	 * @param name the name to delete (not {@code null})
+	 * @throws NullPointerException if the name is {@code null}
+	 * @throws IllegalStateException if this repository is already closed
+	 * @throws IOException if an I/O exception occurred while changing references
+	 */
+	public void deleteReference(String name) throws IOException {
+		Objects.requireNonNull(name);
+		if (directory == null)
+			throw new IllegalStateException("Repository already closed");
+		throw new UnsupportedOperationException("Not implemented");
+	}
+	
+	
+	
 	/*---- Private helper methods ----*/
 	
 	// Scans all loose reference files in the given subdirectory name and adds them to the given collection of results.
