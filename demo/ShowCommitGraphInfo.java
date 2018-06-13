@@ -2,7 +2,7 @@
  * Git library
  * Copyright (c) Project Nayuki
  * 
- * https://www.nayuki.io/
+ * https://www.nayuki.io/page/git-library-java
  */
 
 import java.io.File;

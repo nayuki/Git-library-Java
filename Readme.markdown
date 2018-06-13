@@ -3,7 +3,7 @@ Git library (Java)
 
 A simple library for reading and manipulating Git repositories, implemented in Java.
 
-Home page: https://www.nayuki.io/
+Home page: https://www.nayuki.io/page/git-library-java
 
 
 License
