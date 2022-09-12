@@ -180,13 +180,13 @@ public class MemoryRepository implements Repository {
 				throw new GitFormatException("Data length mismatch");
 			
 			// Parse bytes into object
-			switch (type) {
-				case "blob"  :  return new BlobObject  (bytes);
-				case "tree"  :  return new TreeObject  (bytes);
-				case "commit":  return new CommitObject(bytes);
-				case "tag"   :  return new TagObject   (bytes);
-				default:  throw new GitFormatException("Unknown object type: " + type);
-			}
+			return switch (type) {
+				case "blob"   -> new BlobObject  (bytes);
+				case "tree"   -> new TreeObject  (bytes);
+				case "commit" -> new CommitObject(bytes);
+				case "tag"    -> new TagObject   (bytes);
+				default -> throw new GitFormatException("Unknown object type: " + type);
+			};
 		} catch (IOException e) {  // Includes GitFormatException and EOFException
 			throw new AssertionError(e);
 		}

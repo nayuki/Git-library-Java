@@ -68,13 +68,13 @@ final class PackfileReader {
 	public GitObject readObject(ObjectId id) throws IOException {
 		Object[] pair = readObjectHeaderless(id);
 		byte[] bytes = (byte[])pair[1];
-		switch ((String)pair[0]) {
-			case "blob"  :  return new BlobObject  (bytes);
-			case "tree"  :  return new TreeObject  (bytes);
-			case "commit":  return new CommitObject(bytes);
-			case "tag"   :  return new TagObject   (bytes);
-			default:  throw new AssertionError();
-		}
+		return switch ((String)pair[0]) {
+			case "blob"   -> new BlobObject  (bytes);
+			case "tree"   -> new TreeObject  (bytes);
+			case "commit" -> new CommitObject(bytes);
+			case "tag"    -> new TagObject   (bytes);
+			default -> throw new AssertionError();
+		};
 	}
 	
 	
