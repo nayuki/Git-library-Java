@@ -14,7 +14,7 @@ import java.io.IOException;
  * An immutable 160-bit SHA-1 hash, whose value should reflect a tree object.
  * @see TreeObject
  */
-public class TreeId extends ObjectId {
+public final class TreeId extends ObjectId {
 	
 	/*---- Constructors ----*/
 	
