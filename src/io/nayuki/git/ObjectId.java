@@ -39,8 +39,6 @@ public class ObjectId implements Comparable<ObjectId> {
 	
 	/*---- Fields ----*/
 	
-	private final String hexString;
-	
 	// Not null, and always length 20 (NUM_BYTES).
 	private final byte[] bytes;
 	
@@ -84,7 +82,6 @@ public class ObjectId implements Comparable<ObjectId> {
 		Objects.requireNonNull(bytes);
 		Objects.checkFromIndexSize(off, NUM_BYTES, bytes.length);
 		this.bytes = Arrays.copyOfRange(bytes, off, off + NUM_BYTES);
-		hexString = HEX_FORMAT.formatHex(this.bytes);
 	}
 	
 	
@@ -129,7 +126,7 @@ public class ObjectId implements Comparable<ObjectId> {
 	 * @return the 40-lowercase-digit hexadecimal string representing this hash
 	 */
 	public final String toHexadecimal() {
-		return hexString;
+		return HEX_FORMAT.formatHex(this.bytes);
 	}
 	
 	
@@ -175,7 +172,7 @@ public class ObjectId implements Comparable<ObjectId> {
 	 * {@code this == other}, or a positive number if {@code this > other}
 	 */
 	public final int compareTo(ObjectId other) {
-		return hexString.compareTo(other.hexString);
+		return toHexadecimal().compareTo(other.toHexadecimal());
 	}
 	
 	
@@ -184,7 +181,7 @@ public class ObjectId implements Comparable<ObjectId> {
 	 * @return a string representation of this object ID
 	 */
 	public String toString() {
-		return String.format(getClass().getSimpleName() + "(%s)", hexString);
+		return String.format(getClass().getSimpleName() + "(%s)", toHexadecimal());
 	}
 	
 }
