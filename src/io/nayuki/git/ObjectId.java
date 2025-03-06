@@ -82,8 +82,7 @@ public class ObjectId implements Comparable<ObjectId> {
 	 */
 	ObjectId(byte[] bytes, int off) {
 		Objects.requireNonNull(bytes);
-		if (off < 0 || bytes.length - off < NUM_BYTES)
-			throw new IndexOutOfBoundsException();
+		Objects.checkFromIndexSize(off, NUM_BYTES, bytes.length);
 		
 		this.bytes = Arrays.copyOfRange(bytes, off, off + NUM_BYTES);
 		StringBuilder sb = new StringBuilder();
@@ -129,8 +128,6 @@ public class ObjectId implements Comparable<ObjectId> {
 	 * @throws IndexOutOfBoundsException if the byte index is out of range
 	 */
 	public final byte getByte(int index) {
-		if (index < 0 || index >= NUM_BYTES)
-			throw new IndexOutOfBoundsException();
 		return bytes[index];
 	}
 	
