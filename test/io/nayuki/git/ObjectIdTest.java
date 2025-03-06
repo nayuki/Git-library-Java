@@ -9,7 +9,7 @@ package io.nayuki.git;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import org.junit.Assert;
+import static org.junit.Assert.assertThrows;
 import org.junit.Test;
 
 
@@ -35,10 +35,8 @@ public final class ObjectIdTest {
 	
 	
 	@Test public void testHexadecimalInvalid() {
-		try {
-			new ObjectId((String)null);
-			Assert.fail();
-		} catch (NullPointerException e) {}  // Pass
+		assertThrows(NullPointerException.class,
+			() -> new ObjectId((String)null));
 		
 		String[] cases = {
 			"",
@@ -51,10 +49,8 @@ public final class ObjectIdTest {
 			"000000000000000000000000000000000000000000",
 		};
 		for (String cs : cases) {
-			try {
-				new ObjectId(cs);
-				Assert.fail();
-			} catch (IllegalArgumentException e) {}  // Pass
+			assertThrows(IllegalArgumentException.class,
+				() -> new ObjectId(cs));
 		}
 	}
 	
@@ -71,22 +67,10 @@ public final class ObjectIdTest {
 	
 	
 	@Test public void testByteArrayInvalid() {
-		try {
-			new ObjectId((byte[])null);
-			Assert.fail();
-		} catch (NullPointerException e) {}  // Pass
-		try {
-			new ObjectId(new byte[0]);
-			Assert.fail();
-		} catch (IllegalArgumentException e) {}  // Pass
-		try {
-			new ObjectId(new byte[19]);
-			Assert.fail();
-		} catch (IllegalArgumentException e) {}  // Pass
-		try {
-			new ObjectId(new byte[21]);
-			Assert.fail();
-		} catch (IllegalArgumentException e) {}  // Pass
+		assertThrows(NullPointerException.class, () -> new ObjectId((byte[])null));
+		assertThrows(IllegalArgumentException.class, () -> new ObjectId(new byte[0]));
+		assertThrows(IllegalArgumentException.class, () -> new ObjectId(new byte[19]));
+		assertThrows(IllegalArgumentException.class, () -> new ObjectId(new byte[21]));
 	}
 	
 	
@@ -103,10 +87,8 @@ public final class ObjectIdTest {
 	
 	
 	@Test public void testByteArrayOffsetInvalid() {
-		try {
-			new ObjectId(null, 0);
-			Assert.fail();
-		} catch (NullPointerException e) {}  // Pass
+		assertThrows(NullPointerException.class,
+			() -> new ObjectId(null, 0));
 		
 		int[][] cases = {
 			{0, 0},
@@ -119,10 +101,8 @@ public final class ObjectIdTest {
 			{21, 3},
 		};
 		for (int[] cs : cases) {
-			try {
-				new ObjectId(new byte[cs[0]], cs[1]);
-				Assert.fail();
-			} catch (IndexOutOfBoundsException e) {}  // Pass
+			assertThrows(IndexOutOfBoundsException.class,
+				() -> new ObjectId(new byte[cs[0]], cs[1]));
 		}
 	}
 	

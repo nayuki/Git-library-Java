@@ -8,11 +8,11 @@
 package io.nayuki.git;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import java.io.ByteArrayInputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
-import org.junit.Assert;
 import org.junit.Test;
 
 
@@ -69,11 +69,10 @@ public final class PackfileReaderTest {
 			bytes(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x01),
 		};
 		for (byte[] cs : cases) {
-			try {
+			assertThrows(GitFormatException.class, () -> {
 				DataInput in = new DataInputStream(new ByteArrayInputStream(cs));
 				PackfileReader.decodeTypeAndSize(in);
-				Assert.fail();
-			} catch (GitFormatException e) {}  // Pass
+			});
 		}
 	}
 	
@@ -126,11 +125,10 @@ public final class PackfileReaderTest {
 			bytes(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x00),
 		};
 		for (byte[] cs : cases) {
-			try {
+			assertThrows(GitFormatException.class, () -> {
 				DataInput in = new DataInputStream(new ByteArrayInputStream(cs));
 				PackfileReader.decodeOffsetDelta(in);
-				Assert.fail();
-			} catch (GitFormatException e) {}  // Pass
+			});
 		}
 	}
 	
@@ -177,11 +175,10 @@ public final class PackfileReaderTest {
 			bytes(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x01),
 		};
 		for (byte[] cs : cases) {
-			try {
+			assertThrows(GitFormatException.class, () -> {
 				DataInput in = new DataInputStream(new ByteArrayInputStream(cs));
 				PackfileReader.decodeDeltaHeaderInt(in);
-				Assert.fail();
-			} catch (GitFormatException e) {}  // Pass
+			});
 		}
 	}
 	
