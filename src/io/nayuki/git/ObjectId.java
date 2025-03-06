@@ -70,7 +70,10 @@ public class ObjectId implements Comparable<ObjectId> {
 	 * @throws IllegalArgumentException if the array isn't length 20
 	 */
 	ObjectId(byte[] b) {
-		this(checkHashLength(b), 0);
+		Objects.requireNonNull(b);
+		if (b.length != NUM_BYTES)
+			throw new IllegalArgumentException("Invalid array length");
+		bytes = b.clone();
 	}
 	
 	
@@ -90,14 +93,7 @@ public class ObjectId implements Comparable<ObjectId> {
 	}
 	
 	
-	/* Private helper methods and constants for constructors */
-	
-	private static byte[] checkHashLength(byte[] b) {
-		if (b.length != NUM_BYTES)
-			throw new IllegalArgumentException("Invalid array length");
-		return b;
-	}
-	
+	/* Private constants for constructors */
 	
 	private static final HexFormat HEX_FORMAT = HexFormat.of();
 	
