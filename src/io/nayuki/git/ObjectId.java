@@ -192,7 +192,7 @@ public class ObjectId implements Comparable<ObjectId> {
 	 * @see #toHexadecimal()
 	 */
 	@Override public String toString() {
-		return String.format(getClass().getSimpleName() + "(%s)", toHexadecimal());
+		return String.format("%s(%s)", getClass().getSimpleName(), toHexadecimal());
 	}
 	
 }
