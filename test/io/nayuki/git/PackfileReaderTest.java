@@ -7,6 +7,7 @@
 
 package io.nayuki.git;
 
+import static org.junit.Assert.assertEquals;
 import java.io.ByteArrayInputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
@@ -52,7 +53,7 @@ public final class PackfileReaderTest {
 		};
 		for (Object[] cs : cases) {
 			DataInput in = new DataInputStream(new ByteArrayInputStream((byte[])cs[1]));
-			Assert.assertEquals((long)cs[0], PackfileReader.decodeTypeAndSize(in));
+			assertEquals((long)cs[0], PackfileReader.decodeTypeAndSize(in));
 		}
 	}
 	
@@ -109,7 +110,7 @@ public final class PackfileReaderTest {
 		};
 		for (Object[] cs : cases) {
 			DataInput in = new DataInputStream(new ByteArrayInputStream((byte[])cs[1]));
-			Assert.assertEquals((long)cs[0], PackfileReader.decodeOffsetDelta(in));
+			assertEquals((long)cs[0], PackfileReader.decodeOffsetDelta(in));
 		}
 	}
 	
@@ -157,7 +158,7 @@ public final class PackfileReaderTest {
 		};
 		for (Object[] cs : cases) {
 			DataInput in = new DataInputStream(new ByteArrayInputStream((byte[])cs[1]));
-			Assert.assertEquals((long)cs[0], PackfileReader.decodeDeltaHeaderInt(in));
+			assertEquals((long)cs[0], PackfileReader.decodeDeltaHeaderInt(in));
 		}
 	}
 	
