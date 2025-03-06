@@ -144,7 +144,7 @@ public final class FileRepository implements Repository {
 					for (File subitem : item.listFiles()) {
 						String subitemName = subitem.getName();
 						if (subitem.isFile() && subitemName.matches("[0-9a-fA-F]{38}"))
-							result.add(new RawId(itemName + subitemName));
+							result.add(new ObjectId(itemName + subitemName));
 					}
 				}
 			}
@@ -156,7 +156,7 @@ public final class FileRepository implements Repository {
 				for (File subitem : item.listFiles()) {
 					String subitemName = subitem.getName();
 					if (subitem.isFile() && subitemName.matches("[0-9a-fA-F]{38}") && subitemName.toLowerCase().startsWith(subprefix))
-						result.add(new RawId(itemName + subitemName));
+						result.add(new ObjectId(itemName + subitemName));
 				}
 			}
 		}
@@ -292,7 +292,7 @@ public final class FileRepository implements Repository {
 	// This does not check whether the object has a valid header or data format.
 	private void writeRawObject(byte[] b) throws IOException {
 		// Handle the file path and the 2-digit directory
-		File file = getLooseObjectFile(new RawId(GitObject.getSha1Hash(b)));
+		File file = getLooseObjectFile(new ObjectId(GitObject.getSha1Hash(b)));
 		if (file.isFile())
 			return;  // Object already stored; do nothing
 		File dir = file.getParentFile();

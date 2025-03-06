@@ -251,7 +251,7 @@ public final class TreeObject extends GitObject {
 			else if (type == Type.DIRECTORY)
 				id = new TreeId(hash);
 			else
-				id = new RawId(hash);
+				id = new ObjectId(hash);
 		}
 		
 		

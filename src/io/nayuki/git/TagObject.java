@@ -100,7 +100,7 @@ public final class TagObject extends GitObject {
 			String[] parts = parser.nextLineAsPair();
 			if (!parts[0].equals("object"))
 				throw new GitFormatException("Object field expected");
-			target = new RawId(parts[1]);
+			target = new ObjectId(parts[1]);
 			
 			// Parse type line
 			parts = parser.nextLineAsPair();

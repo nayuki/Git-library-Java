@@ -16,13 +16,12 @@ import java.util.regex.Pattern;
 /**
  * An immutable 160-bit (20-byte) SHA-1 hash.
  * It has subclasses to allow the {@link #read()} method to be convenient.
- * @see RawId
  * @see BlobId
  * @see TreeId
  * @see CommitId
  * @see TagId
  */
-public abstract class ObjectId implements Comparable<ObjectId> {
+public class ObjectId implements Comparable<ObjectId> {
 	
 	/*---- Public constants ----*/
 	

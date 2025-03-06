@@ -81,8 +81,8 @@ final class PackfileReader {
 	// Reads the index file to find all IDs that match the given
 	// hexadecimal prefix, and adds them to the given result set.
 	public void getIdsByPrefix(String prefix, Set<ObjectId> result) throws IOException {
-		ObjectId lowId  = new RawId(prefix + "0000000000000000000000000000000000000000".substring(prefix.length()));  // Inclusive
-		ObjectId highId = new RawId(prefix + "ffffffffffffffffffffffffffffffffffffffff".substring(prefix.length()));  // Inclusive
+		ObjectId lowId  = new ObjectId(prefix + "0000000000000000000000000000000000000000".substring(prefix.length()));  // Inclusive
+		ObjectId highId = new ObjectId(prefix + "ffffffffffffffffffffffffffffffffffffffff".substring(prefix.length()));  // Inclusive
 		
 		final int HEADER_LEN = 8;
 		final int FANOUT_LEN = 256 * 4;
@@ -113,7 +113,7 @@ final class PackfileReader {
 			b = new byte[ObjectId.NUM_BYTES];
 			for (; objectOffset < totalObjects; objectOffset++) {
 				raf.readFully(b);
-				ObjectId id = new RawId(b);
+				ObjectId id = new ObjectId(b);
 				if (id.compareTo(highId) > 0)
 					break;
 				if (id.compareTo(lowId) >= 0)
@@ -160,7 +160,7 @@ final class PackfileReader {
 				if (objectOffset >= totalObjects)
 					return null;  // Not found
 				raf.readFully(b);
-				int cmp = new RawId(b).compareTo(id);
+				int cmp = new ObjectId(b).compareTo(id);
 				if (cmp == 0)
 					break;
 				else if (cmp > 0)
