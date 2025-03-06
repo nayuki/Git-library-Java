@@ -54,12 +54,12 @@ public class ObjectId implements Comparable<ObjectId> {
 	
 	/**
 	 * Constructs an object ID from the specified hexadecimal string.
-	 * @param hexStr the hexadecimal string (not {@code null})
+	 * @param hex the hexadecimal string (not {@code null})
 	 * @throws NullPointerException if the string is {@code null}
 	 * @throws IllegalArgumentException if the string isn't length 40 or has characters outside {0-9, a-f, A-F}
 	 */
-	ObjectId(String hexStr) {
-		this(HEX_FORMAT.parseHex(hexStr));
+	ObjectId(String hex) {
+		this(HEX_FORMAT.parseHex(hex));
 	}
 	
 	

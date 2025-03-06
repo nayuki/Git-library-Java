@@ -20,12 +20,12 @@ public final class TreeId extends ObjectId {
 	
 	/**
 	 * Constructs a tree object ID from the specified hexadecimal string.
-	 * @param hexStr the hexadecimal string (not {@code null})
+	 * @param hex the hexadecimal string (not {@code null})
 	 * @throws NullPointerException if the string is {@code null}
 	 * @throws IllegalArgumentException if the string isn't length 40 or has characters outside {0-9, a-f, A-F}
 	 */
-	public TreeId(String hexStr) {
-		super(hexStr);
+	public TreeId(String hex) {
+		super(hex);
 	}
 	
 	

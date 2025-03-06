@@ -21,12 +21,12 @@ public final class CommitId extends ObjectId {
 	
 	/**
 	 * Constructs a commit object ID from the specified hexadecimal string.
-	 * @param hexStr the hexadecimal string (not {@code null})
+	 * @param hex the hexadecimal string (not {@code null})
 	 * @throws NullPointerException if the string is {@code null}
 	 * @throws IllegalArgumentException if the string isn't length 40 or has characters outside {0-9, a-f, A-F}
 	 */
-	public CommitId(String hexStr) {
-		super(hexStr);
+	public CommitId(String hex) {
+		super(hex);
 	}
 	
 	

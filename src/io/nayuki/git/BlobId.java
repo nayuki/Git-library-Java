@@ -20,12 +20,12 @@ public final class BlobId extends ObjectId {
 	
 	/**
 	 * Constructs a blob object ID from the specified hexadecimal string.
-	 * @param hexStr the hexadecimal string (not {@code null})
+	 * @param hex the hexadecimal string (not {@code null})
 	 * @throws NullPointerException if the string is {@code null}
 	 * @throws IllegalArgumentException if the string isn't length 40 or has characters outside {0-9, a-f, A-F}
 	 */
-	public BlobId(String hexStr) {
-		super(hexStr);
+	public BlobId(String hex) {
+		super(hex);
 	}
 	
 	
