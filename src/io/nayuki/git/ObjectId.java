@@ -159,7 +159,7 @@ public class ObjectId implements Comparable<ObjectId> {
 	 * @return {@code true} if and only if the given object is an {@code
 	 * ObjectId} (or subclass) with the same array of hash byte values
 	 */
-	public final boolean equals(Object obj) {
+	@Override public final boolean equals(Object obj) {
 		return obj instanceof ObjectId other
 			&& Arrays.equals(bytes, other.bytes);
 	}
@@ -169,7 +169,7 @@ public class ObjectId implements Comparable<ObjectId> {
 	 * Returns the hash code of this object. The formula is subject to change.
 	 * @code the hash code of this object
 	 */
-	public final int hashCode() {
+	@Override public final int hashCode() {
 		return bytes[0] + (bytes[1] << 8) + (bytes[2] << 16) + (bytes[3] << 24);
 	}
 	
@@ -181,7 +181,7 @@ public class ObjectId implements Comparable<ObjectId> {
 	 * @return a negative number if {@code this < other}, zero if
 	 * {@code this == other}, or a positive number if {@code this > other}
 	 */
-	public final int compareTo(ObjectId other) {
+	@Override public final int compareTo(ObjectId other) {
 		for (int i = 0; i < bytes.length; i++) {
 			if (bytes[i] != other.bytes[i])
 				return Byte.toUnsignedInt(bytes[i])	- Byte.toUnsignedInt(other.bytes[i]);
@@ -195,7 +195,7 @@ public class ObjectId implements Comparable<ObjectId> {
 	 * @return a string representation of this object ID
 	 * @see #toHexadecimal()
 	 */
-	public String toString() {
+	@Override public String toString() {
 		return String.format(getClass().getSimpleName() + "(%s)", toHexadecimal());
 	}
 	

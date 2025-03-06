@@ -65,7 +65,7 @@ public final class BlobId extends ObjectId {
 	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 * @throws ClassCastException if an object was successfully read but its type is not a blob object
 	 */
-	public BlobObject read(Repository repo) throws IOException {
+	@Override public BlobObject read(Repository repo) throws IOException {
 		return (BlobObject)super.read(repo);
 	}
 	

@@ -65,7 +65,7 @@ public final class TreeId extends ObjectId {
 	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 * @throws ClassCastException if an object was successfully read but its type is not a tree object
 	 */
-	public TreeObject read(Repository repo) throws IOException {
+	@Override public TreeObject read(Repository repo) throws IOException {
 		return (TreeObject)super.read(repo);
 	}
 	

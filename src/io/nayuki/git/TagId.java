@@ -65,7 +65,7 @@ public final class TagId extends ObjectId {
 	 * @throws IOException if an I/O exception occurred or malformed data was encountered
 	 * @throws ClassCastException if an object was successfully read but its type is not a tag object
 	 */
-	public TagObject read(Repository repo) throws IOException {
+	@Override public TagObject read(Repository repo) throws IOException {
 		return (TagObject)super.read(repo);
 	}
 	
