@@ -166,13 +166,18 @@ public class ObjectId implements Comparable<ObjectId> {
 	
 	
 	/**
-	 * Compares this hash to the given hash in standard big-endian order.
-	 * @param other the object to compare to
+	 * Compares this hash to the specified hash using the standard order.
+	 * Both arrays are treated as unsigned bytes and compared lexicographically.
+	 * @param other the object ID to compare to
 	 * @return a negative number if {@code this < other}, zero if
 	 * {@code this == other}, or a positive number if {@code this > other}
 	 */
 	public final int compareTo(ObjectId other) {
-		return toHexadecimal().compareTo(other.toHexadecimal());
+		for (int i = 0; i < bytes.length; i++) {
+			if (bytes[i] != other.bytes[i])
+				return Byte.toUnsignedInt(bytes[i])	- Byte.toUnsignedInt(other.bytes[i]);
+		}
+		return 0;
 	}
 	
 	
