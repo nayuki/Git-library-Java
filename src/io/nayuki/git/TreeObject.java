@@ -71,7 +71,7 @@ public final class TreeObject extends GitObject {
 			}
 			
 			// Resolve the mode value
-			String modeStr = new String(data, start, index - start, StandardCharsets.US_ASCII);
+			var modeStr = new String(data, start, index - start, StandardCharsets.US_ASCII);
 			int modeInt;
 			try {
 				modeInt = Integer.parseInt(modeStr, 8);  // Parse number as octal
@@ -96,7 +96,7 @@ public final class TreeObject extends GitObject {
 				else
 					index++;
 			}
-			String name = new String(data, start, index - start, StandardCharsets.UTF_8);
+			var name = new String(data, start, index - start, StandardCharsets.UTF_8);
 			index++;
 			
 			// Grab the hash bytes and create new entry
@@ -151,7 +151,7 @@ public final class TreeObject extends GitObject {
 	public byte[] toBytes() {
 		checkState();
 		try {
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			var out = new ByteArrayOutputStream();
 			for (Entry entry : entries) {
 				out.write(String.format("%o %s\0", entry.type.mode, entry.name).getBytes(StandardCharsets.UTF_8));  // Format number as octal
 				out.write(entry.id.getBytes());

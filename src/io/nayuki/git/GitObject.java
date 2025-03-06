@@ -54,7 +54,7 @@ public abstract class GitObject {
 	// Returns a new byte array containing some header fields prepended to the given byte data.
 	static byte[] addHeader(String type, byte[] data) {
 		byte[] header = String.format("%s %d\0", type, data.length).getBytes(StandardCharsets.US_ASCII);
-		byte[] result = new byte[header.length + data.length];
+		var result = new byte[header.length + data.length];
 		System.arraycopy(header, 0, result, 0, header.length);
 		System.arraycopy(data, 0, result, header.length, data.length);
 		return result;

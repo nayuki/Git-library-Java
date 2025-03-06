@@ -39,7 +39,7 @@ public final class ShowCommitGraphInfo {
 		}
 		
 		// Scan the repository
-		CommitGraph graph = new CommitGraph();
+		var graph = new CommitGraph();
 		try (Repository repo = new FileRepository(new File(args[0]))) {
 			Set<CommitId> commitIds = new HashSet<>();
 			for (String name : refNames) {

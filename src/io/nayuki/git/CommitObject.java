@@ -124,7 +124,7 @@ public final class CommitObject extends GitObject {
 		Objects.requireNonNull(data);
 		
 		try {
-			LineParser parser = new LineParser(data);
+			var parser = new LineParser(data);
 			
 			// Parse tree line
 			String[] parts = parser.nextLineAsPair();
@@ -185,7 +185,7 @@ public final class CommitObject extends GitObject {
 	 */
 	public byte[] toBytes() {
 		checkState();
-		StringBuilder sb = new StringBuilder();
+		var sb = new StringBuilder();
 		sb.append("tree ").append(tree.toHexadecimal()).append("\n");
 		for (ObjectId parent : parents)
 			sb.append("parent ").append(parent.toHexadecimal()).append("\n");

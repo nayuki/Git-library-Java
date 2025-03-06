@@ -71,10 +71,10 @@ public class MemoryRepository implements Repository {
 			throw new IllegalArgumentException("Prefix contains non-hexadecimal characters");
 		checkNotClosed();
 		
-		StringBuilder prefixLow = new StringBuilder(prefix);
+		var prefixLow = new StringBuilder(prefix);
 		while (prefixLow.length() < ObjectId.NUM_HEX_DIGITS)
 			prefixLow.append('0');
-		CommitId prefixId = new CommitId(prefixLow.toString());
+		var prefixId = new CommitId(prefixLow.toString());
 		
 		ObjectId result = null;
 		for (ObjectId id : objects.tailMap(prefixId).keySet()) {
@@ -110,10 +110,10 @@ public class MemoryRepository implements Repository {
 			throw new IllegalArgumentException("Prefix contains non-hexadecimal characters");
 		checkNotClosed();
 		
-		StringBuilder prefixLow = new StringBuilder(prefix);
+		var prefixLow = new StringBuilder(prefix);
 		while (prefixLow.length() < ObjectId.NUM_HEX_DIGITS)
 			prefixLow.append('0');
-		CommitId prefixId = new CommitId(prefixLow.toString());
+		var prefixId = new CommitId(prefixLow.toString());
 		
 		Set<ObjectId> result = new HashSet<>();
 		for (ObjectId id : objects.tailMap(prefixId).keySet()) {
@@ -163,7 +163,7 @@ public class MemoryRepository implements Repository {
 				index++;
 			if (index >= bytes.length)
 				throw new GitFormatException("Invalid object header");
-			String header = new String(bytes, 0, index, StandardCharsets.US_ASCII);
+			var header = new String(bytes, 0, index, StandardCharsets.US_ASCII);
 			bytes = Arrays.copyOfRange(bytes, index + 1, bytes.length);
 			
 			// Parse header

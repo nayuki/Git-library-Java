@@ -150,7 +150,7 @@ public final class FileRepository implements Repository {
 			}
 		} else {
 			String itemName = prefix.substring(0, 2);
-			File item = new File(objectsDir, itemName);
+			var item = new File(objectsDir, itemName);
 			if (item.isDirectory()) {
 				String subprefix = prefix.substring(2);
 				for (File subitem : item.listFiles()) {
@@ -195,7 +195,7 @@ public final class FileRepository implements Repository {
 		byte[] result = null;
 		File looseFile = getLooseObjectFile(id);
 		if (looseFile.isFile()) {  // Read from loose object store
-			ByteArrayOutputStream bout = new ByteArrayOutputStream();
+			var bout = new ByteArrayOutputStream();
 			try (OutputStream out = new InflaterOutputStream(bout)) {
 				Files.copy(looseFile.toPath(), out);
 			}
@@ -237,7 +237,7 @@ public final class FileRepository implements Repository {
 				index++;
 			if (index >= bytes.length)
 				throw new GitFormatException("Invalid object header");
-			String header = new String(bytes, 0, index, StandardCharsets.US_ASCII);
+			var header = new String(bytes, 0, index, StandardCharsets.US_ASCII);
 			bytes = Arrays.copyOfRange(bytes, index + 1, bytes.length);
 			
 			// Parse header
@@ -313,12 +313,12 @@ public final class FileRepository implements Repository {
 	// Scans the "objects/pack" directory and returns a collection of pack file reader objects.
 	private Collection<PackfileReader> listPackfiles() {
 		Collection<PackfileReader> result = new ArrayList<>();
-		File dir = new File(objectsDir, "pack");
+		var dir = new File(objectsDir, "pack");
 		final String IDX_EXT = ".idx";
 		for (File item : dir.listFiles()) {  // Look for index files
 			String name = item.getName();
 			if (item.isFile() && name.startsWith("pack-") && name.endsWith(IDX_EXT)) {
-				File packfile = new File(dir, name.substring(0, name.length() - IDX_EXT.length()) + ".pack");
+				var packfile = new File(dir, name.substring(0, name.length() - IDX_EXT.length()) + ".pack");
 				if (packfile.isFile())
 					result.add(new PackfileReader(item, packfile));
 			}
@@ -338,10 +338,10 @@ public final class FileRepository implements Repository {
 		
 		// Scan loose ref files
 		Collection<Reference> result = new ArrayList<>();
-		File headsDir = new File(new File(directory, "refs"), "heads");
+		var headsDir = new File(new File(directory, "refs"), "heads");
 		if (headsDir.isDirectory())
 			listLooseReferences("heads", result);
-		File remotesDir = new File(new File(directory, "refs"), "remotes");
+		var remotesDir = new File(new File(directory, "refs"), "remotes");
 		if (remotesDir.isDirectory()) {
 			for (File item : remotesDir.listFiles()) {
 				if (item.isDirectory())
@@ -374,7 +374,7 @@ public final class FileRepository implements Repository {
 		Reference.checkName(name);
 		checkNotClosed();
 		
-		File looseRefFile = new File(new File(directory, "refs"), name);
+		var looseRefFile = new File(new File(directory, "refs"), name);
 		if (looseRefFile.isFile())
 			return parseReferenceFile(name.substring(0, name.lastIndexOf('/')), looseRefFile);
 		else {
@@ -399,7 +399,7 @@ public final class FileRepository implements Repository {
 		Objects.requireNonNull(ref.target);
 		checkNotClosed();
 		
-		File looseRefFile = new File(new File(directory, "refs"), ref.name);
+		var looseRefFile = new File(new File(directory, "refs"), ref.name);
 		looseRefFile.getParentFile().mkdirs();
 		boolean success = false;
 		try (Writer out = new OutputStreamWriter(new FileOutputStream(looseRefFile), StandardCharsets.US_ASCII)) {
@@ -442,11 +442,11 @@ public final class FileRepository implements Repository {
 	// Note that the returned reference names are like "heads/master", and do not contain a "refs/" prefix.
 	private Collection<Reference> parsePackedRefsFile() throws IOException {
 		Collection<Reference> result = new ArrayList<>();
-		File packedRefFile = new File(directory, "packed-refs");
+		var packedRefFile = new File(directory, "packed-refs");
 		if (!packedRefFile.isFile())
 			return result;  // Empty but valid collection
 		
-		try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(packedRefFile), StandardCharsets.UTF_8))) {
+		try (var in = new BufferedReader(new InputStreamReader(new FileInputStream(packedRefFile), StandardCharsets.UTF_8))) {
 			if (!checkPackedRefsFileHeaderLine(in.readLine()))
 				throw new GitFormatException("Invalid packed-refs file");
 			while (true) {
@@ -462,7 +462,7 @@ public final class FileRepository implements Repository {
 				} else if (parts.length == 2) {
 					if (!parts[1].startsWith("refs/"))
 						throw new GitFormatException("Invalid packed-refs file");
-					Reference ref = new Reference(parts[1].substring("refs/".length()), new CommitId(parts[0]));
+					var ref = new Reference(parts[1].substring("refs/".length()), new CommitId(parts[0]));
 					if (!ref.name.startsWith("tags/"))
 						result.add(ref);
 				} else
@@ -483,8 +483,8 @@ public final class FileRepository implements Repository {
 	// subDirName is usually something like "heads" or "remotes/origin" or "tags".
 	// The file must contain exactly 40 hexadecimal digits followed by a newline (total 41 bytes).
 	private Reference parseReferenceFile(String subDirName, File file) throws IOException {
-		byte[] buf = new byte[ObjectId.NUM_HEX_DIGITS + 1];
-		try (DataInputStream in = new DataInputStream(new FileInputStream(file))) {
+		var buf = new byte[ObjectId.NUM_HEX_DIGITS + 1];
+		try (var in = new DataInputStream(new FileInputStream(file))) {
 			in.readFully(buf);
 			if (buf[buf.length - 1] != '\n' || in.read() != -1)
 				throw new GitFormatException("Invalid reference file");
@@ -496,7 +496,7 @@ public final class FileRepository implements Repository {
 	// Returns the expected location of a loose object file with the given hash. This performs no I/O and always succeeds.
 	// For example, a repo at "user/project.git" has a loose object of hash 12345xyz at "user/project.git/objects/12/345xyz".
 	private File getLooseObjectFile(ObjectId id) {
-		File temp = new File(objectsDir, id.toHexadecimal().substring(0, 2));
+		var temp = new File(objectsDir, id.toHexadecimal().substring(0, 2));
 		return new File(temp, id.toHexadecimal().substring(2));
 	}
 	

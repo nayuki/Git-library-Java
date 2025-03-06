@@ -187,7 +187,7 @@ public final class PackfileReaderTest {
 	
 	
 	private static byte[] bytes(int... x) {
-		byte[] b = new byte[x.length];
+		var b = new byte[x.length];
 		for (int i = 0; i < b.length; i++)
 			b[i] = (byte)x[i];
 		return b;

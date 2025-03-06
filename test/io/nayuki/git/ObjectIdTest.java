@@ -19,7 +19,7 @@ import org.junit.Test;
 public final class ObjectIdTest {
 	
 	@Test public void testHexadecimal() {
-		ObjectId id = new ObjectId("0123456789abcdef0123456789abcdef01234567");
+		var id = new ObjectId("0123456789abcdef0123456789abcdef01234567");
 		assertEquals("0123456789abcdef0123456789abcdef01234567", id.toHexadecimal());
 		assertEquals((byte)0x01, id.getByte( 0));
 		assertEquals((byte)0x23, id.getByte( 1));
@@ -60,7 +60,7 @@ public final class ObjectIdTest {
 	
 	
 	@Test public void testByteArray() {
-		ObjectId id = new ObjectId(new byte[20]);
+		var id = new ObjectId(new byte[20]);
 		assertEquals("0000000000000000000000000000000000000000", id.toHexadecimal());
 		
 		id = new ObjectId(bytes(
@@ -128,7 +128,7 @@ public final class ObjectIdTest {
 	
 	
 	@Test public void testEquals() {
-		ObjectId id = new ObjectId("0123456789abcdef0123456789abcdef01234567");
+		var id = new ObjectId("0123456789abcdef0123456789abcdef01234567");
 		
 		assertEquals(id, id);
 		assertEquals(id, new ObjectId("0123456789abcdef0123456789abcdef01234567"));
@@ -158,15 +158,15 @@ public final class ObjectIdTest {
 			{"7d9a21feb6a3fe4414f4ee28e9bf15e434fab7eb", "7d9a21fef6a3fe4414f4ee28e9bf15e434fab7eb", -1},
 		};
 		for (Object[] cs : cases) {
-			ObjectId x = new ObjectId((String)cs[0]);
-			ObjectId y = new ObjectId((String)cs[1]);
+			var x = new ObjectId((String)cs[0]);
+			var y = new ObjectId((String)cs[1]);
 			assertEquals((int)cs[2], Integer.signum(x.compareTo(y)));
 		}
 	}
 	
 	
 	private static byte[] bytes(int... x) {
-		byte[] b = new byte[x.length];
+		var b = new byte[x.length];
 		for (int i = 0; i < b.length; i++)
 			b[i] = (byte)x[i];
 		return b;

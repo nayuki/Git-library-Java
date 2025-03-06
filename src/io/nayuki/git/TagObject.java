@@ -147,7 +147,7 @@ public final class TagObject extends GitObject {
 	 */
 	public byte[] toBytes() {
 		checkState();
-		StringBuilder sb = new StringBuilder();
+		var sb = new StringBuilder();
 		sb.append("object ").append(target.toHexadecimal()).append("\n");
 		sb.append("type ").append(targetType).append("\n");
 		sb.append("tag ").append(tagName).append("\n");

@@ -82,14 +82,14 @@ final class PackfileReader {
 	// hexadecimal prefix, and adds them to the given result set.
 	public void getIdsByPrefix(String prefix, Set<ObjectId> result) throws IOException {
 		ObjectId lowId  = new ObjectId(prefix + "0000000000000000000000000000000000000000".substring(prefix.length()));  // Inclusive
-		ObjectId highId = new ObjectId(prefix + "ffffffffffffffffffffffffffffffffffffffff".substring(prefix.length()));  // Inclusive
+		var highId = new ObjectId(prefix + "ffffffffffffffffffffffffffffffffffffffff".substring(prefix.length()));  // Inclusive
 		
 		final int HEADER_LEN = 8;
 		final int FANOUT_LEN = 256 * 4;
 		
-		try (RandomAccessFile raf = new RandomAccessFile(indexFile, "r")) {
+		try (var raf = new RandomAccessFile(indexFile, "r")) {
 			// Check file header; this logic only supports version 2 indexes
-			byte[] b = new byte[4];
+			var b = new byte[4];
 			raf.readFully(b);
 			if (b[0] != (byte)0xFF || b[1] != 't' || b[2] != 'O' || b[3] != 'c')
 				throw new GitFormatException("Pack index header expected");
@@ -113,7 +113,7 @@ final class PackfileReader {
 			b = new byte[ObjectId.NUM_BYTES];
 			for (; objectOffset < totalObjects; objectOffset++) {
 				raf.readFully(b);
-				ObjectId id = new ObjectId(b);
+				var id = new ObjectId(b);
 				if (id.compareTo(highId) > 0)
 					break;
 				if (id.compareTo(lowId) >= 0)
@@ -132,9 +132,9 @@ final class PackfileReader {
 		final int HEADER_LEN = 8;
 		final int FANOUT_LEN = 256 * 4;
 		
-		try (RandomAccessFile raf = new RandomAccessFile(indexFile, "r")) {
+		try (var raf = new RandomAccessFile(indexFile, "r")) {
 			// Check file header; this logic only supports version 2 indexes
-			byte[] b = new byte[4];
+			var b = new byte[4];
 			raf.readFully(b);
 			if (b[0] != (byte)0xFF || b[1] != 't' || b[2] != 'O' || b[3] != 'c')
 				throw new GitFormatException("Pack index header expected");
@@ -188,7 +188,7 @@ final class PackfileReader {
 		// Read byte data
 		int typeIndex;
 		byte[] bytes;
-		try (RandomAccessFile raf = new RandomAccessFile(packFile, "r")) {
+		try (var raf = new RandomAccessFile(packFile, "r")) {
 			Object[] temp = readObjectHeaderless(raf, readDataOffset(id));
 			typeIndex = (Integer)temp[0];
 			bytes = (byte[])temp[1];
@@ -237,11 +237,11 @@ final class PackfileReader {
 		// Decompress data
 		byte[] data;
 		{
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			Inflater inf = new Inflater(false);
+			var out = new ByteArrayOutputStream();
+			var inf = new Inflater(false);
 			try {
-				byte[] inbuf  = new byte[1024];
-				byte[] outbuf = new byte[1024];
+				var inbuf  = new byte[1024];
+				var outbuf = new byte[1024];
 				while (true) {
 					int outn = inf.inflate(outbuf);
 					if (outn > 0)
@@ -274,20 +274,20 @@ final class PackfileReader {
 			byte[] base = (byte[])temp[1];
 			
 			// Decode delta header
-			DataInputStream deltaIn = new DataInputStream(new ByteArrayInputStream(data));
+			var deltaIn = new DataInputStream(new ByteArrayInputStream(data));
 			long baseLen = decodeDeltaHeaderInt(deltaIn);
 			if (baseLen != base.length)
 				throw new GitFormatException("Base data length mismatch");
 			long dataLen = decodeDeltaHeaderInt(deltaIn);
 			
 			// Decode the delta format's operations
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			var out = new ByteArrayOutputStream();
 			while (true) {
 				int op = deltaIn.read();
 				if (op == -1)
 					break;
 				if ((op & 0x80) == 0) {  // Insert
-					byte[] buf = new byte[op];
+					var buf = new byte[op];
 					deltaIn.readFully(buf);
 					out.write(buf);
 				} else {  // Copy
