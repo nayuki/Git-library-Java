@@ -146,13 +146,15 @@ public class ObjectId implements Comparable<ObjectId> {
 	
 	
 	/**
-	 * Tests whether the specified object is an {@code ObjectId} with the same hash bytes.
+	 * Tests whether the specified object is an {@code ObjectId} with the same hash bytes. Both sides
+	 * of the comparison are treated as a {@code ObjectId} and the exact subclass is irrelevant.
 	 * @param obj the object to test equality with
-	 * @return {@code true} if and only if the given object is
-	 * an {@code ObjectId} with the same array of hash byte values
+	 * @return {@code true} if and only if the given object is an {@code
+	 * ObjectId} (or subclass) with the same array of hash byte values
 	 */
 	public final boolean equals(Object obj) {
-		return (obj instanceof ObjectId) && Arrays.equals(bytes, ((ObjectId)obj).bytes);
+		return obj instanceof ObjectId other
+			&& Arrays.equals(bytes, other.bytes);
 	}
 	
 	
