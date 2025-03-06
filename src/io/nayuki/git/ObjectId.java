@@ -65,37 +65,37 @@ public class ObjectId implements Comparable<ObjectId> {
 	
 	/**
 	 * Constructs an object ID from the specified 20-byte array.
-	 * @param bytes the byte array (not {@code null})
+	 * @param b the byte array (not {@code null})
 	 * @throws NullPointerException if the array is {@code null}
 	 * @throws IllegalArgumentException if the array isn't length 20
 	 */
-	ObjectId(byte[] bytes) {
-		this(checkHashLength(bytes), 0);
+	ObjectId(byte[] b) {
+		this(checkHashLength(b), 0);
 	}
 	
 	
 	/**
 	 * Constructs an object ID from 20 bytes in the
 	 * specified array starting at the specified offset.
-	 * @param bytes the byte array (not {@code null})
+	 * @param b the byte array (not {@code null})
 	 * @param off the offset to start at
 	 * @throws NullPointerException if the array is {@code null}
 	 * @throws IndexOutOfBoundsException if the offset is negative,
 	 * or there are fewer than 20 bytes remaining starting at the offset
 	 */
-	ObjectId(byte[] bytes, int off) {
-		Objects.requireNonNull(bytes);
-		Objects.checkFromIndexSize(off, NUM_BYTES, bytes.length);
-		this.bytes = Arrays.copyOfRange(bytes, off, off + NUM_BYTES);
+	ObjectId(byte[] b, int off) {
+		Objects.requireNonNull(b);
+		Objects.checkFromIndexSize(off, NUM_BYTES, b.length);
+		bytes = Arrays.copyOfRange(b, off, off + NUM_BYTES);
 	}
 	
 	
 	/* Private helper methods and constants for constructors */
 	
-	private static byte[] checkHashLength(byte[] bytes) {
-		if (bytes.length != NUM_BYTES)
+	private static byte[] checkHashLength(byte[] b) {
+		if (b.length != NUM_BYTES)
 			throw new IllegalArgumentException("Invalid array length");
-		return bytes;
+		return b;
 	}
 	
 	

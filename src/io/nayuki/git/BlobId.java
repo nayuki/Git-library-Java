@@ -31,26 +31,26 @@ public final class BlobId extends ObjectId {
 	
 	/**
 	 * Constructs a blob object ID from the specified 20-byte array.
-	 * @param bytes the byte array (not {@code null})
+	 * @param b the byte array (not {@code null})
 	 * @throws NullPointerException if the array is {@code null}
 	 * @throws IllegalArgumentException if the array isn't length 20
 	 */
-	public BlobId(byte[] bytes) {
-		super(bytes);
+	public BlobId(byte[] b) {
+		super(b);
 	}
 	
 	
 	/**
 	 * Constructs a blob object ID from 20 bytes in the
 	 * specified array starting at the specified offset.
-	 * @param bytes the byte array (not {@code null})
+	 * @param b the byte array (not {@code null})
 	 * @param off the offset to start at
 	 * @throws NullPointerException if the array is {@code null}
 	 * @throws IndexOutOfBoundsException if the offset is negative,
 	 * or there are fewer than 20 bytes remaining starting at the offset
 	 */
-	public BlobId(byte[] bytes, int off) {
-		super(bytes, off);
+	public BlobId(byte[] b, int off) {
+		super(b, off);
 	}
 	
 	
