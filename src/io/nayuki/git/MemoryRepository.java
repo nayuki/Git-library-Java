@@ -78,7 +78,7 @@ public class MemoryRepository implements Repository {
 		
 		ObjectId result = null;
 		for (ObjectId id : objects.tailMap(prefixId).keySet()) {
-			if (!id.hexString.startsWith(prefix))
+			if (!id.toHexadecimal().startsWith(prefix))
 				break;
 			else if (result != null)
 				throw new IllegalArgumentException("Multiple object IDs found");
@@ -117,7 +117,7 @@ public class MemoryRepository implements Repository {
 		
 		Set<ObjectId> result = new HashSet<>();
 		for (ObjectId id : objects.tailMap(prefixId).keySet()) {
-			if (id.hexString.startsWith(prefix))
+			if (id.toHexadecimal().startsWith(prefix))
 				result.add(id);
 			else
 				break;

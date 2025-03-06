@@ -39,11 +39,7 @@ public class ObjectId implements Comparable<ObjectId> {
 	
 	/*---- Fields ----*/
 	
-	/**
-	 * The 40-character (NUM_BYTES * 2) hexadecimal representation of the hash, in lowercase.
-	 * For example, "0123456789abcdef0123456789abcdef01234567".
-	 */
-	public final String hexString;
+	private final String hexString;
 	
 	// Not null, and always length 20 (NUM_BYTES).
 	private final byte[] bytes;
@@ -145,6 +141,16 @@ public class ObjectId implements Comparable<ObjectId> {
 	 */
 	public final byte[] getBytes() {
 		return bytes.clone();
+	}
+	
+	
+	/**
+	 * Returns the {@link #NUM_HEX_DIGITS}-character lowercase hexadecimal string
+	 * representation of this hash. For example, "0123456789abcdef0123456789abcdef01234567".
+	 * @return the 40-lowercase-digit hexadecimal string representing this hash
+	 */
+	public final String toHexadecimal() {
+		return hexString;
 	}
 	
 	

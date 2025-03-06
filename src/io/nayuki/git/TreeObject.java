@@ -272,7 +272,7 @@ public final class TreeObject extends GitObject {
 		 * @return a string representation of this tree entry
 		 */
 		public String toString() {
-			return String.format("TreeEntry(mode=%s, name=\"%s\", id=%s)", Integer.toString(type.mode, 8), name, id.hexString);
+			return String.format("TreeEntry(mode=%s, name=\"%s\", id=%s)", Integer.toString(type.mode, 8), name, id.toHexadecimal());
 		}
 		
 		

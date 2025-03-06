@@ -148,7 +148,7 @@ public final class TagObject extends GitObject {
 	public byte[] toBytes() {
 		checkState();
 		StringBuilder sb = new StringBuilder();
-		sb.append("object ").append(target.hexString).append("\n");
+		sb.append("object ").append(target.toHexadecimal()).append("\n");
 		sb.append("type ").append(targetType).append("\n");
 		sb.append("tag ").append(tagName).append("\n");
 		sb.append(String.format("tagger %s <%s> %d %s\n",
@@ -174,7 +174,7 @@ public final class TagObject extends GitObject {
 	 * @return a string representation of this tag object
 	 */
 	public String toString() {
-		return String.format("TagObject(target=%s, type=%s)", target.hexString, targetType);
+		return String.format("TagObject(target=%s, type=%s)", target.toHexadecimal(), targetType);
 	}
 	
 	

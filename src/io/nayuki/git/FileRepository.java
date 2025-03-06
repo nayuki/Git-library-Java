@@ -403,7 +403,7 @@ public final class FileRepository implements Repository {
 		looseRefFile.getParentFile().mkdirs();
 		boolean success = false;
 		try (Writer out = new OutputStreamWriter(new FileOutputStream(looseRefFile), StandardCharsets.US_ASCII)) {
-			out.write(ref.target.hexString + "\n");
+			out.write(ref.target.toHexadecimal() + "\n");
 			success = true;
 		}
 		if (!success)
@@ -496,8 +496,8 @@ public final class FileRepository implements Repository {
 	// Returns the expected location of a loose object file with the given hash. This performs no I/O and always succeeds.
 	// For example, a repo at "user/project.git" has a loose object of hash 12345xyz at "user/project.git/objects/12/345xyz".
 	private File getLooseObjectFile(ObjectId id) {
-		File temp = new File(objectsDir, id.hexString.substring(0, 2));
-		return new File(temp, id.hexString.substring(2));
+		File temp = new File(objectsDir, id.toHexadecimal().substring(0, 2));
+		return new File(temp, id.toHexadecimal().substring(2));
 	}
 	
 	

@@ -20,14 +20,14 @@ public final class ObjectIdTest {
 	
 	@Test public void testHexadecimal() {
 		ObjectId id = new ObjectId("0123456789abcdef0123456789abcdef01234567");
-		assertEquals("0123456789abcdef0123456789abcdef01234567", id.hexString);
+		assertEquals("0123456789abcdef0123456789abcdef01234567", id.toHexadecimal());
 		assertEquals((byte)0x01, id.getByte( 0));
 		assertEquals((byte)0x23, id.getByte( 1));
 		assertEquals((byte)0xEF, id.getByte( 7));
 		assertEquals((byte)0x67, id.getByte(19));
 		
 		id = new ObjectId("0123456789AbcdeF0123456789ABCDEF01234567");
-		assertEquals("0123456789abcdef0123456789abcdef01234567", id.hexString);
+		assertEquals("0123456789abcdef0123456789abcdef01234567", id.toHexadecimal());
 		assertArrayEquals(bytes(
 			0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0x01, 0x23,
 			0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0x01, 0x23, 0x45, 0x67), id.getBytes());
@@ -61,12 +61,12 @@ public final class ObjectIdTest {
 	
 	@Test public void testByteArray() {
 		ObjectId id = new ObjectId(new byte[20]);
-		assertEquals("0000000000000000000000000000000000000000", id.hexString);
+		assertEquals("0000000000000000000000000000000000000000", id.toHexadecimal());
 		
 		id = new ObjectId(bytes(
 			0xFF, 0x7F, 0x00, 0x80, 0x31, 0x25, 0x07, 0x64, 0xCC, 0x2D,
 			0xA1, 0xFF, 0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10));
-		assertEquals("ff7f008031250764cc2da1fffedcba9876543210", id.hexString);
+		assertEquals("ff7f008031250764cc2da1fffedcba9876543210", id.toHexadecimal());
 	}
 	
 	
@@ -96,9 +96,9 @@ public final class ObjectIdTest {
 			0x88, 0xFD, 0x55, 0xFA, 0x83, 0x25, 0x93, 0xF6, 0x04, 0x32,
 			0xD0, 0x41, 0x35, 0xAB, 0xBA, 0xF5, 0x18, 0xA8, 0x2B, 0x8A,
 			0xD3, 0x74, 0x4A, 0xCE, 0x64, 0xCC, 0x05, 0x9E, 0x4C, 0x62);
-		assertEquals("4bce96fb248a9577566a88fd55fa832593f60432", new ObjectId(b,  0).hexString);
-		assertEquals("8a9577566a88fd55fa832593f60432d04135abba", new ObjectId(b,  5).hexString);
-		assertEquals("d04135abbaf518a82b8ad3744ace64cc059e4c62", new ObjectId(b, 20).hexString);
+		assertEquals("4bce96fb248a9577566a88fd55fa832593f60432", new ObjectId(b,  0).toHexadecimal());
+		assertEquals("8a9577566a88fd55fa832593f60432d04135abba", new ObjectId(b,  5).toHexadecimal());
+		assertEquals("d04135abbaf518a82b8ad3744ace64cc059e4c62", new ObjectId(b, 20).toHexadecimal());
 	}
 	
 	

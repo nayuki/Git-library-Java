@@ -186,9 +186,9 @@ public final class CommitObject extends GitObject {
 	public byte[] toBytes() {
 		checkState();
 		StringBuilder sb = new StringBuilder();
-		sb.append("tree ").append(tree.hexString).append("\n");
+		sb.append("tree ").append(tree.toHexadecimal()).append("\n");
 		for (ObjectId parent : parents)
-			sb.append("parent ").append(parent.hexString).append("\n");
+			sb.append("parent ").append(parent.toHexadecimal()).append("\n");
 		sb.append(String.format("author %s <%s> %d %s\n", authorName, authorEmail, authorTime, formatTimezone(authorTimezone)));
 		sb.append(String.format("committer %s <%s> %d %s\n", committerName, committerEmail, committerTime, formatTimezone(committerTimezone)));
 		sb.append("\n").append(message);
@@ -212,7 +212,7 @@ public final class CommitObject extends GitObject {
 	 * @return a string representation of this commit object
 	 */
 	public String toString() {
-		return String.format("CommitObject(tree=%s)", tree.hexString);
+		return String.format("CommitObject(tree=%s)", tree.toHexadecimal());
 	}
 	
 	

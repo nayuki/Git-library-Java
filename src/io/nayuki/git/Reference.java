@@ -89,7 +89,7 @@ public final class Reference {
 	 */
 	public String toString() {
 		return String.format("Reference(name=%s, id=%s)",
-			name, target != null ? target.hexString : "null");
+			name, target != null ? target.toHexadecimal() : "null");
 	}
 	
 	
