@@ -19,17 +19,6 @@ public final class TreeId extends ObjectId {
 	/*---- Constructors ----*/
 	
 	/**
-	 * Constructs a tree object ID from the specified hexadecimal string.
-	 * @param hex the hexadecimal string (not {@code null})
-	 * @throws NullPointerException if the string is {@code null}
-	 * @throws IllegalArgumentException if the string isn't length 40 or has characters outside {0-9, a-f, A-F}
-	 */
-	public TreeId(String hex) {
-		super(hex);
-	}
-	
-	
-	/**
 	 * Constructs a tree object ID from the specified 20-byte array.
 	 * @param b the byte array (not {@code null})
 	 * @throws NullPointerException if the array is {@code null}
@@ -51,6 +40,17 @@ public final class TreeId extends ObjectId {
 	 */
 	public TreeId(byte[] b, int off) {
 		super(b, off);
+	}
+	
+	
+	/**
+	 * Constructs a tree object ID from the specified hexadecimal string.
+	 * @param hex the hexadecimal string (not {@code null})
+	 * @throws NullPointerException if the string is {@code null}
+	 * @throws IllegalArgumentException if the string isn't length 40 or has characters outside {0-9, a-f, A-F}
+	 */
+	public TreeId(String hex) {
+		super(hex);
 	}
 	
 	

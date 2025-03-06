@@ -53,17 +53,6 @@ public class ObjectId implements Comparable<ObjectId> {
 	// Note: Constructors are package-private to prevent foreign subclasses.
 	
 	/**
-	 * Constructs an object ID from the specified hexadecimal string.
-	 * @param hex the hexadecimal string (not {@code null})
-	 * @throws NullPointerException if the string is {@code null}
-	 * @throws IllegalArgumentException if the string isn't length 40 or has characters outside {0-9, a-f, A-F}
-	 */
-	ObjectId(String hex) {
-		this(HEX_FORMAT.parseHex(hex));
-	}
-	
-	
-	/**
 	 * Constructs an object ID from the specified 20-byte array.
 	 * @param b the byte array (not {@code null})
 	 * @throws NullPointerException if the array is {@code null}
@@ -90,6 +79,17 @@ public class ObjectId implements Comparable<ObjectId> {
 		Objects.requireNonNull(b);
 		Objects.checkFromIndexSize(off, NUM_BYTES, b.length);
 		bytes = Arrays.copyOfRange(b, off, off + NUM_BYTES);
+	}
+	
+	
+	/**
+	 * Constructs an object ID from the specified hexadecimal string.
+	 * @param hex the hexadecimal string (not {@code null})
+	 * @throws NullPointerException if the string is {@code null}
+	 * @throws IllegalArgumentException if the string isn't length 40 or has characters outside {0-9, a-f, A-F}
+	 */
+	ObjectId(String hex) {
+		this(HEX_FORMAT.parseHex(hex));
 	}
 	
 	
