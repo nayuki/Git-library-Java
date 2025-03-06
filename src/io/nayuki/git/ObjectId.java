@@ -9,8 +9,8 @@ package io.nayuki.git;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HexFormat;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 
 /**
@@ -57,7 +57,7 @@ public class ObjectId implements Comparable<ObjectId> {
 	 * @throws IllegalArgumentException if the string isn't length 40 or has characters outside {0-9, a-f, A-F}
 	 */
 	ObjectId(String hexStr) {
-		this(hexHashToBytes(hexStr));
+		this(HEX_FORMAT.parseHex(hexStr));
 	}
 	
 	
@@ -83,28 +83,12 @@ public class ObjectId implements Comparable<ObjectId> {
 	ObjectId(byte[] bytes, int off) {
 		Objects.requireNonNull(bytes);
 		Objects.checkFromIndexSize(off, NUM_BYTES, bytes.length);
-		
 		this.bytes = Arrays.copyOfRange(bytes, off, off + NUM_BYTES);
-		StringBuilder sb = new StringBuilder();
-		for (byte b : this.bytes)
-			sb.append(HEX_DIGITS[(b >>> 4) & 0xF]).append(HEX_DIGITS[b & 0xF]);
-		hexString = sb.toString();
+		hexString = HEX_FORMAT.formatHex(this.bytes);
 	}
 	
 	
 	/* Private helper methods and constants for constructors */
-	
-	private static byte[] hexHashToBytes(String str) {
-		Objects.requireNonNull(str);
-		if (!HEX_STRING_PATTERN.matcher(str).matches())
-			throw new IllegalArgumentException("Invalid hexadecimal hash");
-		
-		byte[] result = new byte[NUM_BYTES];
-		for (int i = 0; i < result.length; i++)
-			result[i] = (byte)Integer.parseInt(str.substring(i * 2, (i + 1) * 2), 16);
-		return result;
-	}
-	
 	
 	private static byte[] checkHashLength(byte[] bytes) {
 		if (bytes.length != NUM_BYTES)
@@ -113,9 +97,7 @@ public class ObjectId implements Comparable<ObjectId> {
 	}
 	
 	
-	private static final Pattern HEX_STRING_PATTERN = Pattern.compile("[0-9a-fA-F]{" + NUM_HEX_DIGITS + "}");
-	
-	private static final char[] HEX_DIGITS = "0123456789abcdef".toCharArray();
+	private static final HexFormat HEX_FORMAT = HexFormat.of();
 	
 	
 	
