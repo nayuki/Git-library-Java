@@ -11,7 +11,7 @@ import java.io.IOException;
 
 
 /**
- * An immutable 160-bit (20-byte) SHA-1 hash, whose value should reflect a commit object.
+ * An immutable 160-bit SHA-1 hash, whose value should reflect a commit object.
  * @see CommitObject
  * @see Reference
  */
@@ -34,7 +34,7 @@ public final class CommitId extends ObjectId {
 	 * Constructs a commit object ID from the specified 20-byte array.
 	 * @param bytes the byte array (not {@code null})
 	 * @throws NullPointerException if the array is {@code null}
-	 * @throws IllegalArgumentException if array isn't length 20
+	 * @throws IllegalArgumentException if the array isn't length 20
 	 */
 	public CommitId(byte[] bytes) {
 		super(bytes);
@@ -42,12 +42,13 @@ public final class CommitId extends ObjectId {
 	
 	
 	/**
-	 * Constructs a commit object ID from 20 bytes in the specified array starting at the specified offset.
+	 * Constructs a commit object ID from 20 bytes in the
+	 * specified array starting at the specified offset.
 	 * @param bytes the byte array (not {@code null})
 	 * @param off the offset to start at
 	 * @throws NullPointerException if the array is {@code null}
 	 * @throws IndexOutOfBoundsException if the offset is negative,
-	 * or there are fewer than 20 bytes remaining starting at that offset
+	 * or there are fewer than 20 bytes remaining starting at the offset
 	 */
 	public CommitId(byte[] bytes, int off) {
 		super(bytes, off);

@@ -14,12 +14,14 @@ import java.util.Objects;
 
 
 /**
- * An immutable 160-bit (20-byte) SHA-1 hash.
- * It has subclasses to allow the {@link #read()} method to be convenient.
+ * An immutable 160-bit, 40-hex-digit, 20-byte SHA-1 hash.
+ * Its subclasses make the return type of the {@link #read()} method more convenient.
+ * To enforce immutability, subclasses cannot be defined outside this package.
  * @see BlobId
  * @see TreeId
  * @see CommitId
  * @see TagId
+ * @see GitObject
  */
 public class ObjectId implements Comparable<ObjectId> {
 	
@@ -27,11 +29,13 @@ public class ObjectId implements Comparable<ObjectId> {
 	
 	/**
 	 * The number of bytes in a SHA-1 hash, which is defined to be 20.
+	 * @see #getBytes()
 	 */
 	public static final int NUM_BYTES = 20;
 	
 	/**
 	 * The number of hexadecimal digits in a SHA-1 hash, which is defined to be 40.
+	 * @see #toHexadecimal()
 	 */
 	public static final int NUM_HEX_DIGITS = NUM_BYTES * 2;
 	
@@ -46,7 +50,7 @@ public class ObjectId implements Comparable<ObjectId> {
 	
 	/*---- Constructors ----*/
 	
-	// Note: Constructors are package-private to prevent foreign subclasses, which could break immutability.
+	// Note: Constructors are package-private to prevent foreign subclasses.
 	
 	/**
 	 * Constructs an object ID from the specified hexadecimal string.
@@ -63,7 +67,7 @@ public class ObjectId implements Comparable<ObjectId> {
 	 * Constructs an object ID from the specified 20-byte array.
 	 * @param bytes the byte array (not {@code null})
 	 * @throws NullPointerException if the array is {@code null}
-	 * @throws IllegalArgumentException if array isn't length 20
+	 * @throws IllegalArgumentException if the array isn't length 20
 	 */
 	ObjectId(byte[] bytes) {
 		this(checkHashLength(bytes), 0);
@@ -71,12 +75,13 @@ public class ObjectId implements Comparable<ObjectId> {
 	
 	
 	/**
-	 * Constructs an object ID from 20 bytes in the specified array starting at the specified offset.
+	 * Constructs an object ID from 20 bytes in the
+	 * specified array starting at the specified offset.
 	 * @param bytes the byte array (not {@code null})
 	 * @param off the offset to start at
 	 * @throws NullPointerException if the array is {@code null}
 	 * @throws IndexOutOfBoundsException if the offset is negative,
-	 * or there are fewer than 20 bytes remaining starting at that offset
+	 * or there are fewer than 20 bytes remaining starting at the offset
 	 */
 	ObjectId(byte[] bytes, int off) {
 		Objects.requireNonNull(bytes);
@@ -105,6 +110,7 @@ public class ObjectId implements Comparable<ObjectId> {
 	 * @param index the byte index to read from
 	 * @return the hash byte at the index
 	 * @throws IndexOutOfBoundsException if the byte index is out of range
+	 * @see #getBytes()
 	 */
 	public final byte getByte(int index) {
 		return bytes[index];
@@ -114,6 +120,7 @@ public class ObjectId implements Comparable<ObjectId> {
 	/**
 	 * Returns a new copy of the array of hash bytes.
 	 * @return an array of hash bytes (not {@code null})
+	 * @see #getByte()
 	 */
 	public final byte[] getBytes() {
 		return bytes.clone();
@@ -123,7 +130,7 @@ public class ObjectId implements Comparable<ObjectId> {
 	/**
 	 * Returns the {@link #NUM_HEX_DIGITS}-character lowercase hexadecimal string
 	 * representation of this hash. For example, "0123456789abcdef0123456789abcdef01234567".
-	 * @return the 40-lowercase-digit hexadecimal string representing this hash
+	 * @return the 40-lowercase-digit hexadecimal string representing this hash (not {@code null})
 	 */
 	public final String toHexadecimal() {
 		return HEX_FORMAT.formatHex(this.bytes);
@@ -186,6 +193,7 @@ public class ObjectId implements Comparable<ObjectId> {
 	/**
 	 * Returns a string representation of this object ID. The format is subject to change.
 	 * @return a string representation of this object ID
+	 * @see #toHexadecimal()
 	 */
 	public String toString() {
 		return String.format(getClass().getSimpleName() + "(%s)", toHexadecimal());
